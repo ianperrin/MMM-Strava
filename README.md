@@ -6,11 +6,14 @@ A MagicMirror Module for your Strava data.
 ![](.github/example.png)
 
 ### The module displays the following information:
-
-* Recent (last 4 weeks), year to date or all time stats for your activities
 * The number of activities for the period.
 * The total distance for the period.
 * The total number of achievements (recent period only).
+
+### In addition you can configure the following options
+* Which period to display stats for your activities: Recent (last 4 weeks), year to date or all time
+* Which activities (and the order activities) should be displayed.
+* The units (miles/kilometres) used to display the total distance for each activity
 
 ## Installation
 

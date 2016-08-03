@@ -1,0 +1,6 @@
+{
+    "CONFIG_MISSING": "Please configure the access_token, athlete_id and activities.",
+    "RIDE": "Ride",
+    "RUN": "Run",
+    "SWIM": "Swim"
+}

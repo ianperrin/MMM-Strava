@@ -1,0 +1,24 @@
+.MMM-Strava .symbol {
+    padding-left: 10px;
+    padding-right: 0;
+}
+
+.MMM-Strava .stat {
+    padding-left: 20px;
+    padding-right: 0;
+}
+
+/* Override fa-bicycle */
+.MMM-Strava .fa-ride:before {
+    content: "\f206"; 
+}
+
+/* Override fa-heartbeat */
+.MMM-Strava .fa-run:before {
+    content: "\f21e"; 
+}
+
+/* Override fa-life-saver */
+.MMM-Strava .fa-swim:before {
+    content: "\f1cd"; 
+}

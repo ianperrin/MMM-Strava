@@ -3,7 +3,7 @@ A MagicMirror Module for your Strava data.
 
 ## Example
 
-![](.github/example.png)
+![](.github/example.gif)
 
 ### The module displays the following information:
 * The number of activities for the period.

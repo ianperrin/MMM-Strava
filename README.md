@@ -30,7 +30,7 @@ git clone https://github.com/ianperrin/MMM-Strava.git
 
 Configure the module in your `config/config.js` file.
 
-#### Updating your MMM-Strava module
+## Updating your MMM-Strava module
 
 If you want to update your MMM-Strava module to the latest version, use your terminal to go to your MMM-Strava module folder and type the following command:
 

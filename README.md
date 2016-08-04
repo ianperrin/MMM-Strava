@@ -84,6 +84,13 @@ The following properties can be configured:
             </td>
         </tr>
         <tr>
+            <td><code>auto_rotate</code></td>
+            <td><b>Optional</b> - Whether the summary of activities should rotate through the different periods.<br>
+                <br><b>Possible values:</b> <code>true</code> = rotates the summary through the different periods, <code>false</code> = displays the specified period only.
+                <br><b>Default value:</b> <code>false</code>
+            </td>
+        </tr>
+        <tr>
             <td><code>units</code></td>
             <td><b>Optional</b> - What units to use. Specified by config.js<br>
                 <br><b>Possible values:</b> <code>config.units</code> = Specified by config.js, <code>metric</code> = Kilometres, <code>imperial</code> = Miles
@@ -105,10 +112,17 @@ The following properties can be configured:
             </td>
         </tr>
         <tr>
+            <td><code>updateInterval</code></td>
+            <td><b>Optional</b> - How often does the period have to change? (Milliseconds).<br>
+                <br><b>Possible values:</b> <code>1000</code> - <code>86400000</code>
+                <br><b>Default value:</b> <code>10000</code> (10 seconds)
+            </td>
+        </tr>
+        <tr>
             <td><code>reloadInterval</code></td>
             <td><b>Optional</b> - How often does the data needs to be reloaded from the API? (Milliseconds). See <a href="http://strava.github.io/api/#rate-limiting">Strava documentation</a> for API rate limits<br>
                 <br><b>Possible values:</b> <code>7500</code> - <code>86400000</code>
-                <br><b>Default value:</b> <code>150000</code> (5 minutes)
+                <br><b>Default value:</b> <code>300000</code> (5 minutes)
             </td>
         </tr>
         <tr>

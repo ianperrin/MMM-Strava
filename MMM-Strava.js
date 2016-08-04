@@ -13,10 +13,12 @@ Module.register("MMM-Strava",{
         access_token: '',                     // https://www.strava.com/settings/api
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
         period: "recent",                     // Possible values "recent", "ytd", "all"
+        auto_rotate: false,                   // Rotate stats through each period starting from specified period
         units: config.units,
         fade: false,
         fadePoint: 0.1,                       // Start on 1/4th of the list.
-        reloadInterval: 150000,               // every 5 minutes
+        reloadInterval: 5 * 60 * 1000,        // every 5 minutes
+        updateInterval: 10 * 1000,            // 10 seconds
         animationSpeed: 2.5 * 1000,           // 2.5 seconds
     },
 
@@ -65,15 +67,26 @@ Module.register("MMM-Strava",{
 
             for (i = 0; i < this.config.activities.length; i++) {
                 var currentActivity = this.config.activities[i].toLowerCase();
-                var currentActivityStats = athleteStats[this.config.period + "_" + currentActivity + "_totals"];
-                if (currentActivityStats) {
-                    this.stravaData.athleteStats[currentActivity + "_totals"] = currentActivityStats;
+
+                var recentActivityStats = athleteStats["recent_" + currentActivity + "_totals"];
+                if (recentActivityStats) {
+                    this.stravaData.athleteStats["recent_" + currentActivity + "_totals"] = recentActivityStats;
+                }
+                var ytdActivityStats = athleteStats["ytd_" + currentActivity + "_totals"];
+                if (ytdActivityStats) {
+                    this.stravaData.athleteStats["ytd_" + currentActivity + "_totals"] = ytdActivityStats;
+                }
+                var allActivityStats = athleteStats["all_" + currentActivity + "_totals"];
+                if (allActivityStats) {
+                    this.stravaData.athleteStats["all_" + currentActivity + "_totals"] = allActivityStats;
                 }
             }
 
             this.loading = false;
 
-            this.updateDom(this.config.animationSpeed);
+            this.scheduleUpdateInterval();
+
+
         }
     },
 
@@ -107,7 +120,7 @@ Module.register("MMM-Strava",{
 
                 var activity = this.config.activities[i];
                 Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
-                var activityTotals = this.stravaData.athleteStats[activity.toLowerCase() + "_totals"];
+                var activityTotals = this.stravaData.athleteStats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
                 var activityRow = this.createActivityRow(activity.toLowerCase(), 
                                                             this.translate(activity.toUpperCase()), 
                                                             activityTotals.count,
@@ -129,6 +142,20 @@ Module.register("MMM-Strava",{
 
                 tableWrapper.appendChild(activityRow);
 
+            }
+
+            // Add period indicator if rotating
+            if (this.config.auto_rotate) {
+                var periodTr = document.createElement('tr');
+                periodTr.className = "xsmall";
+
+                var periodTd =  document.createElement("td");
+                periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
+                periodTd.colSpan = tableWrapper.rows[0].cells.length; 
+                periodTd.className = "align-right";
+                periodTr.appendChild(periodTd);
+
+                tableWrapper.appendChild(periodTr);                
             }
 
             return tableWrapper;
@@ -227,6 +254,23 @@ Module.register("MMM-Strava",{
         td.innerHTML = innerHTML;
 
         return td;
+    },
+
+    /* scheduleUpdateInterval()
+     * Schedule visual update.
+     */
+    scheduleUpdateInterval: function() {
+        var self = this;
+
+        self.updateDom(self.config.animationSpeed);
+
+        if (this.config.auto_rotate &&
+            this.config.updateInterval) {
+                setInterval(function() {
+                    self.config.period = ((self.config.period == "recent") ? "ytd" : ((self.config.period == "ytd") ? "all" : "recent"));
+                    self.updateDom(self.config.animationSpeed);
+                }, this.config.updateInterval);
+        }
     },
 
     /**

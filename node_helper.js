@@ -53,7 +53,7 @@ module.exports = NodeHelper.create({
 
             setTimeout(function() {
                 self.fetchAthleteStats(athleteId);
-            }, self.config.updateInterval);
+            }, self.config.reloadInterval);
         });
     }
 });

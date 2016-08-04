@@ -105,8 +105,8 @@ The following properties can be configured:
             </td>
         </tr>
         <tr>
-            <td><code>updateInterval</code></td>
-            <td><b>Optional</b> - How often does the content needs to be fetched? (Milliseconds). See <a href="http://strava.github.io/api/#rate-limiting">Strava documentation</a> for API rate limits<br>
+            <td><code>reloadInterval</code></td>
+            <td><b>Optional</b> - How often does the data needs to be reloaded from the API? (Milliseconds). See <a href="http://strava.github.io/api/#rate-limiting">Strava documentation</a> for API rate limits<br>
                 <br><b>Possible values:</b> <code>7500</code> - <code>86400000</code>
                 <br><b>Default value:</b> <code>150000</code> (5 minutes)
             </td>

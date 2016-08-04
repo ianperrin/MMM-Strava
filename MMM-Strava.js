@@ -16,7 +16,7 @@ Module.register("MMM-Strava",{
         units: config.units,
         fade: false,
         fadePoint: 0.1,                       // Start on 1/4th of the list.
-        updateInterval: 150000,               // every 5 minutes
+        reloadInterval: 150000,               // every 5 minutes
         animationSpeed: 2.5 * 1000,           // 2.5 seconds
     },
 

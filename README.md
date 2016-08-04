@@ -11,9 +11,10 @@ A MagicMirror Module for your Strava data.
 * The total number of achievements (recent period only).
 
 ### In addition you can configure the following options
-* Which period to display stats for your activities: Recent (last 4 weeks), year to date or all time
+* Which period to display stats for your activities: Recent (last 4 weeks), year to date or all time.
+* Whether the module should rotate through the different periods, and the interval between rotations.
 * Which activities (and the order activities) should be displayed.
-* The units (miles/kilometres) used to display the total distance for each activity
+* The units (miles/kilometres) used to display the total distance for each activity.
 
 ## Installation
 

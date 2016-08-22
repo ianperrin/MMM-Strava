@@ -1,6 +1,7 @@
-var http = require('http');
+/* jshint node: true */
+//var http = require('http');
 var https = require('https');
-var querystring = require('querystring');
+//var querystring = require('querystring');
 var extend = require('util')._extend;
 
 var StravaAPI = (function() {
@@ -60,9 +61,9 @@ var StravaAPI = (function() {
         if (options.authorization === 'basic') {
             console.error('Basic authorization is not supported at this time.');
             process.exit(1);
-            options.headers  = extend(options.headers, {
-                'Authorization' : 'Basic ' + new Buffer(APIKEY + ":" + APISECRET).toString('base64')
-            });
+            // options.headers  = extend(options.headers, {
+            //     'Authorization' : 'Basic ' + new Buffer(APIKEY + ":" + APISECRET).toString('base64')
+            // });
         }
 
         // Make changes to the request options headers if method is POST
@@ -128,7 +129,7 @@ var StravaAPI = (function() {
             });
 
             response.on('error', function(e) {
-                console.log("Error performing request to endpoint: /" + endpoint);
+                console.log("Error performing request to endpoint: /" + options.path);
                 options.callback();
             });
         });

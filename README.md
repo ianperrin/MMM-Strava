@@ -1,7 +1,8 @@
 # MagicMirror Module: MMM-Strava
-A MagicMirror Module for your Strava data.
+A MagicMirror Module for displaying your Strava data.
 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://raw.githubusercontent.com/ianperrin/MMM-Strava/master/LICENSE)
+[![Build Status](https://img.shields.io/travis/ianperrin/MMM-Strava.svg?maxAge=2592000)](https://travis-ci.org/ianperrin/MMM-Strava)
+[![License](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://raw.githubusercontent.com/ianperrin/MMM-Strava/master/LICENSE)
 
 ## Example
 

@@ -1,6 +1,5 @@
 'use strict';
 
-var strava = require('../MMM-Strava.js');
 var moduleObject;
 
 global.Module = {
@@ -8,6 +7,8 @@ global.Module = {
 		moduleObject = moduleObjectArgument;
 	}
 };
+
+var strava = require('../MMM-Strava.js');
 
 exports['test'] = {
   'phony ok test': function(test) {

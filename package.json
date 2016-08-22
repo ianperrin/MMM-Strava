@@ -24,8 +24,8 @@
   "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
   "dependencies" : {},
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-nodeunit": "~0.2.0"
+    "grunt": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-nodeunit": "latest"
   }
 }

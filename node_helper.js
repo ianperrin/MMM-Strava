@@ -1,4 +1,3 @@
-
 /* MMM-Strava
  * Node Helper
  *
@@ -6,8 +5,10 @@
  * MIT Licensed.
  */
 
+/* jshint node: true, esversion: 6 */
+
 const NodeHelper = require("node_helper");
-var StravaAPI = require("./StravaAPI.js");
+const StravaAPI = require("./StravaAPI.js");
 
 module.exports = NodeHelper.create({
     // Subclass start method.

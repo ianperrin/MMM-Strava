@@ -1,6 +1,8 @@
 # MagicMirror Module: MMM-Strava
 A MagicMirror Module for your Strava data.
 
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://raw.githubusercontent.com/ianperrin/MMM-Strava/master/LICENSE)
+
 ## Example
 
 ![](.github/example.gif)
@@ -30,7 +32,7 @@ git clone https://github.com/ianperrin/MMM-Strava.git
 
 Configure the module in your `config/config.js` file.
 
-## Updating your MMM-Strava module
+## Updating the module
 
 If you want to update your MMM-Strava module to the latest version, use your terminal to go to your MMM-Strava module folder and type the following command:
 

@@ -5,6 +5,9 @@
  * MIT Licensed.
  */
 
+/* jshint node: true */
+/* global Module, config, Log */
+
 Module.register("MMM-Strava",{
 
     // Default module config.
@@ -65,7 +68,7 @@ Module.register("MMM-Strava",{
         if (notification === "ATHLETE_STATS") {
             var athleteStats = payload;
 
-            for (i = 0; i < this.config.activities.length; i++) {
+            for (var i = 0; i < this.config.activities.length; i++) {
                 var currentActivity = this.config.activities[i].toLowerCase();
 
                 var recentActivityStats = athleteStats["recent_" + currentActivity + "_totals"];
@@ -116,7 +119,7 @@ Module.register("MMM-Strava",{
             tableWrapper.appendChild(this.createHeaderRow());
 
             // Add row to table for each activity.
-            for (i = 0; i < this.config.activities.length; i++) {
+            for (var i = 0; i < this.config.activities.length; i++) {
 
                 var activity = this.config.activities[i];
                 Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);

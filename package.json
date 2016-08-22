@@ -1,0 +1,31 @@
+{
+  "name": "MMM-Strava",
+  "version": "1.0.0",
+  "description": "A MagicMirror Module for displaying your Strava data.",
+  "main": "MMM-Strava.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianperrin/MMM-Strava.git"
+  },
+  "keywords": [
+    "magic",
+    "mirror",
+    "strava"
+  ],
+  "author": "Ian Perrin",
+  "contributors" : [],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ianperrin/MMM-Strava/issues"
+  },
+  "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
+  "dependencies" : {},
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-nodeunit": "~0.2.0"
+  }
+}

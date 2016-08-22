@@ -1,6 +1,13 @@
 'use strict';
 
 var strava = require('../MMM-Strava.js');
+var moduleObject;
+
+global.Module = {
+	register: function (name, moduleObjectArgument) {
+		moduleObject = moduleObjectArgument;
+	}
+};
 
 exports['test'] = {
   'phony ok test': function(test) {

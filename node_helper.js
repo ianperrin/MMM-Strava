@@ -6,6 +6,7 @@
  * MIT Licensed.
  */
 
+const NodeHelper = require("node_helper");
 var StravaAPI = require("./StravaAPI.js");
 
 module.exports = NodeHelper.create({

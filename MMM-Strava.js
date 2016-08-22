@@ -14,6 +14,7 @@ Module.register("MMM-Strava",{
     defaults: {
         strava_id: '',                        // Could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
         access_token: '',                     // https://www.strava.com/settings/api
+        mode: 'table',                        // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
         period: "recent",                     // Possible values "recent", "ytd", "all"
         auto_rotate: false,                   // Rotate stats through each period starting from specified period
@@ -113,61 +114,86 @@ Module.register("MMM-Strava",{
         }
 
         if (this.config.activities.length > 0) {
-            var tableWrapper = document.createElement("table");
-            tableWrapper.className = "small";
 
-            tableWrapper.appendChild(this.createHeaderRow());
-
-            // Add row to table for each activity.
-            for (var i = 0; i < this.config.activities.length; i++) {
-
-                var activity = this.config.activities[i];
-                Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
-                var activityTotals = this.stravaData.athleteStats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
-                var activityRow = this.createActivityRow(activity.toLowerCase(), 
-                                                            this.translate(activity.toUpperCase()), 
-                                                            activityTotals.count,
-                                                            this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
-                                                            activityTotals.achievement_count);
-
-                // Create fade effect.
-                if (this.config.fade && this.config.fadePoint < 1) {
-                    if (this.config.fadePoint < 0) {
-                        this.config.fadePoint = 0;
-                    }
-                    var startingPoint = this.config.activities.length * this.config.fadePoint;
-                    var steps = this.config.activities.length - startingPoint;
-                    if (i >= startingPoint) {
-                        var currentStep = i - startingPoint;
-                        activityRow.style.opacity = 1 - (1 / steps * currentStep);
-                    }
-                }
-
-                tableWrapper.appendChild(activityRow);
-
+            if (this.config.mode === 'chart') {
+                return this.createActivityChart();
+            } else {
+                return this.createStatsTable();
             }
-
-            // Add period indicator if rotating
-            if (this.config.auto_rotate) {
-                var periodTr = document.createElement('tr');
-                periodTr.className = "xsmall";
-
-                var periodTd =  document.createElement("td");
-                periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
-                periodTd.colSpan = tableWrapper.rows[0].cells.length; 
-                periodTd.className = "align-right";
-                periodTr.appendChild(periodTd);
-
-                tableWrapper.appendChild(periodTr);                
-            }
-
-            return tableWrapper;
 
         }
 
     },
 
+    /**
+     * createChart
+     * This method creates a table to display the stats.
+     * @return {dom object}                    a div element containing the activity chart
+     */
+    createActivityChart: function() {
+        var notImplementedWrapper = document.createElement("div");
+        notImplementedWrapper.innerHTML = this.translate("NOT_IMPLEMENTED");
+        notImplementedWrapper.className = "small dimmed light";
+        return notImplementedWrapper;
+    },
 
+    /**
+     * createStatsTable
+     * This method creates a table to display the stats.
+     * @return {dom object}                    the table containing the stats
+     */
+    createStatsTable: function() {
+        var tableWrapper = document.createElement("table");
+        tableWrapper.className = "small";
+
+        tableWrapper.appendChild(this.createHeaderRow());
+
+        // Add row to table for each activity.
+        for (var i = 0; i < this.config.activities.length; i++) {
+
+            var activity = this.config.activities[i];
+            Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
+            var activityTotals = this.stravaData.athleteStats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
+            var activityRow = this.createActivityRow(activity.toLowerCase(), 
+                                                        this.translate(activity.toUpperCase()), 
+                                                        activityTotals.count,
+                                                        this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
+                                                        activityTotals.achievement_count);
+
+            // Create fade effect.
+            if (this.config.fade && this.config.fadePoint < 1) {
+                if (this.config.fadePoint < 0) {
+                    this.config.fadePoint = 0;
+                }
+                var startingPoint = this.config.activities.length * this.config.fadePoint;
+                var steps = this.config.activities.length - startingPoint;
+                if (i >= startingPoint) {
+                    var currentStep = i - startingPoint;
+                    activityRow.style.opacity = 1 - (1 / steps * currentStep);
+                }
+            }
+
+            tableWrapper.appendChild(activityRow);
+
+        }
+
+        // Add period indicator if rotating
+        if (this.config.auto_rotate) {
+            var periodTr = document.createElement('tr');
+            periodTr.className = "xsmall";
+
+            var periodTd =  document.createElement("td");
+            periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
+            periodTd.colSpan = tableWrapper.rows[0].cells.length; 
+            periodTd.className = "align-right";
+            periodTr.appendChild(periodTd);
+
+            tableWrapper.appendChild(periodTr);                
+        }
+
+        return tableWrapper;
+    },
+    
     /**
      * createHeaderRow
      * This method creates a table row for the stat headings.

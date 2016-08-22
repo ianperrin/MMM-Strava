@@ -22,3 +22,66 @@
 .MMM-Strava .fa-swim:before {
     content: "\f1cd"; 
 }
+
+
+/* Chart */
+
+.MMM-Strava .week {
+    position: relative;
+    margin-top: 20px
+}
+
+.MMM-Strava .week:first-child {
+    margin-top: 0
+}
+
+.MMM-Strava .primary-stats {
+	float: left;
+    width: 125px;
+}
+
+.MMM-Strava .primary-stats .inline-stats {
+    margin-top: 2px;
+}
+
+.MMM-Strava .inline-stats {
+    clear: both;
+}
+
+.MMM-Strava .inline-stats:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.MMM-Strava .inline-stats li {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.MMM-Strava svg {
+    float: right; 
+    vertical-align: middle
+}
+
+
+.MMM-Strava .day-label {
+    font-size: 11px
+}
+
+.MMM-Strava .day-label.past, .MMM-Strava .volume-bar.past  {
+    fill: #ccc;
+}
+
+.MMM-Strava .day-label.highlighted, .MMM-Strava .volume-bar.highlighted {
+    fill: #666;
+}
+
+.MMM-Strava .day-label.future, .MMM-Strava .volume-bar.future {
+    fill: #e5e5e5;
+}
+
+.MMM-Strava .volume-bar {
+    shape-rendering: crispEdges
+}
+

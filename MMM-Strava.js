@@ -131,10 +131,102 @@ Module.register("MMM-Strava",{
      * @return {dom object}                    a div element containing the activity chart
      */
     createActivityChart: function() {
-        var notImplementedWrapper = document.createElement("div");
-        notImplementedWrapper.innerHTML = this.translate("NOT_IMPLEMENTED");
-        notImplementedWrapper.className = "small dimmed light";
-        return notImplementedWrapper;
+        var chartWrapper = document.createElement("div");
+        chartWrapper.className = "small";
+
+
+
+        // Add div for each activity.
+        for (var i = 0; i < this.config.activities.length; i++) {
+            var activity = this.config.activities[i];
+
+            var activityDiv = document.createElement("div");
+            activityDiv.className = "week";
+            activityDiv.id = activity.toLowerCase();
+
+                var primaryStatsDiv = document.createElement("div");
+                primaryStatsDiv.className = "primary-stats";
+
+                    var actualDistanceSpan = document.createElement("span");
+                    actualDistanceSpan.innerHTML = "38.1 mi";
+                    actualDistanceSpan.className = "actual small bright";
+                    primaryStatsDiv.appendChild(actualDistanceSpan);
+
+                    var inlineStatsList = document.createElement("ul");
+                    inlineStatsList.className = "inline-stats";
+
+                        var durationListItem = document.createElement("li");
+                        durationListItem.innerHTML = "2h 39m";
+                        durationListItem.className = "xsmall light";
+                        inlineStatsList.appendChild(durationListItem);
+
+                        var elevationListItem = document.createElement("li");
+                        elevationListItem.innerHTML = "1,604 ft";
+                        elevationListItem.className = "xsmall light";
+                        inlineStatsList.appendChild(elevationListItem);
+
+                    primaryStatsDiv.appendChild(inlineStatsList);
+
+                activityDiv.appendChild(primaryStatsDiv);
+
+
+
+
+activityDiv.innerHTML += `
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="chart" width="115" height="68" role="img">
+<g class="activity-chart" transform="translate(25, 5)">
+    <g transform="translate(0,0)" class="volume-bar-container">
+        <rect class="volume-bar past" y="15.770875162395178" height="32.22912483760482" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(12.571428571428571,0)" class="volume-bar-container">
+        <rect class="volume-bar past" y="15.658438644147871" height="32.34156135585213" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(25.142857142857142,0)" class="volume-bar-container">
+        <rect class="volume-bar past" y="15.548836659974015" height="32.451163340025985" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(37.714285714285715,0)" class="volume-bar-container">
+        <rect class="volume-bar past" y="46" height="2" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(50.285714285714285,0)" class="volume-bar-container">
+        <rect class="volume-bar past" y="46" height="2" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(62.857142857142854,0)" class="volume-bar-container">
+        <rect class="volume-bar highlighted" y="0" height="48" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(75.42857142857143,0)" class="volume-bar-container">
+        <rect class="volume-bar future" y="46" height="2" width="6.571428571428571"></rect>
+    </g>
+    <g transform="translate(0,63)" class="day-label-container">
+        <text class="day-label past" x="0" y="0">M</text>
+    </g>
+    <g transform="translate(12.571428571428571,63)" class="day-label-container">
+        <text class="day-label past" x="0" y="0">T</text>
+    </g>
+    <g transform="translate(25.142857142857142,63)" class="day-label-container">
+        <text class="day-label past" x="0" y="0">W</text>
+    </g>
+    <g transform="translate(37.714285714285715,63)" class="day-label-container">
+        <text class="day-label past" x="0" y="0">T</text>
+    </g>
+    <g transform="translate(50.285714285714285,63)" class="day-label-container">
+        <text class="day-label past" x="0" y="0">F</text>
+    </g>
+    <g transform="translate(62.857142857142854,63)" class="day-label-container">
+        <text class="day-label highlighted" x="0" y="0">S</text>
+    </g>
+    <g transform="translate(75.42857142857143,63)" class="day-label-container">
+        <text class="day-label future" x="0" y="0">S</text>
+    </g>
+</g>
+</svg>
+
+`;
+
+            chartWrapper.appendChild(activityDiv);
+
+        }
+
+        return chartWrapper;
     },
 
     /**
@@ -193,7 +285,7 @@ Module.register("MMM-Strava",{
 
         return tableWrapper;
     },
-    
+
     /**
      * createHeaderRow
      * This method creates a table row for the stat headings.

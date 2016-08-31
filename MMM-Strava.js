@@ -28,10 +28,15 @@ Module.register("MMM-Strava",{
 
     // Store the strava data in an object.
     stravaData: {
-        athleteStats: {
+        stats: {
             ride_totals: null,
             run_totals: null,
             swim_totals: null
+        },
+        activitySummary: { 
+            ride: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
+            run: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
+            swim: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
         }
     },
 
@@ -41,6 +46,11 @@ Module.register("MMM-Strava",{
     // Subclass getStyles method.
     getStyles: function() {
         return ['font-awesome.css','MMM-Strava.css'];
+    },
+
+    // Subclass getScripts method.
+    getScripts: function() {
+        return ["moment.js"];
     },
 
     // Subclass getTranslations method.
@@ -67,22 +77,22 @@ Module.register("MMM-Strava",{
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
         if (notification === "ATHLETE_STATS") {
-            var athleteStats = payload;
+            var stats = payload;
 
             for (var i = 0; i < this.config.activities.length; i++) {
                 var currentActivity = this.config.activities[i].toLowerCase();
 
-                var recentActivityStats = athleteStats["recent_" + currentActivity + "_totals"];
+                var recentActivityStats = stats["recent_" + currentActivity + "_totals"];
                 if (recentActivityStats) {
-                    this.stravaData.athleteStats["recent_" + currentActivity + "_totals"] = recentActivityStats;
+                    this.stravaData.stats["recent_" + currentActivity + "_totals"] = recentActivityStats;
                 }
-                var ytdActivityStats = athleteStats["ytd_" + currentActivity + "_totals"];
+                var ytdActivityStats = stats["ytd_" + currentActivity + "_totals"];
                 if (ytdActivityStats) {
-                    this.stravaData.athleteStats["ytd_" + currentActivity + "_totals"] = ytdActivityStats;
+                    this.stravaData.stats["ytd_" + currentActivity + "_totals"] = ytdActivityStats;
                 }
-                var allActivityStats = athleteStats["all_" + currentActivity + "_totals"];
+                var allActivityStats = stats["all_" + currentActivity + "_totals"];
                 if (allActivityStats) {
-                    this.stravaData.athleteStats["all_" + currentActivity + "_totals"] = allActivityStats;
+                    this.stravaData.stats["all_" + currentActivity + "_totals"] = allActivityStats;
                 }
             }
 
@@ -90,7 +100,28 @@ Module.register("MMM-Strava",{
 
             this.scheduleUpdateInterval();
 
+        }
 
+        if (notification === "ATHLETE_ACTIVITY") {
+            var activitySummary = payload;
+            //Log.info(payload);
+
+            // Summarise athlete activity totals and daily distances
+            for (var i = 0; i < Object.keys(activitySummary).length - 1; i++) {
+
+                var activityDate = moment(activitySummary[i].start_date_local);
+                var currentActivity = this.stravaData.activitySummary[activitySummary[i].type.toLowerCase()];
+
+                // Update activity stats
+                currentActivity.total_distance += activitySummary[i].distance;
+                currentActivity.total_elevation_gain += activitySummary[i].total_elevation_gain;
+                currentActivity.total_moving_time += activitySummary[i].moving_time;
+                currentActivity.days[activityDate.weekday()] += activitySummary[i].distance;
+            }
+
+            //Log.info(this.stravaData.activitySummary);
+            this.loading = false;
+            this.scheduleUpdateInterval();
         }
     },
 
@@ -134,21 +165,29 @@ Module.register("MMM-Strava",{
         var chartWrapper = document.createElement("div");
         chartWrapper.className = "small";
 
+Log.info(this.config.activities.length);
 
+        function getNode(n, v) {
+          n = document.createElementNS("http://www.w3.org/2000/svg", n);
+          for (var p in v)
+            n.setAttributeNS(null, p.replace(/[A-Z]/g, function(m, p, o, s) { return "-" + m.toLowerCase(); }), v[p]);
+          return n
+        }
 
-        // Add div for each activity.
+        // Add div for each activity type.
         for (var i = 0; i < this.config.activities.length; i++) {
-            var activity = this.config.activities[i];
-
-            var activityDiv = document.createElement("div");
-            activityDiv.className = "week";
-            activityDiv.id = activity.toLowerCase();
+            var activityType = this.config.activities[i];
+            Log.info(i + ': ' + activityType);
+            var activitySummary = this.stravaData.activitySummary[activityType.toLowerCase()];
+            var activityTypeDiv = document.createElement("div");
+            activityTypeDiv.className = "week";
+            activityTypeDiv.id = activityType.toLowerCase();
 
                 var primaryStatsDiv = document.createElement("div");
                 primaryStatsDiv.className = "primary-stats";
 
                     var actualDistanceSpan = document.createElement("span");
-                    actualDistanceSpan.innerHTML = "38.1 mi";
+                    actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
                     actualDistanceSpan.className = "actual small bright";
                     primaryStatsDiv.appendChild(actualDistanceSpan);
 
@@ -156,73 +195,68 @@ Module.register("MMM-Strava",{
                     inlineStatsList.className = "inline-stats";
 
                         var durationListItem = document.createElement("li");
-                        durationListItem.innerHTML = "2h 39m";
+                        var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
+                        durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
                         durationListItem.className = "xsmall light";
                         inlineStatsList.appendChild(durationListItem);
 
                         var elevationListItem = document.createElement("li");
-                        elevationListItem.innerHTML = "1,604 ft";
+                        elevationListItem.innerHTML = this.roundedToFixed(activitySummary.total_elevation_gain, 1) + " m";
                         elevationListItem.className = "xsmall light";
                         inlineStatsList.appendChild(elevationListItem);
 
                     primaryStatsDiv.appendChild(inlineStatsList);
 
-                activityDiv.appendChild(primaryStatsDiv);
+                activityTypeDiv.appendChild(primaryStatsDiv);
 
+                var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
 
+                var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
 
+                var now = moment().startOf('day');
+                var startOfWeek = moment().startOf('week');
 
-activityDiv.innerHTML += `
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="chart" width="115" height="68" role="img">
-<g class="activity-chart" transform="translate(25, 5)">
-    <g transform="translate(0,0)" class="volume-bar-container">
-        <rect class="volume-bar past" y="15.770875162395178" height="32.22912483760482" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(12.571428571428571,0)" class="volume-bar-container">
-        <rect class="volume-bar past" y="15.658438644147871" height="32.34156135585213" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(25.142857142857142,0)" class="volume-bar-container">
-        <rect class="volume-bar past" y="15.548836659974015" height="32.451163340025985" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(37.714285714285715,0)" class="volume-bar-container">
-        <rect class="volume-bar past" y="46" height="2" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(50.285714285714285,0)" class="volume-bar-container">
-        <rect class="volume-bar past" y="46" height="2" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(62.857142857142854,0)" class="volume-bar-container">
-        <rect class="volume-bar highlighted" y="0" height="48" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(75.42857142857143,0)" class="volume-bar-container">
-        <rect class="volume-bar future" y="46" height="2" width="6.571428571428571"></rect>
-    </g>
-    <g transform="translate(0,63)" class="day-label-container">
-        <text class="day-label past" x="0" y="0">M</text>
-    </g>
-    <g transform="translate(12.571428571428571,63)" class="day-label-container">
-        <text class="day-label past" x="0" y="0">T</text>
-    </g>
-    <g transform="translate(25.142857142857142,63)" class="day-label-container">
-        <text class="day-label past" x="0" y="0">W</text>
-    </g>
-    <g transform="translate(37.714285714285715,63)" class="day-label-container">
-        <text class="day-label past" x="0" y="0">T</text>
-    </g>
-    <g transform="translate(50.285714285714285,63)" class="day-label-container">
-        <text class="day-label past" x="0" y="0">F</text>
-    </g>
-    <g transform="translate(62.857142857142854,63)" class="day-label-container">
-        <text class="day-label highlighted" x="0" y="0">S</text>
-    </g>
-    <g transform="translate(75.42857142857143,63)" class="day-label-container">
-        <text class="day-label future" x="0" y="0">S</text>
-    </g>
-</g>
-</svg>
+                for (var d = 0; d < activitySummary.days.length; d++) {
 
-`;
+                    var barDate = startOfWeek;
+                    var barClass = 'past';
+                    if (now.diff(barDate, 'days') == 0) {
+                        barClass = 'highlighted';
+                    } else if (now.diff(barDate, 'days') >= 1) {
+                        barClass = 'future';
+                    }
 
-            chartWrapper.appendChild(activityDiv);
+                    // bars
+                    var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
+                    var barHeight = (activitySummary.days[d] > 0 ? (activitySummary.days[d]/activitySummary.total_distance * 50) : 2) ;
+                    var barY = 50 - barHeight; 
+                    var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
+                    barRect.classList.add(barClass);
+                    barG.appendChild(barRect);
+                    chartG.appendChild(barG);
+
+                    // labels
+                    var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
+                    var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
+                    labelRect.classList.add(barClass);
+                    labelRect.innerHTML = barDate.format('dd').slice(0,1);
+                    labelG.appendChild(labelRect);
+                    chartG.appendChild(labelG);
+
+                    barDate = startOfWeek.add('days', 1);
+                }
+
+                chartSvg.appendChild(chartG);
+
+                activityTypeDiv.appendChild(chartSvg);
+
+                // Icon
+                var iconDiv = document.createElement("div");
+                iconDiv.classList.add("strava-icon", "icon-" + activityType.toLowerCase());
+                iconDiv.title = activityType.toLowerCase();
+                activityTypeDiv.appendChild(iconDiv);
+
+            chartWrapper.appendChild(activityTypeDiv);
 
         }
 
@@ -245,7 +279,7 @@ activityDiv.innerHTML += `
 
             var activity = this.config.activities[i];
             Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
-            var activityTotals = this.stravaData.athleteStats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
+            var activityTotals = this.stravaData.stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
             var activityRow = this.createActivityRow(activity.toLowerCase(), 
                                                         this.translate(activity.toUpperCase()), 
                                                         activityTotals.count,

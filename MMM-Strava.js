@@ -14,6 +14,7 @@ Module.register("MMM-Strava",{
     defaults: {
         strava_id: '',                        // Could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
         access_token: '',                     // https://www.strava.com/settings/api
+        mode: 'table',                        // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
         period: "recent",                     // Possible values "recent", "ytd", "all"
         auto_rotate: false,                   // Rotate stats through each period starting from specified period
@@ -27,10 +28,11 @@ Module.register("MMM-Strava",{
 
     // Store the strava data in an object.
     stravaData: {
-        athleteStats: {
-            ride_totals: null,
-            run_totals: null,
-            swim_totals: null
+        stats: {},
+        activitySummary: { 
+            ride: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
+            run: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
+            swim: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
         }
     },
 
@@ -40,6 +42,11 @@ Module.register("MMM-Strava",{
     // Subclass getStyles method.
     getStyles: function() {
         return ['font-awesome.css','MMM-Strava.css'];
+    },
+
+    // Subclass getScripts method.
+    getScripts: function() {
+        return ["moment.js"];
     },
 
     // Subclass getTranslations method.
@@ -66,22 +73,22 @@ Module.register("MMM-Strava",{
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
         if (notification === "ATHLETE_STATS") {
-            var athleteStats = payload;
+            var stats = payload;
 
             for (var i = 0; i < this.config.activities.length; i++) {
                 var currentActivity = this.config.activities[i].toLowerCase();
 
-                var recentActivityStats = athleteStats["recent_" + currentActivity + "_totals"];
+                var recentActivityStats = stats["recent_" + currentActivity + "_totals"];
                 if (recentActivityStats) {
-                    this.stravaData.athleteStats["recent_" + currentActivity + "_totals"] = recentActivityStats;
+                    this.stravaData.stats["recent_" + currentActivity + "_totals"] = recentActivityStats;
                 }
-                var ytdActivityStats = athleteStats["ytd_" + currentActivity + "_totals"];
+                var ytdActivityStats = stats["ytd_" + currentActivity + "_totals"];
                 if (ytdActivityStats) {
-                    this.stravaData.athleteStats["ytd_" + currentActivity + "_totals"] = ytdActivityStats;
+                    this.stravaData.stats["ytd_" + currentActivity + "_totals"] = ytdActivityStats;
                 }
-                var allActivityStats = athleteStats["all_" + currentActivity + "_totals"];
+                var allActivityStats = stats["all_" + currentActivity + "_totals"];
                 if (allActivityStats) {
-                    this.stravaData.athleteStats["all_" + currentActivity + "_totals"] = allActivityStats;
+                    this.stravaData.stats["all_" + currentActivity + "_totals"] = allActivityStats;
                 }
             }
 
@@ -89,7 +96,28 @@ Module.register("MMM-Strava",{
 
             this.scheduleUpdateInterval();
 
+        }
 
+        if (notification === "ATHLETE_ACTIVITY") {
+            var activitySummary = payload;
+            //Log.info(payload);
+
+            // Summarise athlete activity totals and daily distances
+            for (var i = 0; i < Object.keys(activitySummary).length - 1; i++) {
+
+                var activityDate = moment(activitySummary[i].start_date_local);
+                var currentActivity = this.stravaData.activitySummary[activitySummary[i].type.toLowerCase()];
+
+                // Update activity stats
+                currentActivity.total_distance += activitySummary[i].distance;
+                currentActivity.total_elevation_gain += activitySummary[i].total_elevation_gain;
+                currentActivity.total_moving_time += activitySummary[i].moving_time;
+                currentActivity.days[activityDate.weekday()] += activitySummary[i].distance;
+            }
+
+            //Log.info(this.stravaData.activitySummary);
+            this.loading = false;
+            this.scheduleUpdateInterval();
         }
     },
 
@@ -113,60 +141,179 @@ Module.register("MMM-Strava",{
         }
 
         if (this.config.activities.length > 0) {
-            var tableWrapper = document.createElement("table");
-            tableWrapper.className = "small";
 
-            tableWrapper.appendChild(this.createHeaderRow());
-
-            // Add row to table for each activity.
-            for (var i = 0; i < this.config.activities.length; i++) {
-
-                var activity = this.config.activities[i];
-                Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
-                var activityTotals = this.stravaData.athleteStats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
-                var activityRow = this.createActivityRow(activity.toLowerCase(), 
-                                                            this.translate(activity.toUpperCase()), 
-                                                            activityTotals.count,
-                                                            this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
-                                                            activityTotals.achievement_count);
-
-                // Create fade effect.
-                if (this.config.fade && this.config.fadePoint < 1) {
-                    if (this.config.fadePoint < 0) {
-                        this.config.fadePoint = 0;
-                    }
-                    var startingPoint = this.config.activities.length * this.config.fadePoint;
-                    var steps = this.config.activities.length - startingPoint;
-                    if (i >= startingPoint) {
-                        var currentStep = i - startingPoint;
-                        activityRow.style.opacity = 1 - (1 / steps * currentStep);
-                    }
-                }
-
-                tableWrapper.appendChild(activityRow);
-
+            if (this.config.mode === 'chart') {
+                return this.createActivityChart();
+            } else {
+                return this.createStatsTable();
             }
-
-            // Add period indicator if rotating
-            if (this.config.auto_rotate) {
-                var periodTr = document.createElement('tr');
-                periodTr.className = "xsmall";
-
-                var periodTd =  document.createElement("td");
-                periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
-                periodTd.colSpan = tableWrapper.rows[0].cells.length; 
-                periodTd.className = "align-right";
-                periodTr.appendChild(periodTd);
-
-                tableWrapper.appendChild(periodTr);                
-            }
-
-            return tableWrapper;
 
         }
 
     },
 
+    /**
+     * createChart
+     * This method creates a table to display the stats.
+     * @return {dom object}                    a div element containing the activity chart
+     */
+    createActivityChart: function() {
+        var chartWrapper = document.createElement("div");
+        chartWrapper.className = "small";
+
+        function getNode(n, v) {
+          n = document.createElementNS("http://www.w3.org/2000/svg", n);
+          for (var p in v)
+            n.setAttributeNS(null, p.replace(/[A-Z]/g, function(m, p, o, s) { return "-" + m.toLowerCase(); }), v[p]);
+          return n
+        }
+
+        // Add div for each activity type.
+        for (var i = 0; i < this.config.activities.length; i++) {
+            var activityType = this.config.activities[i];
+            var activitySummary = this.stravaData.activitySummary[activityType.toLowerCase()];
+            var activityTypeDiv = document.createElement("div");
+            activityTypeDiv.className = "week";
+            activityTypeDiv.id = activityType.toLowerCase();
+
+                var primaryStatsDiv = document.createElement("div");
+                primaryStatsDiv.className = "primary-stats";
+
+                    var actualDistanceSpan = document.createElement("span");
+                    actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
+                    actualDistanceSpan.className = "actual small bright";
+                    primaryStatsDiv.appendChild(actualDistanceSpan);
+
+                    var inlineStatsList = document.createElement("ul");
+                    inlineStatsList.className = "inline-stats";
+
+                        var durationListItem = document.createElement("li");
+                        var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
+                        durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+                        durationListItem.className = "xsmall light";
+                        inlineStatsList.appendChild(durationListItem);
+
+                        if (activityType != "swim") {
+                            var elevationListItem = document.createElement("li");
+                            elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
+                            elevationListItem.className = "xsmall light";
+                            inlineStatsList.appendChild(elevationListItem);
+                        }
+
+                    primaryStatsDiv.appendChild(inlineStatsList);
+
+                activityTypeDiv.appendChild(primaryStatsDiv);
+
+                var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
+
+                var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
+
+                var now = moment().startOf('day');
+                var startOfWeek = moment().startOf('week');
+
+                for (var d = 0; d < activitySummary.days.length; d++) {
+
+                    var barDate = startOfWeek;
+                    var barClass = 'past';
+                    if (now.diff(barDate, 'days') == 0) {
+                        barClass = 'highlighted';
+                    } else if (now.diff(barDate, 'days') >= 1) {
+                        barClass = 'future';
+                    }
+
+                    // bars
+                    var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
+                    var barHeight = (activitySummary.days[d] > 0 ? (activitySummary.days[d]/activitySummary.total_distance * 50) : 2) ;
+                    var barY = 50 - barHeight; 
+                    var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
+                    barRect.classList.add(barClass);
+                    barG.appendChild(barRect);
+                    chartG.appendChild(barG);
+
+                    // labels
+                    var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
+                    var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
+                    labelRect.classList.add(barClass);
+                    labelRect.innerHTML = barDate.format('dd').slice(0,1);
+                    labelG.appendChild(labelRect);
+                    chartG.appendChild(labelG);
+
+                    barDate = startOfWeek.add('days', 1);
+                }
+
+                chartSvg.appendChild(chartG);
+
+                activityTypeDiv.appendChild(chartSvg);
+
+                // Icon
+                var iconDiv = document.createElement("div");
+                iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
+                iconDiv.title = activityType.toLowerCase();
+                activityTypeDiv.appendChild(iconDiv);
+
+            chartWrapper.appendChild(activityTypeDiv);
+
+        }
+
+        return chartWrapper;
+    },
+
+    /**
+     * createStatsTable
+     * This method creates a table to display the stats.
+     * @return {dom object}                    the table containing the stats
+     */
+    createStatsTable: function() {
+        var tableWrapper = document.createElement("table");
+        tableWrapper.className = "small";
+
+        tableWrapper.appendChild(this.createHeaderRow());
+
+        // Add row to table for each activity.
+        for (var i = 0; i < this.config.activities.length; i++) {
+
+            var activity = this.config.activities[i];
+            Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
+            var activityTotals = this.stravaData.stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
+            var activityRow = this.createActivityRow(activity.toLowerCase(), 
+                                                        this.translate(activity.toUpperCase()), 
+                                                        activityTotals.count,
+                                                        this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
+                                                        activityTotals.achievement_count);
+
+            // Create fade effect.
+            if (this.config.fade && this.config.fadePoint < 1) {
+                if (this.config.fadePoint < 0) {
+                    this.config.fadePoint = 0;
+                }
+                var startingPoint = this.config.activities.length * this.config.fadePoint;
+                var steps = this.config.activities.length - startingPoint;
+                if (i >= startingPoint) {
+                    var currentStep = i - startingPoint;
+                    activityRow.style.opacity = 1 - (1 / steps * currentStep);
+                }
+            }
+
+            tableWrapper.appendChild(activityRow);
+
+        }
+
+        // Add period indicator if rotating
+        if (this.config.auto_rotate) {
+            var periodTr = document.createElement('tr');
+            periodTr.className = "xsmall";
+
+            var periodTd =  document.createElement("td");
+            periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
+            periodTd.colSpan = tableWrapper.rows[0].cells.length; 
+            periodTd.className = "align-right";
+            periodTr.appendChild(periodTd);
+
+            tableWrapper.appendChild(periodTr);                
+        }
+
+        return tableWrapper;
+    },
 
     /**
      * createHeaderRow
@@ -230,8 +377,10 @@ Module.register("MMM-Strava",{
 
         var activityTypeIconCell = document.createElement("td");
         activityTypeIconCell.className = "bright symbol";
-        var symbol =  document.createElement("span");
-        symbol.className = "fa fa-" + icon;
+        var symbol =  document.createElement("div");
+        //symbol.className = "fa fa-" + icon;
+        symbol.classList.add( "strava-icon", "icon-" + icon);//"fa fa-" + icon;
+
         activityTypeIconCell.appendChild(symbol);
         tr.appendChild(activityTypeIconCell);
 
@@ -278,13 +427,20 @@ Module.register("MMM-Strava",{
 
     /**
      * convertToUnits
-     * This method converts the supplied value to either kilometres or miles depending on the value of config.units.
-     * @param  {float} _float            the value (in metres) to be converted
-     * @return {float}                    the converted value (in miles or kilometres)
+     * This method converts the supplied value depending on the value of config.units.
+     * @param  {float} _float             the value (in metres) to be converted
+     * @param  {boolean} _minor           if _minor, the output will be in feet or metres otherwise it will be in miles or kilometres
+     * @return {float}                    the converted value
      */
-    convertToUnits: function (_float){
-        var km = _float * 0.001;
-        return (this.config.units.toLowerCase() === "imperial") ? km * 0.621 : km;
+    convertToUnits: function (_float, _minor){
+        if (_minor) {
+            // Convert to either feet or inches
+            return (this.config.units.toLowerCase() === "imperial") ? _float * 3.281 : _float;
+        } else {
+            // Convert to either miles or kilometres
+            var km = _float * 0.001;
+            return (this.config.units.toLowerCase() === "imperial") ? km * 0.621 : km;
+        }
     },
 
     /**

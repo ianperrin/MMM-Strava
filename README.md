@@ -6,18 +6,22 @@ A MagicMirror Module for displaying your Strava data.
 
 ## Example
 
-![](.github/example.gif)
+![](.github/example.gif) ![](.github/example-2.png)
 
-### The module displays the following information:
-* The number of activities for the period.
-* The total distance for the period.
-* The total number of achievements (recent period only).
+### The module displays activity information in one of two modes:
+* `table` mode, which includes
+  * The number of activities for the period.
+  * The total distance for the period.
+  * The total number of achievements (recent period only).
+* `chart` mode, which includes
+  * The total distance, moving time and elevation for the last week.
+  * A chart of distance by day.
 
 ### In addition you can configure the following options
-* Which period to display stats for your activities: Recent (last 4 weeks), year to date or all time.
-* Whether the module should rotate through the different periods, and the interval between rotations.
-* Which activities (and the order activities) should be displayed.
-* The units (miles/kilometres) used to display the total distance for each activity.
+* Which `activities` (and the order activities) should be displayed.
+* Which `period` to display stats for your activities: Recent (last 4 weeks), year to date or all time. (only applicable in `table` mode)
+* Whether the module should rotate through the different periods, and the interval between rotations. (only applicable in `table` mode)
+* The units (miles/feet or kilometres/metres) used to display the total distance for each activity.
 
 ## Installation
 
@@ -84,23 +88,30 @@ The following properties can be configured:
             <td><b>Required</b> - Your Strava API Access Token. Obtained from <a href="https://www.strava.com/settings/api">www.strava.com/settings/api</a>.</td>
         </tr>
         <tr>
+            <td><code>mode</code></td>
+            <td><b>Optional</b> - Determines which mode should be used to display activity information.<br>
+                <br><b>Possible values:</b> <code>"table"</code>, <code>"chart"</code>
+                <br><b>Default value:</b> <code>"table"</code>
+            </td>
+        </tr>
+        <tr>
             <td><code>activities</code></td>
             <td><b>Optional</b> - Determines which activities to display and in which order they are displayed.<br>
                 <br><b>Possible values:</b> <code>"ride"</code>, <code>"run"</code>, <code>"swim"</code>
-                <br><b>Default value:</b> <code>["ride", "run", "swim"]</code>
+                <br><b>Default value:</b> <code>"["ride", "run", "swim"]"</code>
                 <br><b>Note:</b> - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets.
             </td>
         </tr>
         <tr>
             <td><code>period</code></td>
-            <td><b>Optional</b> - What period should be used to summarise the activities.<br>
+            <td><b>Optional</b> - What period should be used to summarise the activities in <code>table</code> mode.<br>
                 <br><b>Possible values:</b> <code>recent</code> = recent (last 4 weeks), <code>ytd</code> = year to date, <code>all</code> = all time
                 <br><b>Default value:</b> <code>recent</code>
             </td>
         </tr>
         <tr>
             <td><code>auto_rotate</code></td>
-            <td><b>Optional</b> - Whether the summary of activities should rotate through the different periods.<br>
+            <td><b>Optional</b> - Whether the summary of activities should rotate through the different periods in <code>table</code> mode.<br>
                 <br><b>Possible values:</b> <code>true</code> = rotates the summary through the different periods, <code>false</code> = displays the specified period only.
                 <br><b>Default value:</b> <code>false</code>
             </td>
@@ -108,7 +119,7 @@ The following properties can be configured:
         <tr>
             <td><code>units</code></td>
             <td><b>Optional</b> - What units to use. Specified by config.js<br>
-                <br><b>Possible values:</b> <code>config.units</code> = Specified by config.js, <code>metric</code> = Kilometres, <code>imperial</code> = Miles
+                <br><b>Possible values:</b> <code>config.units</code> = Specified by config.js, <code>metric</code> = Kilometres/Metres, <code>imperial</code> = Miles/Feet
                 <br><b>Default value:</b> <code>config.units</code>
             </td>
         </tr>

@@ -28,11 +28,7 @@ Module.register("MMM-Strava",{
 
     // Store the strava data in an object.
     stravaData: {
-        stats: {
-            ride_totals: null,
-            run_totals: null,
-            swim_totals: null
-        },
+        stats: {},
         activitySummary: { 
             ride: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
             run: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
@@ -165,8 +161,6 @@ Module.register("MMM-Strava",{
         var chartWrapper = document.createElement("div");
         chartWrapper.className = "small";
 
-Log.info(this.config.activities.length);
-
         function getNode(n, v) {
           n = document.createElementNS("http://www.w3.org/2000/svg", n);
           for (var p in v)
@@ -177,7 +171,6 @@ Log.info(this.config.activities.length);
         // Add div for each activity type.
         for (var i = 0; i < this.config.activities.length; i++) {
             var activityType = this.config.activities[i];
-            Log.info(i + ': ' + activityType);
             var activitySummary = this.stravaData.activitySummary[activityType.toLowerCase()];
             var activityTypeDiv = document.createElement("div");
             activityTypeDiv.className = "week";
@@ -200,10 +193,12 @@ Log.info(this.config.activities.length);
                         durationListItem.className = "xsmall light";
                         inlineStatsList.appendChild(durationListItem);
 
-                        var elevationListItem = document.createElement("li");
-                        elevationListItem.innerHTML = this.roundedToFixed(activitySummary.total_elevation_gain, 1) + " m";
-                        elevationListItem.className = "xsmall light";
-                        inlineStatsList.appendChild(elevationListItem);
+                        if (activityType != "swim") {
+                            var elevationListItem = document.createElement("li");
+                            elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
+                            elevationListItem.className = "xsmall light";
+                            inlineStatsList.appendChild(elevationListItem);
+                        }
 
                     primaryStatsDiv.appendChild(inlineStatsList);
 
@@ -252,7 +247,7 @@ Log.info(this.config.activities.length);
 
                 // Icon
                 var iconDiv = document.createElement("div");
-                iconDiv.classList.add("strava-icon", "icon-" + activityType.toLowerCase());
+                iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
                 iconDiv.title = activityType.toLowerCase();
                 activityTypeDiv.appendChild(iconDiv);
 
@@ -382,8 +377,10 @@ Log.info(this.config.activities.length);
 
         var activityTypeIconCell = document.createElement("td");
         activityTypeIconCell.className = "bright symbol";
-        var symbol =  document.createElement("span");
-        symbol.className = "fa fa-" + icon;
+        var symbol =  document.createElement("div");
+        //symbol.className = "fa fa-" + icon;
+        symbol.classList.add( "strava-icon", "icon-" + icon);//"fa fa-" + icon;
+
         activityTypeIconCell.appendChild(symbol);
         tr.appendChild(activityTypeIconCell);
 
@@ -430,13 +427,20 @@ Log.info(this.config.activities.length);
 
     /**
      * convertToUnits
-     * This method converts the supplied value to either kilometres or miles depending on the value of config.units.
-     * @param  {float} _float            the value (in metres) to be converted
-     * @return {float}                    the converted value (in miles or kilometres)
+     * This method converts the supplied value depending on the value of config.units.
+     * @param  {float} _float             the value (in metres) to be converted
+     * @param  {boolean} _minor           if _minor, the output will be in feet or metres otherwise it will be in miles or kilometres
+     * @return {float}                    the converted value
      */
-    convertToUnits: function (_float){
-        var km = _float * 0.001;
-        return (this.config.units.toLowerCase() === "imperial") ? km * 0.621 : km;
+    convertToUnits: function (_float, _minor){
+        if (_minor) {
+            // Convert to either feet or inches
+            return (this.config.units.toLowerCase() === "imperial") ? _float * 3.281 : _float;
+        } else {
+            // Convert to either miles or kilometres
+            var km = _float * 0.001;
+            return (this.config.units.toLowerCase() === "imperial") ? km * 0.621 : km;
+        }
     },
 
     /**

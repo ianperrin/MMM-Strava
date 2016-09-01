@@ -15,6 +15,7 @@ var StravaAPI = (function() {
 
     var accessToken = false;
     var athleteStats = {updated:false};
+    var athleteActivity = {updated:false};
 
     /// Private Methods
 
@@ -211,6 +212,34 @@ var StravaAPI = (function() {
             callback(athleteStats);
         });
     };
+
+    /**
+     * getActivityData
+     * Request the activities for the the current week whose start date is after the specified time. 
+     * @param  {int}   after    seconds since UNIX epoch, result will start with activities whose start_date is after this value, sorted oldest first.
+     * @param  {Function} callback         The callback after the data is received.
+     * https://www.strava.com/api/v3/athletes/{athleteId}/stats
+     */
+    self.getAthleteActivity = function(after, callback) {
+        makeSimpleApiRequest('athlete/activities?after=' + after, function(data) {
+            if (!data) {
+                console.log("Error while fetching athlete activities.");
+                callback(athleteActivity);
+                return;
+            }
+
+            if (data) {
+                athleteActivity = extend(athleteActivity, data);
+                athleteActivity.updated = true;
+            } else {
+                athleteActivity.updated = false;
+            }
+
+            callback(athleteActivity);
+        });
+    };
+
+
 
     return self;
 })();

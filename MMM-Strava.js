@@ -53,7 +53,8 @@ Module.register("MMM-Strava",{
     getTranslations: function() {
         return {
                 en: "translations/en.json",
-                nl: "translations/nl.json"
+                nl: "translations/nl.json",
+                de: "translations/de.json"
         };
     },
 

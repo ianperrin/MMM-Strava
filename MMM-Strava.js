@@ -249,7 +249,7 @@ Module.register("MMM-Strava",{
                     labelG.appendChild(labelRect);
                     chartG.appendChild(labelG);
 
-                    barDate = startOfWeek.add('days', 1);
+                    barDate = startOfWeek.add(1, 'days');
                 }
 
                 chartSvg.appendChild(chartG);

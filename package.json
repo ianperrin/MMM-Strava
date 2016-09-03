@@ -1,6 +1,6 @@
 {
   "name": "MMM-Strava",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A MagicMirror Module for displaying your Strava data.",
   "main": "MMM-Strava.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "strava"
   ],
   "author": "Ian Perrin",
-  "contributors" : [],
+  "contributors" : ["fewieden"],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ianperrin/MMM-Strava/issues"

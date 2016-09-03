@@ -178,7 +178,7 @@ Module.register("MMM-Strava",{
           n = document.createElementNS("http://www.w3.org/2000/svg", n);
           for (var p in v)
             n.setAttributeNS(null, p.replace(/[A-Z]/g, function(m, p, o, s) { return "-" + m.toLowerCase(); }), v[p]);
-          return n
+          return n;
         }
 
         // Add div for each activity type.
@@ -228,7 +228,7 @@ Module.register("MMM-Strava",{
 
                     var barDate = startOfWeek;
                     var barClass = 'past';
-                    if (now.diff(barDate, 'days') == 0) {
+                    if (now.diff(barDate, 'days') === 0) {
                         barClass = 'highlighted';
                     } else if (now.diff(barDate, 'days') >= 1) {
                         barClass = 'future';

@@ -67,6 +67,7 @@ Module.register("MMM-Strava",{
             this.config.period = "recent";
         }
         this.sendSocketNotification("CONFIG", this.config);
+        moment.locale(config.language);
     },
 
     // Subclass socketNotificationReceived method.

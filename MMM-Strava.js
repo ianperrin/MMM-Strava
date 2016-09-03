@@ -53,7 +53,8 @@ Module.register("MMM-Strava",{
     getTranslations: function() {
         return {
                 en: "translations/en.json",
-                nl: "translations/nl.json"
+                nl: "translations/nl.json",
+                de: "translations/de.json"
         };
     },
 
@@ -67,6 +68,7 @@ Module.register("MMM-Strava",{
             this.config.period = "recent";
         }
         this.sendSocketNotification("CONFIG", this.config);
+        moment.locale(config.language);
     },
 
     // Subclass socketNotificationReceived method.
@@ -100,13 +102,24 @@ Module.register("MMM-Strava",{
 
         if (notification === "ATHLETE_ACTIVITY") {
             var activitySummary = payload;
+            var reseted = [];
             //Log.info(payload);
 
             // Summarise athlete activity totals and daily distances
             for (var i = 0; i < Object.keys(activitySummary).length - 1; i++) {
 
                 var activityDate = moment(activitySummary[i].start_date_local);
-                var currentActivity = this.stravaData.activitySummary[activitySummary[i].type.toLowerCase()];
+                var activity = activitySummary[i].type.toLowerCase();
+                var currentActivity = this.stravaData.activitySummary[activity];
+
+                // Reset all stats for the chart
+                if(reseted.indexOf(activity) === -1){
+                    currentActivity.total_distance = 0;
+                    currentActivity.total_elevation_gain = 0;
+                    currentActivity.total_moving_time = 0;
+                    currentActivity.days = [0, 0, 0, 0, 0, 0, 0];
+                    reseted.push(activity);
+                }
 
                 // Update activity stats
                 currentActivity.total_distance += activitySummary[i].distance;
@@ -238,7 +251,7 @@ Module.register("MMM-Strava",{
                     labelG.appendChild(labelRect);
                     chartG.appendChild(labelG);
 
-                    barDate = startOfWeek.add('days', 1);
+                    barDate = startOfWeek.add(1, 'days');
                 }
 
                 chartSvg.appendChild(chartG);

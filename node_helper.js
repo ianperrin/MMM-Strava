@@ -63,7 +63,7 @@ module.exports = NodeHelper.create({
             }
 
             setTimeout(function() {
-                self.getAthleteActivity();
+                self.fetchAthleteActivity(moment().startOf('week').unix());
             }, self.config.reloadInterval);
         });
     },

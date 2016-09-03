@@ -1,0 +1,9 @@
+{
+  "CONFIG_MISSING": "Bitte konfiguriere access_token, athlete_id und activities.",
+  "RIDE": "Radfahren",
+  "RUN": "Laufen",
+  "SWIM": "Schwimmen",
+  "RECENT": "Letzte 4 Wochen",
+  "YTD": "Seit Jahresbeginn",
+  "ALL": "Ewige Statistik"
+}

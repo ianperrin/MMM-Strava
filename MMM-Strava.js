@@ -74,11 +74,13 @@ Module.register("MMM-Strava",{
     // Subclass socketNotificationReceived method.
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
+        var currentActivity, i;
+
         if (notification === "ATHLETE_STATS") {
             var stats = payload;
 
             for (var i = 0; i < this.config.activities.length; i++) {
-                var currentActivity = this.config.activities[i].toLowerCase();
+                currentActivity = this.config.activities[i].toLowerCase();
 
                 var recentActivityStats = stats["recent_" + currentActivity + "_totals"];
                 if (recentActivityStats) {
@@ -106,11 +108,11 @@ Module.register("MMM-Strava",{
             //Log.info(payload);
 
             // Summarise athlete activity totals and daily distances
-            for (var i = 0; i < Object.keys(activitySummary).length - 1; i++) {
+            for (i = 0; i < Object.keys(activitySummary).length - 1; i++) {
 
                 var activityDate = moment(activitySummary[i].start_date_local);
                 var activity = activitySummary[i].type.toLowerCase();
-                var currentActivity = this.stravaData.activitySummary[activity];
+                currentActivity = this.stravaData.activitySummary[activity];
 
                 // Reset all stats for the chart
                 if(reseted.indexOf(activity) === -1){
@@ -178,7 +180,7 @@ Module.register("MMM-Strava",{
           n = document.createElementNS("http://www.w3.org/2000/svg", n);
           for (var p in v)
             n.setAttributeNS(null, p.replace(/[A-Z]/g, function(m, p, o, s) { return "-" + m.toLowerCase(); }), v[p]);
-          return n
+          return n;
         }
 
         // Add div for each activity type.
@@ -228,7 +230,7 @@ Module.register("MMM-Strava",{
 
                     var barDate = startOfWeek;
                     var barClass = 'past';
-                    if (now.diff(barDate, 'days') == 0) {
+                    if (now.diff(barDate, 'days') === 0) {
                         barClass = 'highlighted';
                     } else if (now.diff(barDate, 'days') >= 1) {
                         barClass = 'future';

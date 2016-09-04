@@ -18,6 +18,10 @@ module.exports = NodeHelper.create({
         this.config = {};
         this.fetcherRunning = false;
         this.athleteActivity = false;
+        moment.locale(config.language);
+//        moment.locale("en-gb");
+        Log.info(moment.locale());
+        Log.info(config.language);
     },
 
     // Subclass socketNotificationReceived received.

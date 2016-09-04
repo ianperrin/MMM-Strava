@@ -226,7 +226,8 @@ Module.register("MMM-Strava",{
 
                 var now = moment().startOf('day');
                 var startOfWeek = moment().startOf('week');
-
+                var maxDayValue = this.maxArrayValue(activitySummary.days);
+                
                 for (var d = 0; d < activitySummary.days.length; d++) {
 
                     var barDate = startOfWeek;
@@ -239,7 +240,7 @@ Module.register("MMM-Strava",{
 
                     // bars
                     var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
-                    var barHeight = (activitySummary.days[d] > 0 ? (activitySummary.days[d]/activitySummary.total_distance * 50) : 2) ;
+                    var barHeight = (activitySummary.days[d] > 0 ? (activitySummary.days[d]/maxDayValue * 50) : 2) ;
                     var barY = 50 - barHeight; 
                     var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
                     barRect.classList.add(barClass);
@@ -466,8 +467,24 @@ Module.register("MMM-Strava",{
      * @param  {number} _digits            the number of decimal places
      * @return {float}                    the rounded value
      */
-     roundedToFixed: function (_float, _digits){
+    roundedToFixed: function (_float, _digits) {
         var rounder = Math.pow(10, _digits);
         return (Math.round(_float * rounder) / rounder).toFixed(_digits);
+    },
+    
+    /**
+     * maxArrayValue
+     * This method returns the maximum value from an integer array.
+     * @param  {array} _array            an array of integer values
+     * @return {int}                    the maximum value
+     */
+    maxArrayValue: function(_array) {
+        var max_value = 0;
+        for(var i = 0; i < _array.length; i++) {
+            if(_array[i] > max_value) {
+                max_value = _array[i];
+            }
+        }
+        return max_value;
     },
 });

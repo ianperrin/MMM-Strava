@@ -18,10 +18,6 @@ module.exports = NodeHelper.create({
         this.config = {};
         this.fetcherRunning = false;
         this.athleteActivity = false;
-        moment.locale(config.language);
-//        moment.locale("en-gb");
-        Log.info(moment.locale());
-        Log.info(config.language);
     },
 
     // Subclass socketNotificationReceived received.
@@ -30,6 +26,7 @@ module.exports = NodeHelper.create({
         if (notification === "CONFIG") {
             
             this.config = payload;
+            moment.locale(this.config.locale);
             if (this.config.access_token && this.config.strava_id) {
                 if (!this.fetcherRunning) {
                     StravaAPI.setAccessToken(this.config.access_token);

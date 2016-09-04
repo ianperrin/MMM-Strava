@@ -74,11 +74,13 @@ Module.register("MMM-Strava",{
     // Subclass socketNotificationReceived method.
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
+        var currentActivity, i;
+
         if (notification === "ATHLETE_STATS") {
             var stats = payload;
 
             for (var i = 0; i < this.config.activities.length; i++) {
-                var currentActivity = this.config.activities[i].toLowerCase();
+                currentActivity = this.config.activities[i].toLowerCase();
 
                 var recentActivityStats = stats["recent_" + currentActivity + "_totals"];
                 if (recentActivityStats) {
@@ -106,11 +108,11 @@ Module.register("MMM-Strava",{
             //Log.info(payload);
 
             // Summarise athlete activity totals and daily distances
-            for (var i = 0; i < Object.keys(activitySummary).length - 1; i++) {
+            for (i = 0; i < Object.keys(activitySummary).length - 1; i++) {
 
                 var activityDate = moment(activitySummary[i].start_date_local);
                 var activity = activitySummary[i].type.toLowerCase();
-                var currentActivity = this.stravaData.activitySummary[activity];
+                currentActivity = this.stravaData.activitySummary[activity];
 
                 // Reset all stats for the chart
                 if(reseted.indexOf(activity) === -1){

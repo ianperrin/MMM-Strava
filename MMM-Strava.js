@@ -18,6 +18,7 @@ Module.register("MMM-Strava",{
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
         period: "recent",                     // Possible values "recent", "ytd", "all"
         auto_rotate: false,                   // Rotate stats through each period starting from specified period
+        locale: config.language,
         units: config.units,
         fade: false,
         fadePoint: 0.1,                       // Start on 1/4th of the list.
@@ -68,7 +69,7 @@ Module.register("MMM-Strava",{
             this.config.period = "recent";
         }
         this.sendSocketNotification("CONFIG", this.config);
-        moment.locale(config.language);
+        moment.locale(this.config.locale);
     },
 
     // Subclass socketNotificationReceived method.
@@ -79,7 +80,7 @@ Module.register("MMM-Strava",{
         if (notification === "ATHLETE_STATS") {
             var stats = payload;
 
-            for (var i = 0; i < this.config.activities.length; i++) {
+            for (i = 0; i < this.config.activities.length; i++) {
                 currentActivity = this.config.activities[i].toLowerCase();
 
                 var recentActivityStats = stats["recent_" + currentActivity + "_totals"];

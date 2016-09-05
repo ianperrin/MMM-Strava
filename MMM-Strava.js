@@ -171,7 +171,7 @@ Module.register("MMM-Strava",{
         msgWrapper.innerHTML = this.translate(message);
         msgWrapper.classList.add("small", "dimmed", "light");
         return msgWrapper;
-    }
+    },
 
     /**
      * createChart

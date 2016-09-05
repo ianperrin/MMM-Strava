@@ -215,10 +215,10 @@ var StravaAPI = (function() {
 
     /**
      * getActivityData
-     * Request the activities for the the current week whose start date is after the specified time. 
+     * Request the activities for the current athlete week whose start date is after the specified time. 
      * @param  {int}   after    seconds since UNIX epoch, result will start with activities whose start_date is after this value, sorted oldest first.
      * @param  {Function} callback         The callback after the data is received.
-     * https://www.strava.com/api/v3/athletes/{athleteId}/stats
+     * https://www.strava.com/api/v3/athletes/activities?after={unixtimeinseconds}
      */
     self.getAthleteActivity = function(after, callback) {
         makeSimpleApiRequest('athlete/activities?after=' + after, function(data) {

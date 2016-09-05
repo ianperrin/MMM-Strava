@@ -27,6 +27,7 @@ module.exports = NodeHelper.create({
             
             this.config = payload;
             moment.locale(this.config.locale);
+
             if (this.config.access_token && this.config.strava_id) {
                 if (!this.fetcherRunning) {
                     StravaAPI.setAccessToken(this.config.access_token);
@@ -54,7 +55,7 @@ module.exports = NodeHelper.create({
      * @param  {int}   after    seconds since UNIX epoch, result will start with activities whose start_date is after this value, sorted oldest first.
      */
     fetchAthleteActivity: function(after) {
-        console.log("MMM-Strava is fetching athlete activity");
+        console.log("MMM-Strava is fetching athlete activity after " + after);
         var self = this;
         this.fetcherRunning = true;
         StravaAPI.getAthleteActivity(after, function(athleteActivity) {

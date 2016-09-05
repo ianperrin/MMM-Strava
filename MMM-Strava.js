@@ -6,7 +6,7 @@
  */
 
 /* jshint node: true */
-/* global Module, config, Log */
+/* global Module, config, Log, moment */
 
 Module.register("MMM-Strava",{
 
@@ -30,11 +30,7 @@ Module.register("MMM-Strava",{
     // Store the strava data in an object.
     stravaData: {
         stats: {},
-        activitySummary: { 
-            ride: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
-            run: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
-            swim: { total_distance: 0, total_elevation_gain: 0, total_moving_time: 0, days: [0,0,0,0,0,0,0] },
-        }
+        activitySummary: {}
     },
 
     // A loading boolean.
@@ -75,25 +71,26 @@ Module.register("MMM-Strava",{
     // Subclass socketNotificationReceived method.
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
-        var currentActivity, i;
+        //Log.info(payload);
+        var activityType, i;
 
         if (notification === "ATHLETE_STATS") {
             var stats = payload;
 
             for (i = 0; i < this.config.activities.length; i++) {
-                currentActivity = this.config.activities[i].toLowerCase();
+                activityType = this.config.activities[i].toLowerCase();
 
-                var recentActivityStats = stats["recent_" + currentActivity + "_totals"];
+                var recentActivityStats = stats["recent_" + activityType + "_totals"];
                 if (recentActivityStats) {
-                    this.stravaData.stats["recent_" + currentActivity + "_totals"] = recentActivityStats;
+                    this.stravaData.stats["recent_" + activityType + "_totals"] = recentActivityStats;
                 }
-                var ytdActivityStats = stats["ytd_" + currentActivity + "_totals"];
+                var ytdActivityStats = stats["ytd_" + activityType + "_totals"];
                 if (ytdActivityStats) {
-                    this.stravaData.stats["ytd_" + currentActivity + "_totals"] = ytdActivityStats;
+                    this.stravaData.stats["ytd_" + activityType + "_totals"] = ytdActivityStats;
                 }
-                var allActivityStats = stats["all_" + currentActivity + "_totals"];
+                var allActivityStats = stats["all_" + activityType + "_totals"];
                 if (allActivityStats) {
-                    this.stravaData.stats["all_" + currentActivity + "_totals"] = allActivityStats;
+                    this.stravaData.stats["all_" + activityType + "_totals"] = allActivityStats;
                 }
             }
 
@@ -104,31 +101,32 @@ Module.register("MMM-Strava",{
         }
 
         if (notification === "ATHLETE_ACTIVITY") {
-            var activitySummary = payload;
-            var reseted = [];
-            //Log.info(payload);
+            var activities = payload;
+            var activitySummary;
+
+            // Initialise activity summary for the chart
+            for (i = 0; i < this.defaults.activities.length; i++) {
+                activityType = this.defaults.activities[i].toLowerCase();
+                this.stravaData.activitySummary[activityType] = { 
+                        total_distance: 0, 
+                        total_elevation_gain: 0, 
+                        total_moving_time: 0, 
+                        dayTotals: [0,0,0,0,0,0,0] 
+                    };
+            }
 
             // Summarise athlete activity totals and daily distances
-            for (i = 0; i < Object.keys(activitySummary).length - 1; i++) {
+            for (i = 0; i < Object.keys(activities).length - 1; i++) {
 
-                var activityDate = moment(activitySummary[i].start_date_local);
-                var activity = activitySummary[i].type.toLowerCase();
-                currentActivity = this.stravaData.activitySummary[activity];
+                activityType = activities[i].type.toLowerCase();
+                var activityDate = moment(activities[i].start_date_local);
+                activitySummary = this.stravaData.activitySummary[activityType];
 
-                // Reset all stats for the chart
-                if(reseted.indexOf(activity) === -1){
-                    currentActivity.total_distance = 0;
-                    currentActivity.total_elevation_gain = 0;
-                    currentActivity.total_moving_time = 0;
-                    currentActivity.days = [0, 0, 0, 0, 0, 0, 0];
-                    reseted.push(activity);
-                }
-
-                // Update activity stats
-                currentActivity.total_distance += activitySummary[i].distance;
-                currentActivity.total_elevation_gain += activitySummary[i].total_elevation_gain;
-                currentActivity.total_moving_time += activitySummary[i].moving_time;
-                currentActivity.days[activityDate.weekday()] += activitySummary[i].distance;
+                // Update activity summaries
+                activitySummary.total_distance += activities[i].distance;
+                activitySummary.total_elevation_gain += activities[i].total_elevation_gain;
+                activitySummary.total_moving_time += activities[i].moving_time;
+                activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
             }
 
             //Log.info(this.stravaData.activitySummary);
@@ -226,9 +224,9 @@ Module.register("MMM-Strava",{
 
                 var now = moment().startOf('day');
                 var startOfWeek = moment().startOf('week');
-                var maxDayValue = this.maxArrayValue(activitySummary.days);
+                var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
                 
-                for (var d = 0; d < activitySummary.days.length; d++) {
+                for (var d = 0; d < activitySummary.dayTotals.length; d++) {
 
                     var barDate = startOfWeek;
                     var barClass = 'past';
@@ -240,7 +238,7 @@ Module.register("MMM-Strava",{
 
                     // bars
                     var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
-                    var barHeight = (activitySummary.days[d] > 0 ? (activitySummary.days[d]/maxDayValue * 50) : 2) ;
+                    var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
                     var barY = 50 - barHeight; 
                     var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
                     barRect.classList.add(barClass);

@@ -24,7 +24,7 @@ Module.register("MMM-Strava",{
         fadePoint: 0.1,                       // Start on 1/4th of the list.
         reloadInterval: 5 * 60 * 1000,        // every 5 minutes
         updateInterval: 10 * 1000,            // 10 seconds
-        animationSpeed: 2.5 * 1000,           // 2.5 seconds
+        animationSpeed: 2.5 * 1000            // 2.5 seconds
     },
 
     // Store the strava data in an object.
@@ -58,9 +58,9 @@ Module.register("MMM-Strava",{
     // Subclass start method.
     start: function() {
         Log.info("Starting module: " + this.name);
-        if (this.config.period != "recent" &&
-            this.config.period != "ytd" &&
-            this.config.period != "all")
+        if (this.config.period !== "recent" &&
+            this.config.period !== "ytd" &&
+            this.config.period !== "all")
         {
             this.config.period = "recent";
         }
@@ -214,7 +214,7 @@ Module.register("MMM-Strava",{
                         durationListItem.className = "xsmall light";
                         inlineStatsList.appendChild(durationListItem);
 
-                        if (activityType != "swim") {
+                        if (activityType !== "swim") {
                             var elevationListItem = document.createElement("li");
                             elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
                             elevationListItem.className = "xsmall light";
@@ -441,7 +441,7 @@ Module.register("MMM-Strava",{
         if (this.config.auto_rotate &&
             this.config.updateInterval) {
                 setInterval(function() {
-                    self.config.period = ((self.config.period == "recent") ? "ytd" : ((self.config.period == "ytd") ? "all" : "recent"));
+                    self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
                     self.updateDom(self.config.animationSpeed);
                 }, this.config.updateInterval);
         }
@@ -491,5 +491,5 @@ Module.register("MMM-Strava",{
             }
         }
         return max_value;
-    },
+    }
 });

@@ -141,17 +141,11 @@ Module.register("MMM-Strava",{
         if (this.config.access_token.length <= 0 ||
             this.config.strava_id.length <= 0 ||
             this.config.activities.length <= 0) {
-                var errorWrapper = document.createElement("div");
-                errorWrapper.innerHTML = this.translate("CONFIG_MISSING");
-                errorWrapper.className = "small dimmed light";
-                return errorWrapper;
+                return this.createMessageDiv(this.translate("CONFIG_MISSING"));
         }
 
         if (this.loading) {
-            var loadingWrapper = document.createElement("div");
-            loadingWrapper.innerHTML = this.translate("LOADING");
-            loadingWrapper.className = "small dimmed light";
-            return loadingWrapper;
+            return this.createMessageDiv(this.translate("LOADING"));
         }
 
         if (this.config.activities.length > 0) {
@@ -165,6 +159,19 @@ Module.register("MMM-Strava",{
         }
 
     },
+
+    /**
+     * createMessageDiv
+     * This method creates a div element to display a message.
+     * @return {message string}                the message to be displayed
+     * @return {dom object}                    a div element containing the message
+     */
+    createMessageDiv: function(message) {
+        var msgWrapper = document.createElement("div");
+        msgWrapper.innerHTML = this.translate(message);
+        msgWrapper.classList.add("small", "dimmed", "light");
+        return msgWrapper;
+    }
 
     /**
      * createChart

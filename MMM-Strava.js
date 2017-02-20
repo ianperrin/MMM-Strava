@@ -63,6 +63,18 @@ Module.register("MMM-Strava",{
             this.config.period = "recent";
         }
 		
+		if( typeof this.config.access_token === 'string' ) {
+			this.config.access_token = [ this.config.access_token ];
+		}
+
+		if( typeof this.config.strava_id === 'string' ) {
+			this.config.strava_id = [ this.config.strava_id ];
+		}
+
+		if( typeof this.config.athlete_text === 'string' ) {
+			this.config.athlete_text = [ this.config.athlete_text ];
+		}
+
         this.sendSocketNotification("CONFIG", this.config);
         moment.locale(this.config.locale);
     },

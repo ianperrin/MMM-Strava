@@ -15,9 +15,7 @@ module.exports = NodeHelper.create({
     // Subclass start method.
     start: function() {
         console.log("Starting module: " + this.name);
-        this.config = {};
-        this.fetcherRunning = false;
-        this.athleteActivity = false;
+        this.config = {};	
     },
 
     // Subclass socketNotificationReceived received.
@@ -28,24 +26,15 @@ module.exports = NodeHelper.create({
             this.config = payload;
             moment.locale(this.config.locale);
 
-            if (this.config.access_token && this.config.strava_id) {
-                if (!this.fetcherRunning) {
-                    StravaAPI.setAccessToken(this.config.access_token);
+            for (i = 0; i < this.config.access_token.length; i++) {
+				
+				if (this.config.mode === 'chart') {
+					this.fetchAthleteActivity(this.config.access_token[i], moment().startOf('week').unix());
+				} else {
+					this.fetchAthleteStats(this.config.access_token[i], this.config.strava_id[i]);
+				}
+			}
 
-                    if (this.config.mode === 'chart') {
-                        this.fetchAthleteActivity(moment().startOf('week').unix());
-                    } else {
-                        this.fetchAthleteStats(this.config.strava_id);
-                    }
-
-                }
-            }
-
-            if (this.config.mode === 'chart' && this.athleteActivity) {
-                this.sendSocketNotification('ATHLETE_ACTIVITY', this.athleteActivity);
-            } else if (this.athleteStats) {
-                this.sendSocketNotification('ATHLETE_STATS', this.athleteStats);
-            }
         }
     },
 
@@ -54,18 +43,16 @@ module.exports = NodeHelper.create({
      * Request athlete activity since a specified point from the Strava API and broadcast it to the MagicMirror module if it's received.
      * @param  {int}   after    seconds since UNIX epoch, result will start with activities whose start_date is after this value, sorted oldest first.
      */
-    fetchAthleteActivity: function(after) {
+    fetchAthleteActivity: function(access_token, after) {
         console.log("MMM-Strava is fetching athlete activity after " + after);
         var self = this;
-        this.fetcherRunning = true;
-        StravaAPI.getAthleteActivity(after, function(athleteActivity) {
-            if (athleteActivity && athleteActivity.updated) {
-                self.athleteActivity = athleteActivity;
-                self.sendSocketNotification('ATHLETE_ACTIVITY', athleteActivity);
+        StravaAPI.getAthleteActivity(access_token, after, function(athleteActivity) {
+            if (athleteActivity) {
+                self.sendSocketNotification('ATHLETE_ACTIVITY' + access_token, athleteActivity);
             }
 
             setTimeout(function() {
-                self.fetchAthleteActivity(moment().startOf('week').unix());
+                self.fetchAthleteActivity(access_token, moment().startOf('week').unix());
             }, self.config.reloadInterval);
         });
     },
@@ -75,18 +62,16 @@ module.exports = NodeHelper.create({
      * Request new athelete stats from the Strava API and broadcast it to the MagicMirror module if it's received.
      * @param  {string}   athleteId The id of the current athlete.
      */
-    fetchAthleteStats: function(athleteId) {
+    fetchAthleteStats: function(access_token, athleteId) {
         console.log("MMM-Strava is fetching athlete stats");
-        var self = this;
-        this.fetcherRunning = true;
-        StravaAPI.getAthleteStats(athleteId, function(athleteStats) {
-            if (athleteStats && athleteStats.updated) {
-                self.athleteStats = athleteStats;
-                self.sendSocketNotification('ATHLETE_STATS', athleteStats);
+        var self = this;	
+        StravaAPI.getAthleteStats(access_token, athleteId, function(athleteStats) {
+            if (athleteStats) {
+                self.sendSocketNotification('ATHLETE_STATS' + access_token, athleteStats);
             }
 
             setTimeout(function() {
-                self.fetchAthleteStats(athleteId);
+                self.fetchAthleteStats(access_token, athleteId);
             }, self.config.reloadInterval);
         });
     }

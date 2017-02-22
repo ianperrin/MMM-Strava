@@ -33,6 +33,9 @@ Module.register("MMM-Strava",{
 
     // A loading boolean.
     loading: true,
+	
+	// updateinterval run
+	updateintervalstarted: false,
 
     // Subclass getStyles method.
     getStyles: function() {
@@ -117,11 +120,6 @@ Module.register("MMM-Strava",{
 						this.stravaData[j].stats["all_" + activityType + "_totals"] = allActivityStats;
 					}
 				}
-
-				this.loading = false;
-
-				this.scheduleUpdateInterval();
-
 			}
 
 			if (notification === "ATHLETE_ACTIVITY" + this.config.access_token[j]) {
@@ -154,10 +152,10 @@ Module.register("MMM-Strava",{
 				}
 
 				//Log.info(this.stravaData[j].activitySummary);
-				this.loading = false;
-				this.scheduleUpdateInterval();
 			}
 		}	
+		this.loading = false;
+		this.scheduleUpdateInterval();
     },
 
     // Override dom generator.
@@ -486,15 +484,22 @@ Module.register("MMM-Strava",{
     scheduleUpdateInterval: function() {
         var self = this;
 
-        self.updateDom(self.config.animationSpeed);
+		self.updateDom(self.config.animationSpeed);
 
-        if (this.config.auto_rotate &&
-            this.config.updateInterval) {
-                setInterval(function() {
-                    self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
-                    self.updateDom(self.config.animationSpeed);
-                }, this.config.updateInterval);
-        }
+		if (this.updateintervalstarted) {
+			//	nix tun
+		} else {
+		
+			this.updateintervalstarted = true;
+			
+			if (this.config.auto_rotate &&
+				this.config.updateInterval) {
+					setInterval(function() {
+						self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
+						self.updateDom(self.config.animationSpeed);
+					}, this.config.updateInterval);
+			}
+		}
     },
 
     /**

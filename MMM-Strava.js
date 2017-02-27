@@ -138,7 +138,7 @@ Module.register("MMM-Strava",{
 				}
 
 				// Summarise athlete activity totals and daily distances
-				for (i = 0; i < Object.keys(activities).length - 1; i++) {
+				for (i = 0; i < Object.keys(activities).length; i++) {
 
 					activityType = activities[i].type.toLowerCase();
 					var activityDate = moment(activities[i].start_date_local);
@@ -235,81 +235,81 @@ Module.register("MMM-Strava",{
 					activityTypeDiv.appendChild(activityTypeCell);
 				}
 		
-					var primaryStatsDiv = document.createElement("div");
-					primaryStatsDiv.className = "primary-stats";
+				var primaryStatsDiv = document.createElement("div");
+				primaryStatsDiv.className = "primary-stats";
 
-						var actualDistanceSpan = document.createElement("span");
-						actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
-						actualDistanceSpan.className = "actual small bright";
-						primaryStatsDiv.appendChild(actualDistanceSpan);
+					var actualDistanceSpan = document.createElement("span");
+					actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
+					actualDistanceSpan.className = "actual small bright";
+					primaryStatsDiv.appendChild(actualDistanceSpan);
 
-						var inlineStatsList = document.createElement("ul");
-						inlineStatsList.className = "inline-stats";
+					var inlineStatsList = document.createElement("ul");
+					inlineStatsList.className = "inline-stats";
 
-							var durationListItem = document.createElement("li");
-							var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
-							durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
-							durationListItem.className = "xsmall light";
-							inlineStatsList.appendChild(durationListItem);
+						var durationListItem = document.createElement("li");
+						var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
+						durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+						durationListItem.className = "xsmall light";
+						inlineStatsList.appendChild(durationListItem);
 
-							if (activityType !== "swim") {
-								var elevationListItem = document.createElement("li");
-								elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
-								elevationListItem.className = "xsmall light";
-								inlineStatsList.appendChild(elevationListItem);
-							}
-
-						primaryStatsDiv.appendChild(inlineStatsList);
-
-					activityTypeDiv.appendChild(primaryStatsDiv);
-
-					var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
-
-					var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
-
-					var now = moment().startOf('day');
-					var startOfWeek = moment().startOf('week');
-					var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
-					
-					for (var d = 0; d < activitySummary.dayTotals.length; d++) {
-
-						var barDate = startOfWeek;
-						var barClass = 'past';
-						if (now.diff(barDate, 'days') === 0) {
-							barClass = 'highlighted';
-						} else if (now.diff(barDate, 'days') >= 1) {
-							barClass = 'future';
+						if (activityType !== "swim") {
+							var elevationListItem = document.createElement("li");
+							elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
+							elevationListItem.className = "xsmall light";
+							inlineStatsList.appendChild(elevationListItem);
 						}
 
-						// bars
-						var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
-						var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
-						var barY = 50 - barHeight; 
-						var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
-						barRect.classList.add(barClass);
-						barG.appendChild(barRect);
-						chartG.appendChild(barG);
+					primaryStatsDiv.appendChild(inlineStatsList);
 
-						// labels
-						var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
-						var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
-						labelRect.classList.add(barClass);
-						labelRect.innerHTML = barDate.format('dd').slice(0,1);
-						labelG.appendChild(labelRect);
-						chartG.appendChild(labelG);
+				activityTypeDiv.appendChild(primaryStatsDiv);
 
-						barDate = startOfWeek.add(1, 'days');
+				var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
+
+				var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
+
+				var now = moment().startOf('day');
+				var startOfWeek = moment().startOf('week');
+				var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
+				
+				for (var d = 0; d < activitySummary.dayTotals.length; d++) {
+
+					var barDate = startOfWeek;
+					var barClass = 'past';
+					if (now.diff(barDate, 'days') === 0) {
+						barClass = 'highlighted';
+					} else if (now.diff(barDate, 'days') >= 1) {
+						barClass = 'future';
 					}
 
-					chartSvg.appendChild(chartG);
+					// bars
+					var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
+					var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
+					var barY = 50 - barHeight; 
+					var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
+					barRect.classList.add(barClass);
+					barG.appendChild(barRect);
+					chartG.appendChild(barG);
 
-					activityTypeDiv.appendChild(chartSvg);
+					// labels
+					var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
+					var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
+					labelRect.classList.add(barClass);
+					labelRect.innerHTML = barDate.format('dd').slice(0,1);
+					labelG.appendChild(labelRect);
+					chartG.appendChild(labelG);
 
-					// Icon
-					var iconDiv = document.createElement("div");
-					iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
-					iconDiv.title = activityType.toLowerCase();
-					activityTypeDiv.appendChild(iconDiv);
+					barDate = startOfWeek.add(1, 'days');
+				}
+
+				chartSvg.appendChild(chartG);
+
+				activityTypeDiv.appendChild(chartSvg);
+
+				// Icon
+				var iconDiv = document.createElement("div");
+				iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
+				iconDiv.title = activityType.toLowerCase();
+				activityTypeDiv.appendChild(iconDiv);
 
 				chartWrapper.appendChild(activityTypeDiv);
 			}	

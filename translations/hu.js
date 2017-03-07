@@ -1,0 +1,9 @@
+{
+    "CONFIG_MISSING": "Hiányos konfiguráció. Kérem adja meg a Strava access_token-t, athlete_id-t és a megjeleníteni kívánt sportágakat.",
+    "RIDE": "Bringa",
+    "RUN": "Futás",
+    "SWIM": "Úszás",
+    "RECENT": "Utolsó 4 hét",
+    "YTD": "Ebben az évben",
+    "ALL": "Összes"
+}

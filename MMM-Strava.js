@@ -16,6 +16,7 @@ Module.register("MMM-Strava",{
         access_token: [''],                   // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
         athlete_text: [''],					  // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text	
         mode: 'table',                        // Possible values "table", "chart"
+        elevation: false,                     // Shows elevation in "table" mode
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
         period: "recent",                     // Possible values "recent", "ytd", "all"
         auto_rotate: false,                   // Rotate stats through each period starting from specified period
@@ -348,6 +349,7 @@ Module.register("MMM-Strava",{
 															label,
 															activityTotals.count,
 															this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
+                                                        this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain), 1),
 															activityTotals.achievement_count);
 
 				// Create fade effect.
@@ -402,6 +404,8 @@ Module.register("MMM-Strava",{
 
         tr.appendChild(this.createHeaderRowStatCell("hashtag"));        // Count
         tr.appendChild(this.createHeaderRowStatCell("arrows-h"));        // Distance
+        if (this.config.elevation)
+            tr.appendChild(this.createHeaderRowStatCell("line-chart"));        // Elevation  "location-arrow" "external-link-square"
 
         if (this.config.period === "recent")
             tr.appendChild(this.createHeaderRowStatCell("trophy"));            // Achievement Count
@@ -433,10 +437,11 @@ Module.register("MMM-Strava",{
      * @param  {string} label                the label for the activity
      * @param  {number} count                the activity count
      * @param  {number} distance            the distance in metres
+     * @param  {number} elevation            the elevation in kilometres
      * @param  {number} achievement_count     the number of achievements for the activity
      * @return {dom object}                    the table row (tr)
      */
-    createActivityRow: function(icon, label, count, distance, achievement_count) {
+    createActivityRow: function(icon, label, count, distance, elevation, achievement_count) {
         var tr = document.createElement("tr");
         tr.className = "normal";
         
@@ -456,6 +461,8 @@ Module.register("MMM-Strava",{
 
         tr.appendChild(this.createActivityRowStatCell(count));                // Count
         tr.appendChild(this.createActivityRowStatCell(distance));            // Distance
+        if (this.config.elevation)
+            tr.appendChild(this.createActivityRowStatCell(elevation));            // Elevation
 
         if (this.config.period === "recent")
             tr.appendChild(this.createActivityRowStatCell(achievement_count));    // Achievement Count

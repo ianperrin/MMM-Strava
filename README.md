@@ -78,14 +78,17 @@ The following properties can be configured:
         </tr>
     <thead>
     <tbody>
-
         <tr>
             <td><code>strava_id</code></td>
-            <td><b>Required</b> - Your Strava ID. Obtained from <a href="https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-">support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-</a>.</td>
+            <td><b>Required</b> - Your Strava ID. Obtained from <a href="https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-">support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-</a>.
+                <br>For more than 1 user you can use <code>[strava_id_1, strava_id2]</code>.
+			</td>
         </tr>
         <tr>
             <td><code>access_token</code></td>
-            <td><b>Required</b> - Your Strava API Access Token. Obtained from <a href="https://www.strava.com/settings/api">www.strava.com/settings/api</a>.</td>
+            <td><b>Required</b> - Your Strava API Access Token. Obtained from <a href="https://www.strava.com/settings/api">www.strava.com/settings/api</a>.
+                <br>For more than 1 user you can use <code>[access_token_user_1, access_token_user_2]</code>.
+			</td>
         </tr>
         <tr>
             <td><code>mode</code></td>
@@ -103,10 +106,23 @@ The following properties can be configured:
             </td>
         </tr>
         <tr>
+            <td><code>athlete_text</code></td>
+            <td><b>Optional</b> - Replaces the activity texts <code>"ride"</code>, <code>"run"</code>, <code>"swim"</code> with the athlete name you define here.
+                <br>Makes sense if the module is set up for more than 1 user. <code>[athlete_1, athlete_2]</code>.
+			</td>
+        </tr>
+        <tr>
             <td><code>period</code></td>
             <td><b>Optional</b> - What period should be used to summarise the activities in <code>table</code> mode.<br>
                 <br><b>Possible values:</b> <code>recent</code> = recent (last 4 weeks), <code>ytd</code> = year to date, <code>all</code> = all time
                 <br><b>Default value:</b> <code>recent</code>
+            </td>
+        </tr>
+        <tr>
+            <td><code>elevation</code></td>
+            <td><b>Optional</b> - If set elevation is displayed in <code>table</code> mode.<br>
+                <br><b>Possible values:</b> <code>true</code> = elevation is displayed, <code>false</code> = elevation is not displayed.
+                <br><b>Default value:</b> <code>false</code>
             </td>
         </tr>
         <tr>

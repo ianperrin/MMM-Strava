@@ -14,7 +14,7 @@ Module.register("MMM-Strava",{
     defaults: {
         strava_id: [''],                      // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
         access_token: [''],                   // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
-        athlete_text: [''],					  // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text	
+        athlete_text: [''],                   // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text	
         mode: 'table',                        // Possible values "table", "chart"
         elevation: false,                     // Shows elevation in "table" mode
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
@@ -53,7 +53,8 @@ Module.register("MMM-Strava",{
         return {
                 en: "translations/en.json",
                 nl: "translations/nl.json",
-                de: "translations/de.json"
+                de: "translations/de.json",
+                hu: "translations/hu.json"
         };
     },
 

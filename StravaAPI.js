@@ -4,6 +4,8 @@ var https = require('https');
 //var querystring = require('querystring');
 var extend = require('util')._extend;
 
+const moment = require('moment');
+
 var StravaAPI = (function() {
 
     var self = this;
@@ -13,10 +15,6 @@ var StravaAPI = (function() {
     var API = '/api/v3/';
     var PORT = 443;
 
-    var accessToken = false;
-    var athleteStats = {updated:false};
-    var athleteActivity = {updated:false};
-
     /// Private Methods
 
     /**
@@ -24,7 +22,7 @@ var StravaAPI = (function() {
      * Makes a request to the Strava API server. It can be used for both the API requests as well as the oAuth requests.
      * @param  {Object} options request options.
      */
-    function makeRequest(options) {
+    function makeRequest(accessToken, options) {
 
         var defaultOptions = {
             host: HOST,
@@ -46,7 +44,7 @@ var StravaAPI = (function() {
 
         options = extend(defaultOptions, options);
 
-        console.log("Make request: " + options.path + " (" + options.method + ")");
+        console.log(moment().toISOString() + " Make request: " + options.path + " (" + options.method + ")" + " accessToken=" + accessToken);
 
         // Update Content-Type header
         options.headers  = extend(options.headers, {
@@ -76,7 +74,7 @@ var StravaAPI = (function() {
             });
         }
 
-        //console.log(options);
+        //console.log('options', options);
 
         var request = https.request(options, function(response) {
             response.setEncoding('utf8');
@@ -147,7 +145,7 @@ var StravaAPI = (function() {
      * Makes a request to the Strava JSON api.
      * @param  {options} options request options.
      */
-    function makeApiRequest(options) {
+    function makeApiRequest(accessToken, options) {
         if (!accessToken) {
             console.log("No Access Token. Request one ...");
             return;
@@ -159,7 +157,7 @@ var StravaAPI = (function() {
                 path: API + options.path
         });
 
-        makeRequest(options);
+        makeRequest(accessToken, options);
     }
 
     /**
@@ -167,23 +165,13 @@ var StravaAPI = (function() {
      * @param  {string}   endpoint The endpoint of the API.
      * @param  {Function} callback The callback after completion.
      */
-    function makeSimpleApiRequest(endpoint, callback) {
+    function makeSimpleApiRequest(accessToken, endpoint, callback) {
         callback = callback || function() {};
-        makeApiRequest({
+        makeApiRequest(accessToken, {
             path: endpoint,
             callback: callback
         });
     }
-
-    /**
-     * setAccessToken
-     * Set the Access Token.
-     * @param  {string} t Access Token.
-     */
-    self.setAccessToken = function(t) {
-        accessToken = t;
-    };
-
 
     // Athletes
 
@@ -194,22 +182,15 @@ var StravaAPI = (function() {
      * @param  {Function} callback         The callback after the data is received.
      * https://www.strava.com/api/v3/athletes/{athleteId}/stats
      */
-    self.getAthleteStats = function(athleteId, callback) {
-        makeSimpleApiRequest('athletes/' + athleteId + '/stats', function(data) {
+    self.getAthleteStats = function(accessToken, athleteId, callback) {
+        makeSimpleApiRequest(accessToken, 'athletes/' + athleteId + '/stats', function(data) {
             if (!data) {
                 console.log("Error while fetching new athlete stats.");
-                callback(athleteStats);
+                callback(data);
                 return;
             }
 
-            if (Object.keys(data).length !== 0) {
-                athleteStats = extend(athleteStats, data);
-                athleteStats.updated = true;
-            } else {
-                athleteStats.updated = false;
-            }
-
-            callback(athleteStats);
+            callback(data);
         });
     };
 
@@ -220,22 +201,15 @@ var StravaAPI = (function() {
      * @param  {Function} callback         The callback after the data is received.
      * https://www.strava.com/api/v3/athletes/activities?after={unixtimeinseconds}
      */
-    self.getAthleteActivity = function(after, callback) {
-        makeSimpleApiRequest('athlete/activities?after=' + after, function(data) {
+    self.getAthleteActivity = function(accessToken, after, callback) {
+        makeSimpleApiRequest(accessToken, 'athlete/activities?after=' + after, function(data) {
             if (!data) {
                 console.log("Error while fetching athlete activities.");
-                callback(athleteActivity);
+                callback(data);
                 return;
             }
 
-            if (data) {
-                athleteActivity = extend(athleteActivity, data);
-                athleteActivity.updated = true;
-            } else {
-                athleteActivity.updated = false;
-            }
-
-            callback(athleteActivity);
+            callback(data);
         });
     };
 

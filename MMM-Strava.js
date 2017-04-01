@@ -12,8 +12,9 @@ Module.register("MMM-Strava",{
 
     // Default module config.
     defaults: {
-        strava_id: '',                        // Could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: '',                     // https://www.strava.com/settings/api
+        strava_id: [''],                      // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
+        access_token: [''],                   // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
+        athlete_text: [''],					  // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text	
         mode: 'table',                        // Possible values "table", "chart"
         elevation: false,                     // Shows elevation in "table" mode
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
@@ -28,14 +29,14 @@ Module.register("MMM-Strava",{
         animationSpeed: 2.5 * 1000            // 2.5 seconds
     },
 
-    // Store the strava data in an object.
-    stravaData: {
-        stats: {},
-        activitySummary: {}
-    },
+    // Store the strava data in an array of object.
+    stravaData: [],
 
     // A loading boolean.
     loading: true,
+	
+	// updateinterval run
+	updateintervalstarted: false,
 
     // Subclass getStyles method.
     getStyles: function() {
@@ -65,6 +66,19 @@ Module.register("MMM-Strava",{
         {
             this.config.period = "recent";
         }
+		
+		if( typeof this.config.access_token === 'string' ) {
+			this.config.access_token = [ this.config.access_token ];
+		}
+
+		if( typeof this.config.strava_id === 'string' ) {
+			this.config.strava_id = [ this.config.strava_id ];
+		}
+
+		if( typeof this.config.athlete_text === 'string' ) {
+			this.config.athlete_text = [ this.config.athlete_text ];
+		}
+
         this.sendSocketNotification("CONFIG", this.config);
         moment.locale(this.config.locale);
     },
@@ -73,78 +87,88 @@ Module.register("MMM-Strava",{
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
         //Log.info(payload);
-        var activityType, i;
+		var activityType, i;
+		
+		if (typeof this.stravaData !== 'undefined' && this.stravaData.length > 0) {
+			// the array is defined and has at least one element
+		} else {	
+			this.stravaData = [];
+			for (j = 0; j < this.config.access_token.length; j++) {
+				var stats = {};
+				var activitySummary = {};
+				this.stravaData[j] = {stats, activitySummary};
+			}	
+		}		
+			
+        for (j = 0; j < this.config.access_token.length; j++) {
+				
+			if (notification === "ATHLETE_STATS" + this.config.access_token[j]) {
+				var stats = payload;
 
-        if (notification === "ATHLETE_STATS") {
-            var stats = payload;
+				for (i = 0; i < this.config.activities.length; i++) {
+					activityType = this.config.activities[i].toLowerCase();
 
-            for (i = 0; i < this.config.activities.length; i++) {
-                activityType = this.config.activities[i].toLowerCase();
+					var recentActivityStats = stats["recent_" + activityType + "_totals"];
+					if (recentActivityStats) {
+						this.stravaData[j].stats["recent_" + activityType + "_totals"] = recentActivityStats;
+					}
+					var ytdActivityStats = stats["ytd_" + activityType + "_totals"];
+					if (ytdActivityStats) {
+						this.stravaData[j].stats["ytd_" + activityType + "_totals"] = ytdActivityStats;
+					}
+					var allActivityStats = stats["all_" + activityType + "_totals"];
+					if (allActivityStats) {
+						this.stravaData[j].stats["all_" + activityType + "_totals"] = allActivityStats;
+					}
+				}
+			}
 
-                var recentActivityStats = stats["recent_" + activityType + "_totals"];
-                if (recentActivityStats) {
-                    this.stravaData.stats["recent_" + activityType + "_totals"] = recentActivityStats;
-                }
-                var ytdActivityStats = stats["ytd_" + activityType + "_totals"];
-                if (ytdActivityStats) {
-                    this.stravaData.stats["ytd_" + activityType + "_totals"] = ytdActivityStats;
-                }
-                var allActivityStats = stats["all_" + activityType + "_totals"];
-                if (allActivityStats) {
-                    this.stravaData.stats["all_" + activityType + "_totals"] = allActivityStats;
-                }
-            }
+			if (notification === "ATHLETE_ACTIVITY" + this.config.access_token[j]) {
+				var activities = payload;
+				var activitySummary;
 
-            this.loading = false;
+				// Initialise activity summary for the chart
+				for (i = 0; i < this.defaults.activities.length; i++) {
+					activityType = this.defaults.activities[i].toLowerCase();
+					this.stravaData[j].activitySummary[activityType] = { 
+							total_distance: 0, 
+							total_elevation_gain: 0, 
+							total_moving_time: 0, 
+							dayTotals: [0,0,0,0,0,0,0] 
+						};
+				}
 
-            this.scheduleUpdateInterval();
+				// Summarise athlete activity totals and daily distances
+				for (i = 0; i < Object.keys(activities).length; i++) {
 
-        }
+					activityType = activities[i].type.toLowerCase();
+					var activityDate = moment(activities[i].start_date_local);
+					activitySummary = this.stravaData[j].activitySummary[activityType];
 
-        if (notification === "ATHLETE_ACTIVITY") {
-            var activities = payload;
-            var activitySummary;
+					// Update activity summaries
+					activitySummary.total_distance += activities[i].distance;
+					activitySummary.total_elevation_gain += activities[i].total_elevation_gain;
+					activitySummary.total_moving_time += activities[i].moving_time;
+					activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
+				}
 
-            // Initialise activity summary for the chart
-            for (i = 0; i < this.defaults.activities.length; i++) {
-                activityType = this.defaults.activities[i].toLowerCase();
-                this.stravaData.activitySummary[activityType] = { 
-                        total_distance: 0, 
-                        total_elevation_gain: 0, 
-                        total_moving_time: 0, 
-                        dayTotals: [0,0,0,0,0,0,0] 
-                    };
-            }
-
-            // Summarise athlete activity totals and daily distances
-            for (i = 0; i < Object.keys(activities).length - 1; i++) {
-
-                activityType = activities[i].type.toLowerCase();
-                var activityDate = moment(activities[i].start_date_local);
-                activitySummary = this.stravaData.activitySummary[activityType];
-
-                // Update activity summaries
-                activitySummary.total_distance += activities[i].distance;
-                activitySummary.total_elevation_gain += activities[i].total_elevation_gain;
-                activitySummary.total_moving_time += activities[i].moving_time;
-                activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
-            }
-
-            //Log.info(this.stravaData.activitySummary);
-            this.loading = false;
-            this.scheduleUpdateInterval();
-        }
+				//Log.info(this.stravaData[j].activitySummary);
+			}
+		}	
+		this.loading = false;
+		this.scheduleUpdateInterval();
     },
 
     // Override dom generator.
     getDom: function() {
-
-        if (this.config.access_token.length <= 0 ||
-            this.config.strava_id.length <= 0 ||
-            this.config.activities.length <= 0) {
-                return this.createMessageDiv(this.translate("CONFIG_MISSING"));
-        }
-
+        for (i = 0; i < this.config.access_token.length; i++) {
+			if (this.config.access_token[i].length <= 0 ||
+				this.config.strava_id[i].length <= 0 ||
+				this.config.activities.length <= 0) {
+					return this.createMessageDiv(this.translate("CONFIG_MISSING"));
+			}
+		}
+		
         if (this.loading) {
             return this.createMessageDiv(this.translate("LOADING"));
         }
@@ -192,89 +216,104 @@ Module.register("MMM-Strava",{
 
         // Add div for each activity type.
         for (var i = 0; i < this.config.activities.length; i++) {
-            var activityType = this.config.activities[i];
-            var activitySummary = this.stravaData.activitySummary[activityType.toLowerCase()];
-            var activityTypeDiv = document.createElement("div");
-            activityTypeDiv.className = "week";
-            activityTypeDiv.id = activityType.toLowerCase();
+            for (j = 0; j < this.config.access_token.length; j++) {
+				var activityType = this.config.activities[i];
+				var activitySummary = this.stravaData[j].activitySummary[activityType.toLowerCase()];
+				var activityTypeDiv = document.createElement("div");
 
-                var primaryStatsDiv = document.createElement("div");
-                primaryStatsDiv.className = "primary-stats";
+				var label = '';
+				if (this.config.athlete_text[j] && this.config.athlete_text[j] !== '') {
+					label = this.config.athlete_text[j];
+				}
 
-                    var actualDistanceSpan = document.createElement("span");
-                    actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
-                    actualDistanceSpan.className = "actual small bright";
-                    primaryStatsDiv.appendChild(actualDistanceSpan);
+				activityTypeDiv.className = "week";
+				activityTypeDiv.id = activityType.toLowerCase();
 
-                    var inlineStatsList = document.createElement("ul");
-                    inlineStatsList.className = "inline-stats";
+				if (label !== '') {
+					var activityTypeCell = document.createElement("td");
+					activityTypeCell.className = "title light align-right stat";
+					activityTypeCell.innerHTML = label;
+					activityTypeDiv.appendChild(activityTypeCell);
+				}
+		
+				var primaryStatsDiv = document.createElement("div");
+				primaryStatsDiv.className = "primary-stats";
 
-                        var durationListItem = document.createElement("li");
-                        var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
-                        durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
-                        durationListItem.className = "xsmall light";
-                        inlineStatsList.appendChild(durationListItem);
+					var actualDistanceSpan = document.createElement("span");
+					actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
+					actualDistanceSpan.className = "actual small bright";
+					primaryStatsDiv.appendChild(actualDistanceSpan);
 
-                        if (activityType !== "swim") {
-                            var elevationListItem = document.createElement("li");
-                            elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
-                            elevationListItem.className = "xsmall light";
-                            inlineStatsList.appendChild(elevationListItem);
-                        }
+					var inlineStatsList = document.createElement("ul");
+					inlineStatsList.className = "inline-stats";
 
-                    primaryStatsDiv.appendChild(inlineStatsList);
+						var durationListItem = document.createElement("li");
+						var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
+						durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+						durationListItem.className = "xsmall light";
+						inlineStatsList.appendChild(durationListItem);
 
-                activityTypeDiv.appendChild(primaryStatsDiv);
+						if (activityType !== "swim") {
+							var elevationListItem = document.createElement("li");
+							elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
+							elevationListItem.className = "xsmall light";
+							inlineStatsList.appendChild(elevationListItem);
+						}
 
-                var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
+					primaryStatsDiv.appendChild(inlineStatsList);
 
-                var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
+				activityTypeDiv.appendChild(primaryStatsDiv);
 
-                var now = moment().startOf('day');
-                var startOfWeek = moment().startOf('week');
-                var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
-                
-                for (var d = 0; d < activitySummary.dayTotals.length; d++) {
+				var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
 
-                    var barDate = startOfWeek;
-                    var barClass = 'past';
-                    if (now.diff(barDate, 'days') === 0) {
-                        barClass = 'highlighted';
-                    } else if (now.diff(barDate, 'days') >= 1) {
-                        barClass = 'future';
-                    }
+				var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
 
-                    // bars
-                    var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
-                    var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
-                    var barY = 50 - barHeight; 
-                    var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
-                    barRect.classList.add(barClass);
-                    barG.appendChild(barRect);
-                    chartG.appendChild(barG);
+				var now = moment().startOf('day');
+				var startOfWeek = moment().startOf('week');
+				var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
+				
+				for (var d = 0; d < activitySummary.dayTotals.length; d++) {
 
-                    // labels
-                    var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
-                    var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
-                    labelRect.classList.add(barClass);
-                    labelRect.innerHTML = barDate.format('dd').slice(0,1);
-                    labelG.appendChild(labelRect);
-                    chartG.appendChild(labelG);
+					var barDate = startOfWeek;
+					var barClass = 'past';
+					if (now.diff(barDate, 'days') === 0) {
+						barClass = 'highlighted';
+					} else if (now.diff(barDate, 'days') >= 1) {
+						barClass = 'future';
+					}
 
-                    barDate = startOfWeek.add(1, 'days');
-                }
+					// bars
+					var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
+					var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
+					var barY = 50 - barHeight; 
+					var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
+					barRect.classList.add(barClass);
+					barG.appendChild(barRect);
+					chartG.appendChild(barG);
 
-                chartSvg.appendChild(chartG);
+					// labels
+					var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
+					var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
+					labelRect.classList.add(barClass);
+					labelRect.innerHTML = barDate.format('dd').slice(0,1);
+					labelG.appendChild(labelRect);
+					chartG.appendChild(labelG);
 
-                activityTypeDiv.appendChild(chartSvg);
+					barDate = startOfWeek.add(1, 'days');
+				}
 
-                // Icon
-                var iconDiv = document.createElement("div");
-                iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
-                iconDiv.title = activityType.toLowerCase();
-                activityTypeDiv.appendChild(iconDiv);
+				chartSvg.appendChild(chartG);
 
-            chartWrapper.appendChild(activityTypeDiv);
+				activityTypeDiv.appendChild(chartSvg);
+
+				// Icon
+				var iconDiv = document.createElement("div");
+				iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
+				iconDiv.title = activityType.toLowerCase();
+				activityTypeDiv.appendChild(iconDiv);
+
+				chartWrapper.appendChild(activityTypeDiv);
+			}	
 
         }
 
@@ -286,8 +325,8 @@ Module.register("MMM-Strava",{
      * This method creates a table to display the stats.
      * @return {dom object}                    the table containing the stats
      */
-    createStatsTable: function() {
-        var tableWrapper = document.createElement("table");
+    createStatsTable: function(counter) {
+	var tableWrapper = document.createElement("table");
         tableWrapper.className = "small";
 
         tableWrapper.appendChild(this.createHeaderRow());
@@ -295,30 +334,39 @@ Module.register("MMM-Strava",{
         // Add row to table for each activity.
         for (var i = 0; i < this.config.activities.length; i++) {
 
-            var activity = this.config.activities[i];
-            Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
-            var activityTotals = this.stravaData.stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
-            var activityRow = this.createActivityRow(activity.toLowerCase(), 
-                                                        this.translate(activity.toUpperCase()), 
-                                                        activityTotals.count,
-                                                        this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
+            for (j = 0; j < this.config.access_token.length; j++) {
+				var activity = this.config.activities[i];
+				Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
+				var activityTotals = this.stravaData[j].stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
+				var label;
+				if (this.config.athlete_text[j] && this.config.athlete_text[j] !== '') {
+					label = this.config.athlete_text[j];
+				} else {	
+					label = this.translate(activity.toUpperCase());
+				}
+				
+				var activityRow = this.createActivityRow(activity.toLowerCase(), 
+															label,
+															activityTotals.count,
+															this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
                                                         this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain), 1),
-                                                        activityTotals.achievement_count);
+															activityTotals.achievement_count);
 
-            // Create fade effect.
-            if (this.config.fade && this.config.fadePoint < 1) {
-                if (this.config.fadePoint < 0) {
-                    this.config.fadePoint = 0;
-                }
-                var startingPoint = this.config.activities.length * this.config.fadePoint;
-                var steps = this.config.activities.length - startingPoint;
-                if (i >= startingPoint) {
-                    var currentStep = i - startingPoint;
-                    activityRow.style.opacity = 1 - (1 / steps * currentStep);
-                }
-            }
+				// Create fade effect.
+				if (this.config.fade && this.config.fadePoint < 1) {
+					if (this.config.fadePoint < 0) {
+						this.config.fadePoint = 0;
+					}
+					var startingPoint = this.config.activities.length * this.config.fadePoint;
+					var steps = this.config.activities.length - startingPoint;
+					if (i >= startingPoint) {
+						var currentStep = i - startingPoint;
+						activityRow.style.opacity = 1 - (1 / steps * currentStep);
+					}
+				}
 
-            tableWrapper.appendChild(activityRow);
+				tableWrapper.appendChild(activityRow);
+			}	
 
         }
 
@@ -443,15 +491,22 @@ Module.register("MMM-Strava",{
     scheduleUpdateInterval: function() {
         var self = this;
 
-        self.updateDom(self.config.animationSpeed);
+		self.updateDom(self.config.animationSpeed);
 
-        if (this.config.auto_rotate &&
-            this.config.updateInterval) {
-                setInterval(function() {
-                    self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
-                    self.updateDom(self.config.animationSpeed);
-                }, this.config.updateInterval);
-        }
+		if (this.updateintervalstarted) {
+			//	nix tun
+		} else {
+		
+			this.updateintervalstarted = true;
+			
+			if (this.config.auto_rotate &&
+				this.config.updateInterval) {
+					setInterval(function() {
+						self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
+						self.updateDom(self.config.animationSpeed);
+					}, this.config.updateInterval);
+			}
+		}
     },
 
     /**

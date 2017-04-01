@@ -68,111 +68,19 @@ modules: [
 
 The following properties can be configured:
 
-
-<table width="100%">
-    <!-- why, markdown... -->
-    <thead>
-        <tr>
-            <th>Option</th>
-            <th width="100%">Description</th>
-        </tr>
-    <thead>
-    <tbody>
-        <tr>
-            <td><code>strava_id</code></td>
-            <td><b>Required</b> - Your Strava ID. Obtained from <a href="https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-">support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-</a>.
-                <br>For more than 1 user you can use <code>[strava_id_1, strava_id2]</code>.
-			</td>
-        </tr>
-        <tr>
-            <td><code>access_token</code></td>
-            <td><b>Required</b> - Your Strava API Access Token. Obtained from <a href="https://www.strava.com/settings/api">www.strava.com/settings/api</a>.
-                <br>For more than 1 user you can use <code>[access_token_user_1, access_token_user_2]</code>.
-			</td>
-        </tr>
-        <tr>
-            <td><code>mode</code></td>
-            <td><b>Optional</b> - Determines which mode should be used to display activity information.<br>
-                <br><b>Possible values:</b> <code>"table"</code>, <code>"chart"</code>
-                <br><b>Default value:</b> <code>"table"</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>activities</code></td>
-            <td><b>Optional</b> - Determines which activities to display and in which order they are displayed.<br>
-                <br><b>Possible values:</b> <code>"ride"</code>, <code>"run"</code>, <code>"swim"</code>
-                <br><b>Default value:</b> <code>"["ride", "run", "swim"]"</code>
-                <br><b>Note:</b> - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets.
-            </td>
-        </tr>
-        <tr>
-            <td><code>athlete_text</code></td>
-            <td><b>Optional</b> - Replaces the activity texts <code>"ride"</code>, <code>"run"</code>, <code>"swim"</code> with the athlete name you define here.
-                <br>Makes sense if the module is set up for more than 1 user. <code>[athlete_1, athlete_2]</code>.
-			</td>
-        </tr>
-        <tr>
-            <td><code>period</code></td>
-            <td><b>Optional</b> - What period should be used to summarise the activities in <code>table</code> mode.<br>
-                <br><b>Possible values:</b> <code>recent</code> = recent (last 4 weeks), <code>ytd</code> = year to date, <code>all</code> = all time
-                <br><b>Default value:</b> <code>recent</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>elevation</code></td>
-            <td><b>Optional</b> - If set elevation is displayed in <code>table</code> mode.<br>
-                <br><b>Possible values:</b> <code>true</code> = elevation is displayed, <code>false</code> = elevation is not displayed.
-                <br><b>Default value:</b> <code>false</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>auto_rotate</code></td>
-            <td><b>Optional</b> - Whether the summary of activities should rotate through the different periods in <code>table</code> mode.<br>
-                <br><b>Possible values:</b> <code>true</code> = rotates the summary through the different periods, <code>false</code> = displays the specified period only.
-                <br><b>Default value:</b> <code>false</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>units</code></td>
-            <td><b>Optional</b> - What units to use. Specified by config.js<br>
-                <br><b>Possible values:</b> <code>config.units</code> = Specified by config.js, <code>metric</code> = Kilometres/Metres, <code>imperial</code> = Miles/Feet
-                <br><b>Default value:</b> <code>config.units</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>fade</code></td>
-            <td><b>Optional</b> - Whether to fade the activities to black. (Gradient)<br>
-                <br><b>Possible values:</b> <code>true</code> or <code>false</code>
-                <br><b>Default value:</b> <code>false</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>fadePoint</code></td>
-            <td><b>Optional</b> - Where to start fade?<br>
-                <br><b>Possible values:</b> <code>0</code> (top of the list) - <code>1</code> (bottom of list)
-                <br><b>Default value:</b> <code>0.1</code>
-            </td>
-        </tr>
-        <tr>
-            <td><code>updateInterval</code></td>
-            <td><b>Optional</b> - How often does the period have to change? (Milliseconds).<br>
-                <br><b>Possible values:</b> <code>1000</code> - <code>86400000</code>
-                <br><b>Default value:</b> <code>10000</code> (10 seconds)
-            </td>
-        </tr>
-        <tr>
-            <td><code>reloadInterval</code></td>
-            <td><b>Optional</b> - How often does the data needs to be reloaded from the API? (Milliseconds). See <a href="http://strava.github.io/api/#rate-limiting">Strava documentation</a> for API rate limits<br>
-                <br><b>Possible values:</b> <code>7500</code> - <code>86400000</code>
-                <br><b>Default value:</b> <code>300000</code> (5 minutes)
-            </td>
-        </tr>
-        <tr>
-            <td><code>animationSpeed</code></td>
-            <td><b>Optional</b> - The speed of the update animation. (Milliseconds)<br>
-                <br><b>Possible values:</b><code>0</code> - <code>5000</code>
-                <br><b>Default value:</b> <code>2500</code> (2.5 seconds)
-            </td>
-        </tr>
-    </tbody>
-</table>
+| **Option** | **Default** | **Description** | **Possible Values** |
+| --- | --- | --- | --- |
+| `strava_id` |  | *Required* - Your Strava ID. Obtained from [your My Profile page](https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-). For more than 1 user you can use `[strava_id_1, strava_id2]` |  |
+| `access_token` |  | *Required* - Your Strava API Access Token. Obtained from [your My API Application page](https://www.strava.com/settings/api). For more than 1 user you can use `[access_token_user_1, access_token_user_2]` |  |
+| `mode` | `table` | *Optional* - Determines which mode should be used to display activity information. | `"table"`, `"chart"` |
+| `activities` | `["ride", "run", "swim"]` | *Optional* - Determines which activities to display and in which order they are displayed. *Note:* - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"ride"`, `"run"`, `"swim"` |
+| `athlete_text` |  | *Optional* - Replaces the activity texts `"ride"`, `"run"`, `"swim"` with the athlete name you define here. Makes sense if the module is set up for more than 1 user. | `[athlete_1, athlete_2]` |
+| `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
+| `elevation` | `false` | *Optional* - If set elevation is displayed in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
+| `auto_rotate` | `false` | *Optional* - Whether the summary of activities should rotate through the different periods in `table` mode. | `true` = rotates the summary through the different periods, `false` = displays the specified period only. |
+| `units` | `config.units` | *Optional* - What units to use. Specified by config.js | *Possible values:* `config.units` = Specified by config.js, `metric` = Kilometres/Metres, `imperial` = Miles/Feet |
+| `fade` | `false` | *Optional* - Whether to fade the activities to black. (Gradient) | *Possible values:* `true` or `false` |
+| `fadePoint` | `0.1` | *Optional* - Where to start fade? | *Possible values:* `0` (top of the list) - `1` (bottom of list) |
+| `updateInterval` | `10000` (10 seconds) | *Optional* - How often does the period have to change? (Milliseconds). | *Possible values:* `1000` - `86400000` |
+| `reloadInterval` | `300000` (5 minutes) | *Optional* - How often does the data needs to be reloaded from the API? (Milliseconds). See [Strava documentation](http://strava.github.io/api/#rate-limiting) for API rate limits | `7500` - `86400000` |
+| `animationSpeed` | `2500` | *Optional* - The speed of the update animation. (Milliseconds) | `0` - `5000` |

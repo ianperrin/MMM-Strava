@@ -210,7 +210,14 @@ Module.register("MMM-Strava",{
 
                         var durationListItem = document.createElement("li");
                         var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
-                        durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+                        if(this.roundedToFixed(movingTime.asHours(), 1) > 1.0)
+                        {
+                            durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+                        }
+                        else
+                        {
+                            durationListItem.innerHTML = "0h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+                        }
                         durationListItem.className = "xsmall light";
                         inlineStatsList.appendChild(durationListItem);
 

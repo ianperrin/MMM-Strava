@@ -14,7 +14,7 @@ Module.register("MMM-Strava",{
     defaults: {
         strava_id: [''],                      // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
         access_token: [''],                   // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
-        athlete_text: [''],                   // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text	
+        athlete_text: [''],                   // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text
         mode: 'table',                        // Possible values "table", "chart"
         elevation: false,                     // Shows elevation in "table" mode
         activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
@@ -34,7 +34,7 @@ Module.register("MMM-Strava",{
 
     // A loading boolean.
     loading: true,
-	
+
 	// updateinterval run
 	updateintervalstarted: false,
 
@@ -54,7 +54,8 @@ Module.register("MMM-Strava",{
                 en: "translations/en.json",
                 nl: "translations/nl.json",
                 de: "translations/de.json",
-                hu: "translations/hu.json"
+                hu: "translations/hu.json",
+                id: "translations/id.json"
         };
     },
 
@@ -67,7 +68,7 @@ Module.register("MMM-Strava",{
         {
             this.config.period = "recent";
         }
-		
+
 		if( typeof this.config.access_token === 'string' ) {
 			this.config.access_token = [ this.config.access_token ];
 		}
@@ -89,20 +90,20 @@ Module.register("MMM-Strava",{
         Log.info("MMM-Strava received a notification:" + notification);
         //Log.info(payload);
 		var activityType, i;
-		
+
 		if (typeof this.stravaData !== 'undefined' && this.stravaData.length > 0) {
 			// the array is defined and has at least one element
-		} else {	
+		} else {
 			this.stravaData = [];
 			for (j = 0; j < this.config.access_token.length; j++) {
 				var stats = {};
 				var activitySummary = {};
 				this.stravaData[j] = {stats, activitySummary};
-			}	
-		}		
-			
+			}
+		}
+
         for (j = 0; j < this.config.access_token.length; j++) {
-				
+
 			if (notification === "ATHLETE_STATS" + this.config.access_token[j]) {
 				var stats = payload;
 
@@ -131,11 +132,11 @@ Module.register("MMM-Strava",{
 				// Initialise activity summary for the chart
 				for (i = 0; i < this.defaults.activities.length; i++) {
 					activityType = this.defaults.activities[i].toLowerCase();
-					this.stravaData[j].activitySummary[activityType] = { 
-							total_distance: 0, 
-							total_elevation_gain: 0, 
-							total_moving_time: 0, 
-							dayTotals: [0,0,0,0,0,0,0] 
+					this.stravaData[j].activitySummary[activityType] = {
+							total_distance: 0,
+							total_elevation_gain: 0,
+							total_moving_time: 0,
+							dayTotals: [0,0,0,0,0,0,0]
 						};
 				}
 
@@ -155,7 +156,7 @@ Module.register("MMM-Strava",{
 
 				//Log.info(this.stravaData[j].activitySummary);
 			}
-		}	
+		}
 		this.loading = false;
 		this.scheduleUpdateInterval();
     },
@@ -169,7 +170,7 @@ Module.register("MMM-Strava",{
 					return this.createMessageDiv(this.translate("CONFIG_MISSING"));
 			}
 		}
-		
+
         if (this.loading) {
             return this.createMessageDiv(this.translate("LOADING"));
         }
@@ -236,7 +237,7 @@ Module.register("MMM-Strava",{
 					activityTypeCell.innerHTML = label;
 					activityTypeDiv.appendChild(activityTypeCell);
 				}
-		
+
 				var primaryStatsDiv = document.createElement("div");
 				primaryStatsDiv.className = "primary-stats";
 
@@ -272,7 +273,7 @@ Module.register("MMM-Strava",{
 				var now = moment().startOf('day');
 				var startOfWeek = moment().startOf('week');
 				var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
-				
+
 				for (var d = 0; d < activitySummary.dayTotals.length; d++) {
 
 					var barDate = startOfWeek;
@@ -286,7 +287,7 @@ Module.register("MMM-Strava",{
 					// bars
 					var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
 					var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
-					var barY = 50 - barHeight; 
+					var barY = 50 - barHeight;
 					var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
 					barRect.classList.add(barClass);
 					barG.appendChild(barRect);
@@ -314,7 +315,7 @@ Module.register("MMM-Strava",{
 				activityTypeDiv.appendChild(iconDiv);
 
 				chartWrapper.appendChild(activityTypeDiv);
-			}	
+			}
 
         }
 
@@ -342,11 +343,11 @@ Module.register("MMM-Strava",{
 				var label;
 				if (this.config.athlete_text[j] && this.config.athlete_text[j] !== '') {
 					label = this.config.athlete_text[j];
-				} else {	
+				} else {
 					label = this.translate(activity.toUpperCase());
 				}
-				
-				var activityRow = this.createActivityRow(activity.toLowerCase(), 
+
+				var activityRow = this.createActivityRow(activity.toLowerCase(),
 															label,
 															activityTotals.count,
 															this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
@@ -367,7 +368,7 @@ Module.register("MMM-Strava",{
 				}
 
 				tableWrapper.appendChild(activityRow);
-			}	
+			}
 
         }
 
@@ -378,11 +379,11 @@ Module.register("MMM-Strava",{
 
             var periodTd =  document.createElement("td");
             periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
-            periodTd.colSpan = tableWrapper.rows[0].cells.length; 
+            periodTd.colSpan = tableWrapper.rows[0].cells.length;
             periodTd.className = "align-right";
             periodTr.appendChild(periodTd);
 
-            tableWrapper.appendChild(periodTr);                
+            tableWrapper.appendChild(periodTr);
         }
 
         return tableWrapper;
@@ -445,7 +446,7 @@ Module.register("MMM-Strava",{
     createActivityRow: function(icon, label, count, distance, elevation, achievement_count) {
         var tr = document.createElement("tr");
         tr.className = "normal";
-        
+
         var activityTypeCell = document.createElement("td");
         activityTypeCell.className = "title light";
         activityTypeCell.innerHTML = label;
@@ -497,9 +498,9 @@ Module.register("MMM-Strava",{
 		if (this.updateintervalstarted) {
 			//	nix tun
 		} else {
-		
+
 			this.updateintervalstarted = true;
-			
+
 			if (this.config.auto_rotate &&
 				this.config.updateInterval) {
 					setInterval(function() {
@@ -539,7 +540,7 @@ Module.register("MMM-Strava",{
         var rounder = Math.pow(10, _digits);
         return (Math.round(_float * rounder) / rounder).toFixed(_digits);
     },
-    
+
     /**
      * maxArrayValue
      * This method returns the maximum value from an integer array.

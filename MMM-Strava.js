@@ -250,7 +250,7 @@ Module.register("MMM-Strava",{
 
 						var durationListItem = document.createElement("li");
 						var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
-						durationListItem.innerHTML = this.roundedToFixed(movingTime.asHours(), 0) + "h " + this.roundedToFixed(movingTime.minutes(), 0) + "m";
+						durationListItem.innerHTML = Math.floor(movingTime.asHours()) + "h " + movingTime.minutes() + "m";
 						durationListItem.className = "xsmall light";
 						inlineStatsList.appendChild(durationListItem);
 

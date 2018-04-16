@@ -1,4 +1,4 @@
-/* jshint node: true */
+/* jshint node: true, esversion: 6 */
 //var http = require('http');
 var https = require('https');
 //var querystring = require('querystring');

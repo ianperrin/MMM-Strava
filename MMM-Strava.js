@@ -5,7 +5,7 @@
  * MIT Licensed.
  */
 
-/* jshint node: true */
+/* jshint node: true, esversion: 6 */
 /* global Module, config, Log, moment */
 
 Module.register("MMM-Strava",{

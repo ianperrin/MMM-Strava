@@ -76,7 +76,7 @@ The following properties can be configured:
 | `activities` | `["ride", "run", "swim"]` | *Optional* - Determines which activities to display and in which order they are displayed. *Note:* - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"ride"`, `"run"`, `"swim"` |
 | `athlete_text` |  | *Optional* - Replaces the activity texts `"ride"`, `"run"`, `"swim"` with the athlete name you define here. Makes sense if the module is set up for more than 1 user. | `[athlete_1, athlete_2]` |
 | `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
-| `elevation` | `false` | *Optional* - If set elevation is displayed in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
+| `elevation` | `false` | *Optional* - If set elevation is displayed in `table` mode. | `true` = displays the elevation data, `false` = hides the elevation data. |
 | `auto_rotate` | `false` | *Optional* - Whether the summary of activities should rotate through the different periods in `table` mode. | `true` = rotates the summary through the different periods, `false` = displays the specified period only. |
 | `units` | `config.units` | *Optional* - What units to use. Specified by config.js | *Possible values:* `config.units` = Specified by config.js, `metric` = Kilometres/Metres, `imperial` = Miles/Feet |
 | `fade` | `false` | *Optional* - Whether to fade the activities to black. (Gradient) | *Possible values:* `true` or `false` |

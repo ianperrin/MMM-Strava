@@ -90,7 +90,7 @@ Module.register("MMM-Strava",{
     socketNotificationReceived: function(notification, payload) {
         this.log("Received notification - " + notification);
         this.log(payload);
-        var activityType, i, j;
+        var activityType, stats, activitySummary, i, j;
 
         if (typeof this.stravaData !== 'undefined' && this.stravaData.length > 0) {
             this.log("StravaData is already initialised.");
@@ -98,8 +98,8 @@ Module.register("MMM-Strava",{
             this.log("Initialising StravaData");
             this.stravaData = [];
             for (j = 0; j < this.config.access_token.length; j++) {
-                var stats = {};
-                var activitySummary = {};
+                stats = {};
+                activitySummary = {};
                 this.stravaData[j] = {stats, activitySummary};
             }
             this.log(this.stravaData);
@@ -109,7 +109,7 @@ Module.register("MMM-Strava",{
 
             if (notification === "ATHLETE_STATS" + this.config.access_token[j]) {
                 this.log("Reading athlete stats - token " + j);
-                var stats = payload;
+                stats = payload;
 
                 for (i = 0; i < this.config.activities.length; i++) {
                     activityType = this.config.activities[i].toLowerCase();
@@ -133,7 +133,7 @@ Module.register("MMM-Strava",{
             if (notification === "ATHLETE_ACTIVITY" + this.config.access_token[j]) {
                 this.log("Reading athlete activity - token " + j);
                 var activities = payload;
-                var activitySummary;
+                activitySummary;
 
                 // Initialise activity summary for the chart
                 for (i = 0; i < this.defaults.activities.length; i++) {

@@ -26,14 +26,14 @@ module.exports = NodeHelper.create({
             this.config = payload;
             moment.locale(this.config.locale);
 
-            for (i = 0; i < this.config.access_token.length; i++) {
-				
-				if (this.config.mode === 'chart') {
-					this.fetchAthleteActivity(this.config.access_token[i], moment().startOf('week').unix());
-				} else {
-					this.fetchAthleteStats(this.config.access_token[i], this.config.strava_id[i]);
-				}
-			}
+            for (var i = 0; i < this.config.access_token.length; i++) {
+                
+                if (this.config.mode === 'chart') {
+                    this.fetchAthleteActivity(this.config.access_token[i], moment().startOf('week').unix());
+                } else {
+                    this.fetchAthleteStats(this.config.access_token[i], this.config.strava_id[i]);
+                }
+            }
 
         }
     },

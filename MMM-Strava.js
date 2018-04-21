@@ -154,10 +154,12 @@ Module.register("MMM-Strava",{
 					activitySummary = this.stravaData[j].activitySummary[activityType];
 
 					// Update activity summaries
-					activitySummary.total_distance += activities[i].distance;
-					activitySummary.total_elevation_gain += activities[i].total_elevation_gain;
-					activitySummary.total_moving_time += activities[i].moving_time;
-					activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
+					if (activitySummary) {
+					    activitySummary.total_distance += activities[i].distance;
+					    activitySummary.total_elevation_gain += activities[i].total_elevation_gain;
+					    activitySummary.total_moving_time += activities[i].moving_time;
+					    activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
+					}
 				}
 				this.log(this.stravaData[j].activitySummary);
 			}

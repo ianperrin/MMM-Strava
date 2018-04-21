@@ -48,7 +48,7 @@ module.exports = NodeHelper.create({
         var self = this;
         StravaAPI.getAthleteActivity(access_token, after, function(athleteActivity) {
             if (athleteActivity) {
-                self.log(athleteActivity);
+                self.log(JSON.stringify(athleteActivity));
                 self.sendSocketNotification('ATHLETE_ACTIVITY' + access_token, athleteActivity);
             }
 
@@ -68,7 +68,7 @@ module.exports = NodeHelper.create({
         var self = this;	
         StravaAPI.getAthleteStats(access_token, athleteId, function(athleteStats) {
             if (athleteStats) {
-                self.log(athleteStats);
+                self.log(JSON.stringify(athleteStats));
                 self.sendSocketNotification('ATHLETE_STATS' + access_token, athleteStats);
             }
 
@@ -85,7 +85,7 @@ module.exports = NodeHelper.create({
      */
     log: function(msg) {
         if (this.config && this.config.debug) {
-            console.log(this.name + ': ' + JSON.stringify(msg));
+            console.log(this.name + ': ' + msg);
         }
     }    
 });

@@ -1,10 +1,12 @@
-/* jshint node: true, esversion: 6 */
-//var http = require('http');
-var https = require('https');
-//var querystring = require('querystring');
-var extend = require('util')._extend;
+/* StravaAPI
+ *
+ * By Ian Perrin http://github.com/ianperrin/MMM-Strava
+ * MIT Licensed.
+ */
 
-const moment = require('moment');
+/* jshint node: true, esversion: 6 */
+
+var https = require('https');
 
 var StravaAPI = (function() {
 
@@ -19,66 +21,15 @@ var StravaAPI = (function() {
 
     /**
      * makeRequest
-     * Makes a request to the Strava API server. It can be used for both the API requests as well as the oAuth requests.
+     * Makes a https request to a  server.
      * @param  {Object} options request options.
      */
-    function makeRequest(accessToken, options) {
+    function makeRequest(options) {
 
-        var defaultOptions = {
-            host: HOST,
-            port: PORT,
-            path: '/',
-            method: 'GET', // GET | POST
-            parameters: {},
-            body: '',
-            callback: function(){},
-            contentType: 'application/json',
-            authorization: 'bearer', // bearer | basic
-            rejectUnauthorized: false,
-            requestCert: true,
-            agent: false,
-            headers: {
-                'Authorization': 'Bearer ' + accessToken
-            }
-        };
-
-        options = extend(defaultOptions, options);
-
-        console.log(moment().toISOString() + " Make request: " + options.path + " (" + options.method + ")" + " accessToken=" + accessToken);
-
-        // Update Content-Type header
-        options.headers  = extend(options.headers, {
-            'Content-Type' : options.contentType
-        });
-
-        // Encode body if contentType is json.
-        if (options.contentType === 'application/json') {
-            options.body = JSON.stringify(options.body);
-        }
-
-        // Make changed to the request options headers if Authorization is basic.
-        if (options.authorization === 'basic') {
-            console.error('Basic authorization is not supported at this time.');
-            process.exit(1);
-            // options.headers  = extend(options.headers, {
-            //     'Authorization' : 'Basic ' + new Buffer(APIKEY + ":" + APISECRET).toString('base64')
-            // });
-        }
-
-        // Make changes to the request options headers if method is POST
-        if (options.method === 'POST') {
-            console.error('POST requests are not supported at this time.');
-            process.exit(1);
-            options.headers  = extend(options.headers, {
-                'Content-Length': Buffer.byteLength(options.body),
-            });
-        }
-
-        //console.log('options', options);
+        console.log("MMM-Strava: Make request: " + options.path + " (" + options.method + ")");
 
         var request = https.request(options, function(response) {
             response.setEncoding('utf8');
-
             var str = '';
 
             //another chunk of data has been recieved, so append it to `str`
@@ -94,86 +45,72 @@ var StravaAPI = (function() {
                     } else {
                         options.callback({});
                     }
+
                 } else if (response.statusCode === 401) {
                     // Unauthorized
-
-                    console.log("Error performing request: Unauthorized. Access Token will be reset.");
-
-                    // Lets cleanup the accessToken, since this might be the reason for the error.
-                    // A new accessToken should be requested.
-
-                    accessToken = false;
-
+                    console.log("MMM-Strava: Error performing request (401 Unauthorized). Check the Access Token.");
                     options.callback();
 
                 } else if (response.statusCode === 500) {
-                    // Interal server error. This might be caused because the agreement is not properly set.
-                    // Let's reset it ...
-                    console.log("Error performing request (500): " + str);
-
+                    // Interal server error.
+                    console.log("MMM-Strava: Error performing request (500 Server Error) - " + str);
                     options.callback();
 
                 } else if (response.statusCode === 503) {
                     // Probably a message throttle issue ... lets wait a while before we contine...
-                    console.log("Exceeded quota. Waiting for 5 seconds.");
+                    console.log("MMM-Strava: Error performing request (503 Exceeded quota). Waiting for 5 seconds.");
                     setTimeout(function() {
                         options.callback();
                     }, 5000);
 
                 } else {
-                    console.log("Error performing request: " + response.statusCode);
-                    console.log(str);
+                    console.log("MMM-Strava: Error performing request (" + response.statusCode + ") - " + str);
                     options.callback();
                 }
             });
 
             response.on('error', function(e) {
-                console.log("Error performing request to endpoint: /" + options.path);
+                console.log("MMM-Strava: Unknown error performing request to endpoint: /" + options.path);
                 options.callback();
             });
         });
-
-        if (options.method === 'POST') {
-            request.write(options.body);
-        }
 
         request.end();
     }
 
     /**
      * makeApiRequest
-     * Makes a request to the Strava JSON api.
-     * @param  {options} options request options.
+     * Perpare and makes the request to the Strava API server.
+     * @param  {string}   accessToken   The access token for the API.
+     * @param  {string}   endpoint      The endpoint of the API.
+     * @param  {Function} callback      The callback after completion.
      */
-    function makeApiRequest(accessToken, options) {
+    function makeApiRequest(accessToken, endpoint, callback) {
+        // Validate arguments
         if (!accessToken) {
-            console.log("No Access Token. Request one ...");
+            console.log("MMM-Strava: No Access Token. Request one ...");
             return;
         }
-
-        //console.log("All good. Let's make a request ...");
-
-        options = extend(options, {
-                path: API + options.path
-        });
-
-        makeRequest(accessToken, options);
-    }
-
-    /**
-     * makeSimpleApiRequest
-     * @param  {string}   endpoint The endpoint of the API.
-     * @param  {Function} callback The callback after completion.
-     */
-    function makeSimpleApiRequest(accessToken, endpoint, callback) {
+        if (!endpoint) {
+            console.log("MMM-Strava: No API endpoint. Supply one ...");
+            return;
+        }
         callback = callback || function() {};
-        makeApiRequest(accessToken, {
-            path: endpoint,
-            callback: callback
-        });
+        
+        var options = {
+                host: HOST,
+                port: PORT,
+                path: API + endpoint,
+                method: 'GET', // GET | POST
+                callback: callback,
+                contentType: 'application/json',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type' : 'application/json'
+                }
+            };
+        makeRequest(options);
     }
-
-    // Athletes
 
     /**
      * getAthleteStats
@@ -183,13 +120,10 @@ var StravaAPI = (function() {
      * https://www.strava.com/api/v3/athletes/{athleteId}/stats
      */
     self.getAthleteStats = function(accessToken, athleteId, callback) {
-        makeSimpleApiRequest(accessToken, 'athletes/' + athleteId + '/stats', function(data) {
+        makeApiRequest(accessToken, 'athletes/' + athleteId + '/stats', function(data) {
             if (!data) {
-                console.log("Error while fetching new athlete stats.");
-                callback(data);
-                return;
+                console.log("MMM-Strava: Error while fetching new athlete stats.");
             }
-
             callback(data);
         });
     };
@@ -202,18 +136,13 @@ var StravaAPI = (function() {
      * https://www.strava.com/api/v3/athletes/activities?after={unixtimeinseconds}
      */
     self.getAthleteActivity = function(accessToken, after, callback) {
-        makeSimpleApiRequest(accessToken, 'athlete/activities?after=' + after, function(data) {
+        makeApiRequest(accessToken, 'athlete/activities?after=' + after, function(data) {
             if (!data) {
-                console.log("Error while fetching athlete activities.");
-                callback(data);
-                return;
+                console.log("MMM-Strava: Error while fetching athlete activities.");
             }
-
             callback(data);
         });
     };
-
-
 
     return self;
 })();

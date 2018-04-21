@@ -89,7 +89,7 @@ Module.register("MMM-Strava",{
     socketNotificationReceived: function(notification, payload) {
         Log.info("MMM-Strava received a notification:" + notification);
         //Log.info(payload);
-		var activityType, i;
+		var activityType, i, j;
 
 		if (typeof this.stravaData !== 'undefined' && this.stravaData.length > 0) {
 			// the array is defined and has at least one element
@@ -163,7 +163,7 @@ Module.register("MMM-Strava",{
 
     // Override dom generator.
     getDom: function() {
-        for (i = 0; i < this.config.access_token.length; i++) {
+        for (var i = 0; i < this.config.access_token.length; i++) {
 			if (this.config.access_token[i].length <= 0 ||
 				this.config.strava_id[i].length <= 0 ||
 				this.config.activities.length <= 0) {
@@ -218,7 +218,7 @@ Module.register("MMM-Strava",{
 
         // Add div for each activity type.
         for (var i = 0; i < this.config.activities.length; i++) {
-            for (j = 0; j < this.config.access_token.length; j++) {
+            for (var j = 0; j < this.config.access_token.length; j++) {
 				var activityType = this.config.activities[i];
 				var activitySummary = this.stravaData[j].activitySummary[activityType.toLowerCase()];
 				var activityTypeDiv = document.createElement("div");
@@ -336,7 +336,7 @@ Module.register("MMM-Strava",{
         // Add row to table for each activity.
         for (var i = 0; i < this.config.activities.length; i++) {
 
-            for (j = 0; j < this.config.access_token.length; j++) {
+            for (var j = 0; j < this.config.access_token.length; j++) {
 				var activity = this.config.activities[i];
 				Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
 				var activityTotals = this.stravaData[j].stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];

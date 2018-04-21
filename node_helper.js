@@ -20,7 +20,7 @@ module.exports = NodeHelper.create({
 
     // Subclass socketNotificationReceived received.
     socketNotificationReceived: function(notification, payload) {
-        console.log("MMM-Strava received a notification: " + notification);
+        this.log("Received notification: " + notification);
         if (notification === "CONFIG") {
             
             this.config = payload;
@@ -44,10 +44,11 @@ module.exports = NodeHelper.create({
      * @param  {int}   after    seconds since UNIX epoch, result will start with activities whose start_date is after this value, sorted oldest first.
      */
     fetchAthleteActivity: function(access_token, after) {
-        console.log("MMM-Strava is fetching athlete activity after " + after);
+        this.log("Fetching athlete activity after " + after);
         var self = this;
         StravaAPI.getAthleteActivity(access_token, after, function(athleteActivity) {
             if (athleteActivity) {
+                self.log(athleteActivity);
                 self.sendSocketNotification('ATHLETE_ACTIVITY' + access_token, athleteActivity);
             }
 
@@ -63,10 +64,11 @@ module.exports = NodeHelper.create({
      * @param  {string}   athleteId The id of the current athlete.
      */
     fetchAthleteStats: function(access_token, athleteId) {
-        console.log("MMM-Strava is fetching athlete stats");
+        this.log("Fetching athlete stats");
         var self = this;	
         StravaAPI.getAthleteStats(access_token, athleteId, function(athleteStats) {
             if (athleteStats) {
+                self.log(athleteStats);
                 self.sendSocketNotification('ATHLETE_STATS' + access_token, athleteStats);
             }
 
@@ -74,5 +76,16 @@ module.exports = NodeHelper.create({
                 self.fetchAthleteStats(access_token, athleteId);
             }, self.config.reloadInterval);
         });
-    }
+    },
+    
+    /**
+     * log
+     * This method logs the message, prefixed by the Module name, if debug is enabled.
+     * @param  {string} msg            the message to be logged
+     */
+    log: function(msg) {
+        if (this.config && this.config.debug) {
+            console.log(this.name + ': ' + JSON.stringify(msg));
+        }
+    }    
 });

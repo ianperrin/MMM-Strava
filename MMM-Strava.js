@@ -135,8 +135,8 @@ Module.register("MMM-Strava",{
                 var activities = payload;
 
                 // Initialise activity summary for the chart
-                for (i = 0; i < this.defaults.activities.length; i++) {
-                    activityType = this.defaults.activities[i].toLowerCase();
+                for (i = 0; i < this.config.activities.length; i++) {
+                    activityType = this.config.activities[i].toLowerCase();
                     this.stravaData[j].activitySummary[activityType] = {
                             total_distance: 0,
                             total_elevation_gain: 0,

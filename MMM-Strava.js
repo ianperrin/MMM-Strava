@@ -133,7 +133,6 @@ Module.register("MMM-Strava",{
             if (notification === "ATHLETE_ACTIVITY" + this.config.access_token[j]) {
                 this.log("Reading athlete activity - token " + j);
                 var activities = payload;
-                activitySummary;
 
                 // Initialise activity summary for the chart
                 for (i = 0; i < this.defaults.activities.length; i++) {

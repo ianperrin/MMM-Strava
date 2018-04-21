@@ -26,7 +26,8 @@ Module.register("MMM-Strava",{
         fadePoint: 0.1,                       // Start on 1/4th of the list.
         reloadInterval: 5 * 60 * 1000,        // every 5 minutes
         updateInterval: 10 * 1000,            // 10 seconds
-        animationSpeed: 2.5 * 1000            // 2.5 seconds
+        animationSpeed: 2.5 * 1000,           // 2.5 seconds
+        debug: false,                         // Set to true to enable extending logging
     },
 
     // Store the strava data in an array of object.
@@ -87,24 +88,27 @@ Module.register("MMM-Strava",{
 
     // Subclass socketNotificationReceived method.
     socketNotificationReceived: function(notification, payload) {
-        Log.info("MMM-Strava received a notification:" + notification);
-        //Log.info(payload);
+        this.log("Received notification - " + notification);
+        this.log(payload);
 		var activityType, i, j;
 
 		if (typeof this.stravaData !== 'undefined' && this.stravaData.length > 0) {
-			// the array is defined and has at least one element
+			this.log("StravaData is already initialised.");
 		} else {
+			this.log("Initialising StravaData");
 			this.stravaData = [];
 			for (j = 0; j < this.config.access_token.length; j++) {
 				var stats = {};
 				var activitySummary = {};
 				this.stravaData[j] = {stats, activitySummary};
 			}
+			this.log(this.stravaData);
 		}	
 
         for (j = 0; j < this.config.access_token.length; j++) {
 
 			if (notification === "ATHLETE_STATS" + this.config.access_token[j]) {
+    			this.log("Reading athlete stats - token " + j);
 				var stats = payload;
 
 				for (i = 0; i < this.config.activities.length; i++) {
@@ -123,9 +127,11 @@ Module.register("MMM-Strava",{
 						this.stravaData[j].stats["all_" + activityType + "_totals"] = allActivityStats;
 					}
 				}
+				this.log(this.stravaData[j].stats);
 			}
 
 			if (notification === "ATHLETE_ACTIVITY" + this.config.access_token[j]) {
+    			this.log("Reading athlete activity - token " + j);
 				var activities = payload;
 				var activitySummary;
 
@@ -153,8 +159,7 @@ Module.register("MMM-Strava",{
 					activitySummary.total_moving_time += activities[i].moving_time;
 					activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
 				}
-
-				//Log.info(this.stravaData[j].activitySummary);
+				this.log(this.stravaData[j].activitySummary);
 			}
 		}
 		this.loading = false;
@@ -338,7 +343,7 @@ Module.register("MMM-Strava",{
 
             for (var j = 0; j < this.config.access_token.length; j++) {
 				var activity = this.config.activities[i];
-				Log.info("MMM-Strava creating table row for activity: " + activity + " in " + this.config.units);
+				this.log("Creating table row for activity: " + activity + " in " + this.config.units);
 				var activityTotals = this.stravaData[j].stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
 				var label;
 				if (this.config.athlete_text[j] && this.config.athlete_text[j] !== '') {
@@ -555,5 +560,18 @@ Module.register("MMM-Strava",{
             }
         }
         return max_value;
+    },
+    
+    
+    /**
+     * log
+     * This method logs the message, prefixed by the Module name, if debug is enabled.
+     * @param  {string} _msg            the message to be logged
+     */
+    log: function(_msg) {
+        if (this.config && this.config.debug) {
+            Log.info(this.name + ': ' + JSON.stringify(_msg));
+        }
     }
+    
 });

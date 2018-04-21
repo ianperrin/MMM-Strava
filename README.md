@@ -1,8 +1,10 @@
 # MagicMirror Module: MMM-Strava
 A MagicMirror Module for displaying your Strava data.
 
-[![Build Status](https://img.shields.io/travis/ianperrin/MMM-Strava.svg?maxAge=2592000)](https://travis-ci.org/ianperrin/MMM-Strava)
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://raw.githubusercontent.com/ianperrin/MMM-Strava/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/ianperrin/MMM-Strava/master/LICENSE)
+[![Build Status](https://travis-ci.org/ianperrin/MMM-Strava.svg?branch=master)](https://travis-ci.org/ianperrin/MMM-Strava)
+[![Code Climate](https://codeclimate.com/github/ianperrin/MMM-Strava/badges/gpa.svg)](https://codeclimate.com/github/ianperrin/MMM-Strava) 
+[![Known Vulnerabilities](https://snyk.io/test/github/ianperrin/MMM-Strava/badge.svg)](https://snyk.io/test/github/ianperrin/MMM-Strava)
 
 ## Example
 

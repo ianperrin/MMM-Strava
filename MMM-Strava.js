@@ -69,18 +69,10 @@ Module.register("MMM-Strava",{
         {
             this.config.period = "recent";
         }
-
-        if( typeof this.config.access_token === 'string' ) {
-            this.config.access_token = [ this.config.access_token ];
-        }
-
-        if( typeof this.config.strava_id === 'string' ) {
-            this.config.strava_id = [ this.config.strava_id ];
-        }
-
-        if( typeof this.config.athlete_text === 'string' ) {
-            this.config.athlete_text = [ this.config.athlete_text ];
-        }
+        // Ensure config options are arrays
+        this.config.access_token = this.toArray(this.config.access_token);
+        this.config.strava_id = this.toArray(this.config.strava_id);
+        this.config.athlete_text = this.toArray(this.config.athlete_text);
 
         this.sendSocketNotification("CONFIG", this.config);
         moment.locale(this.config.locale);
@@ -563,7 +555,22 @@ Module.register("MMM-Strava",{
         return max_value;
     },
     
-    
+    /**
+     * toArray
+     * This method returns an array from a string.
+     * @param  {string} _string            a string
+     * @return {array}                     the array
+     */
+    toArray: function(_string) {
+        if(Array.isArray(_string)) {
+        	return _string;
+        }
+        if(typeof _string == "string") {
+            return _string.split("'");
+        }
+        return [];
+    },
+
     /**
      * log
      * This method logs the message, prefixed by the Module name, if debug is enabled.

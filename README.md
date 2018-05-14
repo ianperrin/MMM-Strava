@@ -27,13 +27,9 @@ A MagicMirror Module for displaying your Strava data.
 
 ## Installation
 
-In your terminal, go to your MagicMirror's Module folder:
+Clone this repository into your MagicMirror's Module folder:
 ````
 cd ~/MagicMirror/modules
-````
-
-Clone this repository:
-````
 git clone https://github.com/ianperrin/MMM-Strava.git
 ````
 
@@ -41,9 +37,10 @@ Configure the module in your `config/config.js` file.
 
 ## Updating the module
 
-If you want to update your MMM-Strava module to the latest version, use your terminal to go to your MMM-Strava module folder and type the following command:
+To update the module to the latest version, pull the changes from this repository into the MMM-Strava folder:
 
 ````
+cd ~/MagicMirror/modules/MMM-Strava
 git pull
 ```` 
 

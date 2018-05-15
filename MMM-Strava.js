@@ -75,7 +75,6 @@ Module.register("MMM-Strava",{
         this.config.athlete_text = this.toArray(this.config.athlete_text);
 
         this.sendSocketNotification("CONFIG", this.config);
-        moment.locale(this.config.locale);
     },
 
     // Subclass socketNotificationReceived method.
@@ -161,6 +160,10 @@ Module.register("MMM-Strava",{
 
     // Override dom generator.
     getDom: function() {
+        if (this.config.locale) {
+            moment.locale(this.config.locale);
+        }
+
         for (var i = 0; i < this.config.access_token.length; i++) {
             if (this.config.access_token[i].length <= 0 ||
                 this.config.strava_id[i].length <= 0 ||

@@ -83,4 +83,5 @@ The following properties can be configured:
 | `updateInterval` | `10000` (10 seconds) | *Optional* - How often does the period have to change? (Milliseconds). | *Possible values:* `1000` - `86400000` |
 | `reloadInterval` | `300000` (5 minutes) | *Optional* - How often does the data needs to be reloaded from the API? (Milliseconds). See [Strava documentation](http://strava.github.io/api/#rate-limiting) for API rate limits | `7500` - `86400000` |
 | `animationSpeed` | `2500` | *Optional* - The speed of the update animation. (Milliseconds) | `0` - `5000` |
+| `locale` |  | *Optional* - The locale to be used for displaying dates - e.g. the days of the weeks in chart mode. If omitted, the config.language will be used. | e.g. `en`, `en-gb`, `fr` etc |
 | `debug` | `false` | *Optional* - Outputs extended logging to the console/log | `true` = enables extended logging, `false` = disables extended logging |

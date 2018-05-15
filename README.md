@@ -85,3 +85,15 @@ The following properties can be configured:
 | `animationSpeed` | `2500` | *Optional* - The speed of the update animation. (Milliseconds) | `0` - `5000` |
 | `locale` |  | *Optional* - The locale to be used for displaying dates - e.g. the days of the weeks in chart mode. If omitted, the config.language will be used. | e.g. `en`, `en-gb`, `fr` etc |
 | `debug` | `false` | *Optional* - Outputs extended logging to the console/log | `true` = enables extended logging, `false` = disables extended logging |
+
+### Private activities
+The access token retrieved via the `My API Application` page can only read public activities. To allow the module to access to `private` activities, follow the steps below:
+
+1. Using a browser on your computer, go to the [My API Application](https://www.strava.com/settings/api) page in your Strava profile
+2. On the My API Application page, locate and make a note of your `Client ID` and `Client Secret` (you will need to click the *show* link to reveal the client secret).
+3. Using the `Client ID` obtained in step 2, replace `XXXXX` in the following URL: `http://www.strava.com/oauth/authorize?client_id=XXXXX&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=view_private` then go to the URL in a browser on your computer
+4. If prompted, login, then Authorize the request
+5. You will then be redirected to and error (404) page. This is expected so don't panic. Copy the authentication code from the browsers address bar. The address will look something like `http://localhost/exchange_token?state=&code=c498932e64136c8991a3fb31e3d1dfdf2f859357` - you need everything after `code=`
+6. Using the `client id` and `client secret` obtained in step 2 above and the `code` obtained in step 5, replace the respective values in the following command `curl -X POST https://www.strava.com/oauth/token -F client_id=XXXXX -F client_secret=YYYYY -F code=ZZZZZ` 
+7. Using terminal on the Pi or via SSH, run the command
+8. Copy the `access_token` from the result and use it to update the module configuration in the config.js file

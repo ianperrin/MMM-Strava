@@ -406,7 +406,7 @@ Module.register("MMM-Strava",{
         tr.appendChild(activitySymbolTd);
 
         tr.appendChild(this.createHeaderRowStatCell("hashtag"));        // Count
-        tr.appendChild(this.createHeaderRowStatCell("arrows-h"));        // Distance
+        tr.appendChild(this.createHeaderRowStatCell("arrows-alt-h"));        // Distance
         if (this.config.elevation)
             tr.appendChild(this.createHeaderRowStatCell("line-chart"));        // Elevation  "location-arrow" "external-link-square"
 
@@ -427,7 +427,7 @@ Module.register("MMM-Strava",{
         var td =  document.createElement("td");
         td.className = "light symbol align-right stat";
         var tdIcon =  document.createElement("span");
-        tdIcon.className = "fa fa-" + icon;
+        tdIcon.className = "fas fa-" + icon;
         td.appendChild(tdIcon);
 
         return td;

@@ -45,26 +45,14 @@ var StravaAPI = (function() {
                     } else {
                         options.callback({});
                     }
-
-                } else if (response.statusCode === 401) {
-                    // Unauthorized
-                    console.log("MMM-Strava: Error performing request (401 Unauthorized). Check the Access Token.");
-                    options.callback();
-
-                } else if (response.statusCode === 500) {
-                    // Interal server error.
-                    console.log("MMM-Strava: Error performing request (500 Server Error) - " + str);
-                    options.callback();
-
-                } else if (response.statusCode === 503) {
-                    // Probably a message throttle issue ... lets wait a while before we contine...
-                    console.log("MMM-Strava: Error performing request (503 Exceeded quota). Waiting for 5 seconds.");
-                    setTimeout(function() {
-                        options.callback();
-                    }, 5000);
-
-                } else {
-                    console.log("MMM-Strava: Error performing request (" + response.statusCode + ") - " + str);
+                } else  {
+                    console.log("MMM-Strava: Error performing request (" + response.statusCode + ")");
+                    if (str) {
+                        var error = JSON.parse(str);
+                        if(error && error.message && error.errors[0]) {
+                            console.log("MMM-Strava: " + error.message + ": " + error.errors[0].field + " " + error.errors[0].code + " for " + error.errors[0].resource  );
+                        }
+                    }
                     options.callback();
                 }
             });
@@ -123,6 +111,7 @@ var StravaAPI = (function() {
         makeApiRequest(accessToken, 'athletes/' + athleteId + '/stats', function(data) {
             if (!data) {
                 console.log("MMM-Strava: Error while fetching new athlete stats.");
+                data = {};
             }
             callback(data);
         });
@@ -139,6 +128,7 @@ var StravaAPI = (function() {
         makeApiRequest(accessToken, 'athlete/activities?after=' + after, function(data) {
             if (!data) {
                 console.log("MMM-Strava: Error while fetching athlete activities.");
+                data = {};
             }
             callback(data);
         });

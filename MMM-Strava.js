@@ -139,7 +139,7 @@ Module.register("MMM-Strava",{
                 // Summarise athlete activity totals and daily distances
                 for (i = 0; i < Object.keys(activities).length; i++) {
 
-                    activityType = activities[i].type.toLowerCase().replace('virtual','');
+                    activityType = activities[i].type.toLowerCase().replace('virtual');
                     var activityDate = moment(activities[i].start_date_local);
                     activitySummary = this.stravaData[j].activitySummary[activityType];
 
@@ -347,14 +347,12 @@ Module.register("MMM-Strava",{
                 } else {
                     label = this.translate(activity.toUpperCase());
                 }
-
-                var activityRow = this.createActivityRow(activity.toLowerCase(), 
+                var activityRow = this.createActivityRow(activity.toLowerCase(),
                                                             label,
-                                                            activityTotals.count,
-                                                            this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
-                                                        this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain), 1),
-                                                            activityTotals.achievement_count);
-
+                                                            activityTotals ? activityTotals.count : "?",
+                                                            activityTotals ? this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1) : "?",
+                                                            activityTotals ? this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain), 1) : "?",
+                                                            activityTotals ? activityTotals.achievement_count : "?");
                 // Create fade effect.
                 if (this.config.fade && this.config.fadePoint < 1) {
                     if (this.config.fadePoint < 0) {

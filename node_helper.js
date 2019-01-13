@@ -68,7 +68,7 @@ module.exports = NodeHelper.create({
         var self = this;	
         StravaAPI.getAthleteStats(access_token, athleteId, function(athleteStats) {
             if (athleteStats) {
-                self.log(JSON.stringify(athleteStats));
+                self.log("Data: " + JSON.stringify(athleteStats));
                 self.sendSocketNotification('ATHLETE_STATS' + access_token, athleteStats);
             }
 

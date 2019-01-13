@@ -1,4 +1,4 @@
-c'use strict';
+'use strict';
 
 var moduleObject;
 
@@ -24,7 +24,8 @@ var strava = require('../MMM-Strava.js');
 // roundedToFixed
 exports.roundedToFixedTest = function (test) {
     test.expect(2);
-    test.equal(1, 1); //strava.roundedToFixed(1.15,1), 1.2);
-    test.equal(2, 2); //strava.roundedToFixed(145.9,0), 146);
+    console.log(typeof moduleObject);
+    test.equal(moduleObject.roundedToFixed(1.15,1), 1.2);
+    test.equal(moduleObject.roundedToFixed(145.9,0), 146);
     test.done();
 };

@@ -351,7 +351,7 @@ Module.register("MMM-Strava",{
                                                             label,
                                                             activityTotals ? activityTotals.count : "?",
                                                             activityTotals ? this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1) : "?",
-                                                            activityTotals ? this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain), 1) : "?",
+                                                            activityTotals ? this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain, true), 0) : "?",
                                                             activityTotals ? activityTotals.achievement_count : "?");
                 // Create fade effect.
                 if (this.config.fade && this.config.fadePoint < 1) {

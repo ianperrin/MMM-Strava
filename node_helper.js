@@ -1,91 +1,194 @@
-/* MMM-Strava
- * Node Helper
+/**
+ * @file node_helper.js
  *
- * By Ian Perrin http://github.com/ianperrin/MMM-Strava
- * MIT Licensed.
+ * @author ianperrin
+ * @license MIT
+ *
+ * @see  http://github.com/ianperrin/MMM-Strava
  */
 
 /* jshint node: true, esversion: 6 */
 
-const NodeHelper = require("node_helper");
+/**
+ * @external node_helper
+ * @see https://github.com/MichMich/MagicMirror/blob/master/modules/node_modules/node_helper/index.js
+ */
+const NodeHelper = require('node_helper');
+/**
+ * @external request
+ * @see https://www.npmjs.com/package/moment
+ */
 const moment = require('moment');
-const StravaAPI = require("./StravaAPI.js");
+/**
+ * @external request
+ * @see https://www.npmjs.com/package/strava-v3
+ */
+const strava = require('strava-v3');
 
-module.exports = NodeHelper.create({
-    // Subclass start method.
+/**
+ * @module node_helper
+ * @description Backend for the module to query data from the API provider.
+ *
+ * @requires external:node_helper
+ * @requires external:moment
+ * @requires external:strava-v3
+ */
+ module.exports = NodeHelper.create({
+    // Set the minimum MagicMirror module version for this module.
+    requiresVersion: "2.2.0",
+    /**
+     * @function start
+     * @description Logs a start message to the console.
+     * @override
+     */
     start: function() {
-        console.log("Starting module: " + this.name);
-        this.config = {};	
+        console.log('Starting module helper: ' + this.name);
     },
-
-    // Subclass socketNotificationReceived received.
+    // Config store e.g. this.configs["identifier"])
+    configs: Object.create(null),
+    /**
+     * @function socketNotificationReceived
+     * @description Receives socket notifications from the module.
+     * @override
+     *
+     * @param {string} notification - Notification name
+     * @param {*} payload - Detailed payload of the notification.
+     */
     socketNotificationReceived: function(notification, payload) {
-        this.log("Received notification: " + notification);
-        if (notification === "CONFIG") {
-            
-            this.config = payload;
-            moment.locale(this.config.locale);
-
-            for (var i = 0; i < this.config.access_token.length; i++) {
-                
-                if (this.config.mode === 'chart') {
-                    this.fetchAthleteActivity(this.config.access_token[i], moment().startOf('week').unix());
-                } else {
-                    this.fetchAthleteStats(this.config.access_token[i], this.config.strava_id[i]);
-                }
-            }
-
+        this.log('Received notification: ' + notification);
+        if (notification === 'SET_CONFIG') {
+            this.configs[payload.identifier] = payload.config;
+        } else if (notification === 'GET_TABLE_DATA') {
+            this.getAthleteStats(payload.identifier, payload.access_token, payload.athlete_id);
+        } else if (notification === 'GET_CHART_DATA') {
+            moment.locale(this.configs[payload.identifier].locale);
+            var after = moment().startOf(this.configs[payload.identifier].period === 'ytd' ? 'year' : 'week').unix();
+            this.getAthleteActivities(payload.identifier, payload.access_token, after);
         }
     },
-
     /**
-     * fetchAthleteActivity
-     * Request athlete activity since a specified point from the Strava API and broadcast it to the MagicMirror module if it's received.
-     * @param  {int}   after    seconds since UNIX epoch, result will start with activities whose start_date is after this value, sorted oldest first.
+     * @function getAthlete
+     * @description get an athletes profile from the API
      */
-    fetchAthleteActivity: function(access_token, after) {
-        this.log("Fetching athlete activity after " + after);
+//    getAthlete: function(identifier, access_token, athlete_id) {
+//        this.log('Getting athlete for ' + identifier + ' using ' + athlete_id);
+//        var self = this;
+//        strava.athletes.get({'access_token': access_token, 'id': athlete_id}, function(err, payload, limits) {
+//            self.handleApiResponse(identifier, err, payload, limits);
+//        });
+//    },
+    /**
+     * @function getAthleteStats
+     * @description get stats for an athlete from the API
+     */
+    getAthleteStats: function(identifier, access_token, athlete_id) {
+        this.log('Getting athlete stats for ' + identifier + ' using ' + athlete_id);
         var self = this;
-        StravaAPI.getAthleteActivity(access_token, after, function(athleteActivity) {
-            if (athleteActivity) {
-                self.log(JSON.stringify(athleteActivity));
-                self.sendSocketNotification('ATHLETE_ACTIVITY' + access_token, athleteActivity);
+        strava.athletes.stats({'access_token': access_token, 'id': athlete_id}, function(err, payload, limits) {
+            var data = self.handleApiResponse(identifier, err, payload, limits);
+            if (data) {
+                self.sendSocketNotification('DATA', {'identifier': identifier, 'data': data});
             }
-
-            setTimeout(function() {
-                self.fetchAthleteActivity(access_token, moment().startOf('week').unix());
-            }, self.config.reloadInterval);
         });
     },
-
     /**
-     * fetchAthleteStats
-     * Request new athelete stats from the Strava API and broadcast it to the MagicMirror module if it's received.
-     * @param  {string}   athleteId The id of the current athlete.
+     * @function getAthleteActivities
+     * @description get logged in athletes activities from the API
      */
-    fetchAthleteStats: function(access_token, athleteId) {
-        this.log("Fetching athlete stats");
-        var self = this;	
-        StravaAPI.getAthleteStats(access_token, athleteId, function(athleteStats) {
-            if (athleteStats) {
-                self.log("Data: " + JSON.stringify(athleteStats));
-                self.sendSocketNotification('ATHLETE_STATS' + access_token, athleteStats);
+    getAthleteActivities: function(identifier, access_token, after) {
+        this.log('Getting athlete activities for ' + identifier + ' after ' + moment.unix(after).format("YYYY-MM-DD"));
+        var self = this;
+        strava.athlete.listActivities({'access_token': access_token, 'after': after}, function(err, payload, limits) {
+            self.log(payload);
+            var activityList = self.handleApiResponse(identifier, err, payload, limits);
+            if (activityList) {
+                var data = {
+                    'identifier': identifier, 
+                    'data': self.summariseActivities(identifier, activityList)
+                };
+                self.log(data);
+                self.sendSocketNotification('DATA', data);
             }
-
-            setTimeout(function() {
-                self.fetchAthleteStats(access_token, athleteId);
-            }, self.config.reloadInterval);
         });
     },
-    
     /**
-     * log
-     * This method logs the message, prefixed by the Module name, if debug is enabled.
+     * @function handleApiResponse
+     * @description handles the response from the API to catch errors and faults.
+     */
+    handleApiResponse: function(identifier, err, payload, limits) {
+        this.log('Handling API response');
+        // Strava-v3 package errors
+        if(err) {
+            this.log(err);
+            this.sendSocketNotification('ERROR', {'identifier': identifier, 'data': {'message': err}});
+            return false;
+        }
+        // Strava API 'fault'
+        if(payload && payload.hasOwnProperty('message') && payload.hasOwnProperty('errors')) {
+            this.log(payload.errors);
+            this.sendSocketNotification('ERROR', {'identifier': identifier, 'data': payload});
+            return false;
+        }
+        // Strava Data 
+        if (payload) {
+            return payload;
+        }
+        // Unknown response
+        this.log('Could not handle API response');
+        return false;
+    },
+    /**
+     * @function summariseActivities
+     * @description summarises a list of activities for display in the chart.
+     */
+    summariseActivities: function(identifier, activityList) {
+        this.log('Summarising athlete activities for ' + identifier);
+        var activitySummary = Object.create(null);
+        var activityName;
+        // Initialise activity summary
+        var periodIntervals = this.configs[identifier].period === 'ytd' ? moment.monthsShort() : moment.weekdaysShort();
+        for (var activity in this.configs[identifier].activities) {
+            if (this.configs[identifier].activities.hasOwnProperty(activity)) {
+                activityName = this.configs[identifier].activities[activity].toLowerCase();
+                activitySummary[activityName] = {
+                    total_distance: 0,
+                    total_elevation_gain: 0,
+                    total_moving_time: 0,
+                    max_interval_distance: 0,
+                    intervals: Array(periodIntervals.length).fill(0)
+                };
+            }
+        }
+        // Summarise activity totals and interval totals
+        for (var i = 0; i < Object.keys(activityList).length; i++) {
+            // Merge virtual activities
+            activityName = activityList[i].type.toLowerCase().replace('virtual');
+            var activityTypeSummary = activitySummary[activityName];
+            // Update activity summaries
+            if (activityTypeSummary) {
+                var distance = activityList[i].distance;
+                activityTypeSummary.total_distance += distance;
+                activityTypeSummary.total_elevation_gain += activityList[i].total_elevation_gain;
+                activityTypeSummary.total_moving_time += activityList[i].moving_time;
+                const activityDate = moment(activityList[i].start_date_local);
+                const intervalIndex = this.configs[identifier].period === 'ytd' ? activityDate.month() : activityDate.weekday();
+                activityTypeSummary.intervals[intervalIndex] += distance;
+                // Update max interval distance
+                if (activityTypeSummary.intervals[intervalIndex] > activityTypeSummary.max_interval_distance) {
+                    activityTypeSummary.max_interval_distance = activityTypeSummary.intervals[intervalIndex];
+                }
+            }
+        }
+        return activitySummary;
+    },
+    /**
+     * @function log
+     * @description logs the message, prefixed by the Module name, if debug is enabled.
      * @param  {string} msg            the message to be logged
      */
     log: function(msg) {
-        if (this.config && this.config.debug) {
-            console.log(this.name + ': ' + msg);
-        }
-    }    
+//        if (this.config && this.config.debug) {
+            console.log(this.name + ': ', JSON.stringify(msg));
+//        }
+    } 
 });

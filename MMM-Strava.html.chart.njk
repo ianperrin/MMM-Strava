@@ -29,7 +29,7 @@
                 {% endfor %}
                 </g>
             </svg>
-            <div class="strava-icon icon-lg icon-{{ activity | lower }}" title="{{ activity | lower }}"></div>
+            <div class="strava-icon icon-lg icon-{{ activity | lower }}" title="{{ activity | upper | translate }}"></div>
         </div>
 {% endfor %}
     </div>

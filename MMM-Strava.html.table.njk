@@ -22,7 +22,7 @@
 {% for activity in config.activities %}
 {% set activity_data = data[config.period + "_" + activity | lower + "_totals"] %}
             <tr class="normal">
-                <td class="title light">{{activity | title }}</td>
+                <td class="title light">{{activity | upper | translate }}</td>
                 <td class="bright symbol">
                     <div class="strava-icon icon-{{activity | lower }}"></div>
                 </td>
@@ -42,7 +42,7 @@
             <!-- period label -->
             <tr class="xsmall">
                 <td class="align-right" colSpan="100%">
-                    {{config.period | upper}}
+                    {{config.period | upper | translate }}
                 </td>
             </tr>
         </tfoot>

@@ -223,7 +223,8 @@ Module.register('MMM-Strava',{
      * @param  {integer} digits           the number of digits to round the value to
      */
     roundValue: function(value, digits) {
-        return parseFloat(value).toFixed(digits);
+        var rounder = Math.pow(10, digits);
+        return (Math.round(value * rounder) / rounder).toFixed(digits);
     },
     /**
      * @function addFilters

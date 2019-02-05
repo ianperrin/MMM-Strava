@@ -1,31 +1,35 @@
 {
-  "name": "MMM-Strava",
-  "version": "1.1.7",
-  "description": "A MagicMirror Module for displaying your Strava data.",
-  "main": "MMM-Strava.js",
-  "scripts": {
-    "test": "grunt test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ianperrin/MMM-Strava.git"
-  },
-  "keywords": [
-    "magic",
-    "mirror",
-    "strava"
-  ],
-  "author": "Ian Perrin",
-  "contributors" : ["fewieden, peet86, khassel, fuchsde, slametps"],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ianperrin/MMM-Strava/issues"
-  },
-  "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
-  "dependencies" : {},
-  "devDependencies": {
-    "grunt": "latest",
-    "grunt-contrib-jshint": "latest",
-    "grunt-contrib-nodeunit": "latest"
-  }
+    "name": "MMM-Strava",
+    "version": "2.0.0",
+    "description": "A MagicMirror Module for displaying your Strava data.",
+    "main": "MMM-Strava.js",
+    "scripts": {
+        "test": "grunt test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ianperrin/MMM-Strava.git"
+    },
+    "keywords": [
+        "magic",
+        "mirror",
+        "strava"
+    ],
+    "author": "Ian Perrin",
+    "contributors": [
+        "fewieden, peet86, khassel, fuchsde, slametps"
+    ],
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ianperrin/MMM-Strava/issues"
+    },
+    "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
+    "dependencies": {
+        "strava-v3": "^1.14.0"
+    },
+    "devDependencies": {
+        "grunt": "latest",
+        "grunt-contrib-jshint": "latest",
+        "grunt-contrib-nodeunit": "latest"
+    }
 }

@@ -217,6 +217,67 @@ Module.register('MMM-Strava',{
         }
     },
     /**
+     * @function addFilters
+     * @description adds filters to the Nunjucks environment.
+     */
+    addFilters() {
+        var env = this.nunjucksEnvironment();
+        env.addFilter("getPeriodClass", this.getPeriodClass.bind(this));
+        env.addFilter("getLabel", this.getLabel.bind(this));
+        env.addFilter("formatTime", this.formatTime.bind(this));
+        env.addFilter("formatDistance", this.formatDistance.bind(this));
+        env.addFilter("formatElevation", this.formatElevation.bind(this));
+        env.addFilter("roundValue", this.roundValue.bind(this));
+    },
+    getPeriodClass: function(interval)
+    {
+        moment.locale(this.config.locale);
+        const currentInterval = this.config.period === 'ytd' ? moment().month() : moment().weekday();
+        var period = 'future';
+        if (currentInterval === interval) {
+            period = 'current';
+        } else if (currentInterval > interval) {
+            period = 'past';
+        }
+        return period;
+    },
+    getLabel: function(interval) {
+        moment.locale(this.config.locale);
+        const startUnit = this.config.period === 'ytd' ? 'year' : 'week';
+        const intervalUnit = this.config.period === 'ytd' ? 'months' : 'days';
+        const labelUnit = this.config.period === 'ytd' ? 'MMM' : 'dd';
+        var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
+        return intervalDate.format(labelUnit).slice(0,1).toUpperCase();
+    },
+    formatTime: function(timeInSeconds) {
+        var duration = moment.duration(timeInSeconds, "seconds");
+        return Math.floor(duration.asHours()) + "h " + duration.minutes() + "m";
+    },
+    // formatDistance
+    formatDistance: function(value, digits, showUnits) {
+        const distanceMultiplier = this.config.units === "imperial" ? 0.0006213712 : 0.001;
+        const distanceUnits = this.config.units === "imperial" ? " mi" : " km";
+        return this.formatNumber(value, distanceMultiplier, digits, (showUnits ? distanceUnits : null));
+    },
+    // formatElevation
+    formatElevation: function(value, digits, showUnits) {
+        const elevationMultiplier = this.config.units === "imperial" ? 3.28084 : 1;
+        const elevationUnits = this.config.units === "imperial" ? " ft" : " m";
+        return this.formatNumber(value, elevationMultiplier, digits, (showUnits ? elevationUnits : null));
+    },
+    // formatNumber
+    formatNumber: function(value, multipler, digits, units) {
+        // Convert value
+        value = value * multipler;
+        // Round value
+        value = this.roundValue(value, digits);
+        // Append units
+        if (units) {
+            value += units;
+        }
+        return value;
+    },
+    /**
      * @function roundValue
      * @description rounds the value to number of digits.
      * @param  {decimal} value            the value to be rounded 
@@ -225,70 +286,5 @@ Module.register('MMM-Strava',{
     roundValue: function(value, digits) {
         var rounder = Math.pow(10, digits);
         return (Math.round(value * rounder) / rounder).toFixed(digits);
-    },
-    /**
-     * @function addFilters
-     * @description adds filters to the Nunjucks environment.
-     */
-    addFilters() {
-        var env = this.nunjucksEnvironment();
-        // getPeriodClass
-        env.addFilter("getPeriodClass", function(interval) {
-            moment.locale(this.config.locale);
-            const currentInterval = this.config.period === 'ytd' ? moment().month() : moment().weekday();
-            var period = 'future';
-            if (currentInterval === interval) {
-                period = 'current';
-            } else if (currentInterval > interval) {
-                period = 'past';
-            }
-            return period;
-        }.bind(this));
-        // getLabel
-        env.addFilter("getLabel", function(interval) {
-            moment.locale(this.config.locale);
-            const startUnit = this.config.period === 'ytd' ? 'year' : 'week';
-            const intervalUnit = this.config.period === 'ytd' ? 'months' : 'days';
-            const labelUnit = this.config.period === 'ytd' ? 'MMM' : 'dd';
-            var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
-            return intervalDate.format(labelUnit).slice(0,1).toUpperCase();
-        }.bind(this));
-        // formatTime
-        env.addFilter("formatTime", function(timeInSeconds) {
-            var duration = moment.duration(timeInSeconds, "seconds");
-            return Math.floor(duration.asHours()) + "h " + duration.minutes() + "m";
-        }.bind(this));
-        // formatDistance
-        env.addFilter("formatDistance", function(value, digits, showUnits) {
-            const distanceMultiplier = this.config.units === "imperial" ? 0.00062137 : 0.001;
-            const distanceUnits = this.config.units === "imperial" ? " mi" : " km";
-            // Convert value
-            value = value * distanceMultiplier;
-            // Round value
-            value = this.roundValue(value, digits);
-            // Append units
-            if (showUnits === true) {
-                value += distanceUnits;
-            }
-            return value;
-        }.bind(this));
-        // formatElevation
-        env.addFilter("formatElevation", function(value, digits, showUnits) {
-            const elevationMultiplier = this.config.units === "imperial" ? 3.2808 : 1;
-            const elevationUnits = this.config.units === "imperial" ? " ft" : " m";
-            // Convert value
-            value = value * elevationMultiplier;
-            // Round value
-            value = this.roundValue(value, digits);
-            // Append units
-            if (showUnits === true) {
-                value += elevationUnits;
-            }
-            return value;
-        }.bind(this));
-        // roundValue
-        env.addFilter("roundValue", function(value, digits) {
-            return this.roundValue(value, digits);
-        }.bind(this));
     }
 });

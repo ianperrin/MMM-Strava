@@ -255,13 +255,13 @@ Module.register('MMM-Strava',{
     },
     // formatDistance
     formatDistance: function(value, digits, showUnits) {
-        const distanceMultiplier = this.config.units === "imperial" ? 0.00062137 : 0.001;
+        const distanceMultiplier = this.config.units === "imperial" ? 0.0006213712 : 0.001;
         const distanceUnits = this.config.units === "imperial" ? " mi" : " km";
         return this.formatNumber(value, distanceMultiplier, digits, (showUnits ? distanceUnits : null));
     },
     // formatElevation
     formatElevation: function(value, digits, showUnits) {
-        const elevationMultiplier = this.config.units === "imperial" ? 3.2808 : 1;
+        const elevationMultiplier = this.config.units === "imperial" ? 3.28084 : 1;
         const elevationUnits = this.config.units === "imperial" ? " ft" : " m";
         return this.formatNumber(value, elevationMultiplier, digits, (showUnits ? elevationUnits : null));
     },

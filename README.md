@@ -14,16 +14,19 @@ A MagicMirror Module for displaying your Strava data.
 * `table` mode, which includes
   * The number of activities for the period.
   * The total distance for the period.
+  * The total elevation gain for the period. (optional)
+  * The total moving time for the period. (optional)
+  * The total elapsed time for the period. (optional)
   * The total number of achievements (recent period only).
 * `chart` mode, which includes
   * The total distance, moving time and elevation for the last week.
-  * A chart of distance by day.
+  * A chart showing the total distance by day (for `recent` period) or month (for `ytd` period).
 
 ### In addition you can configure the following options
 * Which `activities` (and the order activities) should be displayed.
-* Which `period` to display stats for your activities: Recent (last 4 weeks), year to date or all time. (only applicable in `table` mode)
+* Which `period` to display stats for your activities: Recent (last 4 weeks in `table` mode or current week in `chart` mode), year to date or all time (only applicable in `table` mode).
 * Whether the module should rotate through the different periods, and the interval between rotations. (only applicable in `table` mode)
-* The units (miles/feet or kilometres/metres) used to display the total distance for each activity.
+* The units (miles/feet or kilometres/metres) used to display the total distance and elevation gain for each activity.
 
 ## Installation
 
@@ -31,6 +34,7 @@ Clone this repository into your MagicMirror's Module folder:
 ````
 cd ~/MagicMirror/modules
 git clone https://github.com/ianperrin/MMM-Strava.git
+npm install --production
 ````
 
 Configure the module in your `config/config.js` file.
@@ -42,10 +46,11 @@ To update the module to the latest version, pull the changes from this repositor
 ````
 cd ~/MagicMirror/modules/MMM-Strava
 git pull
+npm install --production
 ```` 
 
-If you haven't changed the modules, this should work without any problems. 
-Type `git status` to see your changes, if there are any, you can reset them with `git reset --hard`. After that, git pull should be possible.
+If you haven't changed the module, this should work without any problems. 
+Type `git status` to see your changes, if there are any, you can reset them with `git reset --hard`. After that, `git pull` should be possible.
 
 ## Using the module
 
@@ -69,13 +74,12 @@ The following properties can be configured:
 
 | **Option** | **Default** | **Description** | **Possible Values** |
 | --- | --- | --- | --- |
-| `strava_id` |  | *Required* - Your Strava ID. Obtained from [your My Profile page](https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-). For more than 1 user you can use `[strava_id_1, strava_id2]` |  |
-| `access_token` |  | *Required* - Your Strava API Access Token. Obtained from [your My API Application page](https://www.strava.com/settings/api). For more than 1 user you can use `[access_token_user_1, access_token_user_2]` |  |
+| `strava_id` |  | *Required* - Your Strava ID. Obtained from [your My Profile page](https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-). |  |
+| `access_token` |  | *Required* - Your Strava API Access Token. Obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
 | `mode` | `table` | *Optional* - Determines which mode should be used to display activity information. | `"table"`, `"chart"` |
 | `activities` | `["ride", "run", "swim"]` | *Optional* - Determines which activities to display and in which order they are displayed. *Note:* - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"ride"`, `"run"`, `"swim"` |
-| `athlete_text` |  | *Optional* - Replaces the activity texts `"ride"`, `"run"`, `"swim"` with the athlete name you define here. Makes sense if the module is set up for more than 1 user. | `[athlete_1, athlete_2]` |
 | `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
-| `elevation` | `false` | *Optional* - If set elevation is displayed in `table` mode. | `true` = displays the elevation data, `false` = hides the elevation data. |
+| `stats` | `["count", "distance", "achievements"]` | *Optional* - Determines which statistics to display in `table` mode. *Note:* - The stats can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"count"`, `"distance"`, `"elevation"`, `"moving_time"`, `"elapsed_time"`, `"acheivements"` |
 | `auto_rotate` | `false` | *Optional* - Whether the summary of activities should rotate through the different periods in `table` mode. | `true` = rotates the summary through the different periods, `false` = displays the specified period only. |
 | `units` | `config.units` | *Optional* - What units to use. Specified by config.js | *Possible values:* `config.units` = Specified by config.js, `metric` = Kilometres/Metres, `imperial` = Miles/Feet |
 | `fade` | `false` | *Optional* - Whether to fade the activities to black. (Gradient) | *Possible values:* `true` or `false` |

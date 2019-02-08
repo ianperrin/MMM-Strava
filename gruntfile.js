@@ -32,7 +32,8 @@ module.exports = function(grunt) {
                 options: {
                     config: {
                         "default": true,
-                        "line-length": false
+                        "line-length": false,
+                        "MD041": false,
                     }
                 },
                 src: [

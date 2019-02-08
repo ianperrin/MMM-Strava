@@ -44,21 +44,21 @@ Module.register('MMM-Strava',{
     requiresVersion: "2.2.0",
     // Default module config.
     defaults: {
-        strava_id: '',                        // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: '',                     // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
-        mode: 'table',                        // Possible values "table", "chart"
-        activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
-        period: "recent",                     // Possible values "recent", "ytd", "all"
-        elevation: false,                     // Shows elevation in "table" mode
-        auto_rotate: false,                   // Rotate stats through each period starting from specified period
+        strava_id: '',                                  // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
+        access_token: '',                               // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
+        mode: 'table',                                  // Possible values "table", "chart"
+        activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
+        period: "recent",                               // Possible values "recent", "ytd", "all"
+        stats: ["count", "distance", "achievements"],   // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
+        auto_rotate: false,                             // Rotate stats through each period starting from specified period
         locale: config.language,
         units: config.units,
         fade: false,
-        fadePoint: 0.1,                       // Start on 1/4th of the list.
-        reloadInterval: 5 * 60 * 1000,        // every 5 minutes
-        updateInterval: 10 * 1000,            // 10 seconds
-        animationSpeed: 2.5 * 1000,           // 2.5 seconds
-        debug: false,                         // Set to true to enable extending logging
+        fadePoint: 0.1,                                 // Start on 1/4th of the list.
+        reloadInterval: 5 * 60 * 1000,                  // every 5 minutes
+        updateInterval: 10 * 1000,                      // 10 seconds
+        animationSpeed: 2.5 * 1000,                     // 2.5 seconds
+        debug: false,                                   // Set to true to enable extending logging
     },
     /**
      * @member {boolean} loading - Flag to indicate the loading state of the module.

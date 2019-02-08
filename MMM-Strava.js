@@ -39,14 +39,14 @@
  * @requires external:Log
  * @requires external:moment
  */
-Module.register('MMM-Strava',{
+Module.register("MMM-Strava",{
     // Set the minimum MagicMirror module version for this module.
     requiresVersion: "2.2.0",
     // Default module config.
     defaults: {
-        strava_id: '',                                  // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: '',                               // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
-        mode: 'table',                                  // Possible values "table", "chart"
+        strava_id: "",                                  // List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
+        access_token: "",                               // List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
+        mode: "table",                                  // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
         stats: ["count", "distance", "achievements"],   // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
@@ -76,7 +76,7 @@ Module.register('MMM-Strava',{
      * @returns {string[]} List of the style dependency filepaths.
      */
     getStyles: function() {
-        return ['font-awesome.css', 'MMM-Strava.css'];
+        return ["font-awesome.css", "MMM-Strava.css"];
     },
     /**
      * @function getScripts
@@ -86,7 +86,7 @@ Module.register('MMM-Strava',{
      * @returns {string[]} List of the script dependency filepaths.
      */
     getScripts: function() {
-        return ['moment.js'];
+        return ["moment.js"];
     },
     /**
      * @function getTranslations
@@ -97,11 +97,11 @@ Module.register('MMM-Strava',{
      */
     getTranslations: function() {
         return {
-                en: "translations/en.json",
-                nl: "translations/nl.json",
-                de: "translations/de.json",
-                id: "translations/id.json",
-                hu: "translations/hu.json"
+            en: "translations/en.json",
+            nl: "translations/nl.json",
+            de: "translations/de.json",
+            id: "translations/id.json",
+            hu: "translations/hu.json"
         };
     },
     /**
@@ -110,14 +110,14 @@ Module.register('MMM-Strava',{
      * @override
      */
     start: function() {
-        Log.info('Starting module: ' + this.name);
+        Log.info("Starting module: " + this.name);
         // Validate config
         this.config.mode = this.config.mode.toLowerCase();
         this.config.period = this.config.period.toLowerCase();
         // Add custom filters
         this.addFilters();
         // Initialise helper and schedule api calls
-        this.sendSocketNotification('SET_CONFIG', {'identifier': this.identifier, 'config': this.config});
+        this.sendSocketNotification("SET_CONFIG", {"identifier": this.identifier, "config": this.config});
         this.scheduleUpdates();
     },
     /**
@@ -131,11 +131,11 @@ Module.register('MMM-Strava',{
     socketNotificationReceived: function(notification, payload) {
         this.log(`Receiving notification: ${notification} for ${payload.identifier}`);
         if (payload.identifier === this.identifier) {
-            if (notification === 'DATA') {
+            if (notification === "DATA") {
                 this.api_data = payload.data;
                 this.loading = false;
                 this.updateDom(this.config.animationSpeed);
-            } else if (notification === 'ERROR') {
+            } else if (notification === "ERROR") {
                 this.log(payload);
                 this.loading = false;
                 this.api_error = payload.data;
@@ -151,7 +151,7 @@ Module.register('MMM-Strava',{
      * @returns {string} Path to nunjuck template.
      */
     getTemplate: function() {
-        return 'MMM-Strava.html.' + this.config.mode + '.njk';
+        return "MMM-Strava.html." + this.config.mode + ".njk";
     },
     /**
      * @function getTemplateData
@@ -161,13 +161,13 @@ Module.register('MMM-Strava',{
      * @returns {string} Data for the nunjuck template.
      */
     getTemplateData: function() {
-        moment.locale('en-gb');
+        moment.locale("en-gb");
         return {
             config: this.config,
             loading: this.loading,
             error: this.api_error || {},
             data: this.api_data || {},
-            chart: {bars: this.config.period === 'ytd' ? moment.monthsShort() : moment.weekdaysShort() }, 
+            chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
         };
     },
     /**
@@ -187,7 +187,7 @@ Module.register('MMM-Strava',{
             if (this.config.auto_rotate && this.config.updateInterval) {
                 setInterval(function() {
                     // Get next period
-                    self.config.period = ((self.config.period === 'recent') ? 'ytd' : ((self.config.period === 'ytd') ? 'all' : 'recent'));
+                    self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
                     self.updateDom(self.config.animationSpeed);
                 }, this.config.updateInterval);
             }
@@ -198,10 +198,10 @@ Module.register('MMM-Strava',{
      * @description Sends request to the node_helper to fetch data from the API.
      */
     getData: function() {
-        Log.info('Sending GET_DATA notification for', this.identifier);
-        var payload = { 
-            'identifier': this.identifier, 
-            access_token: this.config.access_token, 
+        Log.info("Sending GET_DATA notification for", this.identifier);
+        var payload = {
+            "identifier": this.identifier,
+            access_token: this.config.access_token,
             athlete_id: this.config.strava_id
         };
         this.sendSocketNotification(`GET_${this.config.mode.toUpperCase()}_DATA`, payload);
@@ -232,20 +232,20 @@ Module.register('MMM-Strava',{
     getPeriodClass: function(interval)
     {
         moment.locale(this.config.locale);
-        const currentInterval = this.config.period === 'ytd' ? moment().month() : moment().weekday();
-        var period = 'future';
+        const currentInterval = this.config.period === "ytd" ? moment().month() : moment().weekday();
+        var period = "future";
         if (currentInterval === interval) {
-            period = 'current';
+            period = "current";
         } else if (currentInterval > interval) {
-            period = 'past';
+            period = "past";
         }
         return period;
     },
     getLabel: function(interval) {
         moment.locale(this.config.locale);
-        const startUnit = this.config.period === 'ytd' ? 'year' : 'week';
-        const intervalUnit = this.config.period === 'ytd' ? 'months' : 'days';
-        const labelUnit = this.config.period === 'ytd' ? 'MMM' : 'dd';
+        const startUnit = this.config.period === "ytd" ? "year" : "week";
+        const intervalUnit = this.config.period === "ytd" ? "months" : "days";
+        const labelUnit = this.config.period === "ytd" ? "MMM" : "dd";
         var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
         return intervalDate.format(labelUnit).slice(0,1).toUpperCase();
     },
@@ -280,7 +280,7 @@ Module.register('MMM-Strava',{
     /**
      * @function roundValue
      * @description rounds the value to number of digits.
-     * @param  {decimal} value            the value to be rounded 
+     * @param  {decimal} value            the value to be rounded
      * @param  {integer} digits           the number of digits to round the value to
      */
     roundValue: function(value, digits) {

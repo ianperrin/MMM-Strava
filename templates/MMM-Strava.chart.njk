@@ -2,6 +2,10 @@
     <div class="small dimmed light">
         {{ 'LOADING' | translate | safe }}
     </div>
+{% elif error %}
+    <div class="small dimmed light">
+        {{ error | safe }}
+    </div>
 {% else %}
     <div class="small">
 {% for activity in config.activities %}
@@ -21,10 +25,10 @@
                 {% for interval in data[activity].intervals %}
                 {% set bar_height = (interval/data[activity].max_interval_distance * 45) if (interval > 0) else 2 %}
                     <g class="bar-container" transform="translate({{ loop.index0 * 12.5 }}, 0)">
-                        <rect class="bar {{ loop.index0 | getPeriodClass }}" y="{{ 50 - bar_height }}" width="6.6" height="{{ bar_height }}"></rect>
+                        <rect class="bar {{ loop.index0 | getIntervalClass }}" y="{{ 50 - bar_height }}" width="6.6" height="{{ bar_height }}"></rect>
                     </g>
                     <g class="label-container" transform="translate({{ loop.index0 * 12.5 }}, 63)">
-                        <text class="label {{ loop.index0 | getPeriodClass }}" x="0" y="0">{{ loop.index0 | getLabel }}</text>
+                        <text class="label {{ loop.index0 | getIntervalClass }}" x="0" y="0">{{ loop.index0 | getLabel }}</text>
                     </g>
                 {% endfor %}
                 </g>

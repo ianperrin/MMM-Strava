@@ -1,7 +1,11 @@
 {% if loading %}
     <div class="small dimmed light">
         {{ 'LOADING' | translate | safe }}
-    </div
+    </div>
+{% elif error %}
+    <div class="small dimmed light">
+        {{ error | safe }}
+    </div>
 {% else %}
     <table class="small">
         <thead>

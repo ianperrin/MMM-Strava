@@ -7,7 +7,6 @@
  * @see  https://github.com/ianperrin/MMM-Strava
  */
 
-/* jshint node: true, esversion: 6 */
 /* global Module, config, Log, moment */
 
 /**
@@ -39,13 +38,15 @@
  * @requires external:Log
  * @requires external:moment
  */
-Module.register("MMM-Strava",{
+Module.register("MMM-Strava", {
     // Set the minimum MagicMirror module version for this module.
     requiresVersion: "2.2.0",
     // Default module config.
     defaults: {
-        strava_id: "",                                  // List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: "",                               // List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
+        client_id: "",
+        client_secret: "",
+        strava_id: "",                                  // DEPRECATED: List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
+        access_token: "",                               // DEPRECATED: List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
         mode: "table",                                  // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
@@ -126,20 +127,22 @@ Module.register("MMM-Strava",{
      * @override
      *
      * @param {string} notification - Notification name
-     * @param {*} payload - Detailed payload of the notification.
+     * @param {Object,<string,*} payload - Detailed payload of the notification.
      */
     socketNotificationReceived: function(notification, payload) {
         this.log(`Receiving notification: ${notification} for ${payload.identifier}`);
         if (payload.identifier === this.identifier) {
             if (notification === "DATA") {
-                this.api_data = payload.data;
+                this.data = payload.data;
                 this.loading = false;
                 this.updateDom(this.config.animationSpeed);
             } else if (notification === "ERROR") {
-                this.log(payload);
                 this.loading = false;
-                this.api_error = payload.data;
+                this.error = payload.data.message;
                 this.updateDom(this.config.animationSpeed);
+            } else if (notification === "WARNING") {
+                this.loading = false;
+                this.sendNotification("SHOW_ALERT", {type: "notification", title: payload.data.message});
             }
         }
     },
@@ -151,7 +154,7 @@ Module.register("MMM-Strava",{
      * @returns {string} Path to nunjuck template.
      */
     getTemplate: function() {
-        return "MMM-Strava.html." + this.config.mode + ".njk";
+        return "templates\\MMM-Strava." + this.config.mode + ".njk";
     },
     /**
      * @function getTemplateData
@@ -161,26 +164,21 @@ Module.register("MMM-Strava",{
      * @returns {string} Data for the nunjuck template.
      */
     getTemplateData: function() {
-        moment.locale("en-gb");
+        moment.locale(this.config.locale);
         return {
             config: this.config,
             loading: this.loading,
-            error: this.api_error || {},
-            data: this.api_data || {},
+            error: this.error || null,
+            data: this.data || {},
             chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
         };
     },
     /**
      * @function scheduleUpdates
-     * @description Schedules retrieval of API data and table rotation
+     * @description Schedules table rotation
      */
     scheduleUpdates: function() {
         var self = this;
-        // Schedule API calls
-        this.getData();
-        setInterval(function() {
-            self.getData();
-        }, this.config.reloadInterval);
         // Schedule table rotation
         if (!this.rotating) {
             this.rotating = true;
@@ -192,19 +190,6 @@ Module.register("MMM-Strava",{
                 }, this.config.updateInterval);
             }
         }
-    },
-    /**
-     * @function getData
-     * @description Sends request to the node_helper to fetch data from the API.
-     */
-    getData: function() {
-        Log.info("Sending GET_DATA notification for", this.identifier);
-        var payload = {
-            "identifier": this.identifier,
-            access_token: this.config.access_token,
-            athlete_id: this.config.strava_id
-        };
-        this.sendSocketNotification(`GET_${this.config.mode.toUpperCase()}_DATA`, payload);
     },
     /**
      * @function log
@@ -222,24 +207,24 @@ Module.register("MMM-Strava",{
      */
     addFilters() {
         var env = this.nunjucksEnvironment();
-        env.addFilter("getPeriodClass", this.getPeriodClass.bind(this));
+        env.addFilter("getIntervalClass", this.getIntervalClass.bind(this));
         env.addFilter("getLabel", this.getLabel.bind(this));
         env.addFilter("formatTime", this.formatTime.bind(this));
         env.addFilter("formatDistance", this.formatDistance.bind(this));
         env.addFilter("formatElevation", this.formatElevation.bind(this));
         env.addFilter("roundValue", this.roundValue.bind(this));
     },
-    getPeriodClass: function(interval)
+    getIntervalClass: function(interval)
     {
         moment.locale(this.config.locale);
-        const currentInterval = this.config.period === "ytd" ? moment().month() : moment().weekday();
-        var period = "future";
+        var currentInterval = this.config.period === "ytd" ? moment().month() : moment().weekday();
+        var className = "future";
         if (currentInterval === interval) {
-            period = "current";
+            className = "current";
         } else if (currentInterval > interval) {
-            period = "past";
+            className = "past";
         }
-        return period;
+        return className;
     },
     getLabel: function(interval) {
         moment.locale(this.config.locale);

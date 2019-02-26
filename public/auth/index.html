@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strava API Authorisation</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<link rel="stylesheet" type="text/css" href="/css/main.css">
+<link rel="stylesheet" type="text/css" href="/fonts/roboto.css">
+<link rel="stylesheet" type="text/css" href="/modules/MMM-Strava/MMM-Strava.css">
+<link rel="stylesheet" type="text/css" href="/vendor/node_modules/font-awesome/css/font-awesome.min.css">
+
+<style>
+html {
+  cursor: default;
+}
+</style>
+<body>
+    <div class="region top bar">
+        <div class="region top left">
+            <div class="container" style="display: block;">
+                <div id="module_0_MMM-Strava_Authorisation" class="module MMM-Strava-Authorisation"
+                    style="transition: opacity 1.25s ease 0s; opacity: 1; position: static; display: block;">
+                    <div class="module-content">
+                        <a href="/" title="Back to mirror"><i class="fa fa-home"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="region middle center">
+        <div class="container" style="display: block;">
+            <div id="module_1_MMM-Strava_Authorisation" class="module MMM-Strava-Authorisation"
+                style="transition: opacity 1.25s ease 0s; opacity: 1; position: static;">
+                <header class="module_header">Strava Authorisation</header>
+                <form id="setupForm" action="/MMM-Strava/auth/request" method="get">
+                    <fieldset id="module_identifier" class="small light">
+                        <legend class="dimmed">Select the module to be authorised:</legend>
+                    </fieldset>
+                    <div style="overflow:auto;">
+                        <div>
+                            <button type="submit" id="submitButton">Authorise</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="module_2_MMM-Strava_Authorisation" class="module MMM-Strava-Authorisation"
+                style="transition: opacity 1.25s ease 0s; opacity: 1; position: static;">
+                <header class="module-header">Strava Authorisation Complete</header>
+                <div class="module-content">
+                    <div class="small dimmed light">
+                        Please ensure the config for this module includes the <code>client_id</code> and
+                        <code>client_secret</code>, then restart the mirror.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+var StravaAuth = {
+    get: function(route, params, callback, timeout) {
+        var req = new XMLHttpRequest();
+        var url = route + "?" + params;
+        req.open("GET", url, true);
+
+        if (timeout) {
+            req.timeout = timeout; // time in milliseconds
+        }
+
+        //Send the proper header information along with the request
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+        req.onreadystatechange = function() {
+            if(req.readyState == 4 && req.status == 200) {
+                if (callback)
+                {
+                    callback(req.responseText);
+                }
+            }
+        }
+        req.send(null);
+    },
+    showAuthorisationForm: function() {
+        const x = document.getElementById("module_1_MMM-Strava_Authorisation");
+        x.style.display = "block";
+        // Load module options
+        this.get("modules", "", function(text) {
+            var modules = JSON.parse(text);
+            var fieldset = document.getElementById("module_identifier"); 
+            for(var i = 0; i < modules.length; i++) {
+                var module = modules[i];
+                
+                var input = document.createElement("input");
+                input.value = module;
+                input.type = "radio";
+                input.name = "module_identifier";
+                input.id = module;
+                input.required = "required";
+                fieldset.appendChild(input);
+
+                var label = document.createElement("label");
+                label.style.display = "block";
+                label.style.whiteSpace = "nowrap";
+                label.htmlFor = module;
+                var t = document.createTextNode(module);
+                label.appendChild(t);
+                fieldset.appendChild(label);
+            }
+        });
+        //const btn = document.getElementById('submitButton');
+        //btn.addEventListener('click', function() {
+        //    return StravaAuth.validateForm();
+        //})
+    },
+
+    showSuccess: function () {
+        var x = document.getElementById("module_2_MMM-Strava_Authorisation");
+        x.style.display = "block";
+//        const nameNode = document.createTextNode(`Welcome, ${athlete}`)
+//        document.body.appendChild(nameNode)
+    },
+
+    validateForm: function () {
+        var radios = document.getElementsByName("module_identifier");
+        var formValid = false;
+        var i = 0;
+        while (!formValid && i < radios.length) {
+            if (radios[i].checked) {
+                formValid = true;
+            }
+            i++;
+        }
+        if (!formValid) {
+            var labels = document.getElementsByTagName("label");
+            for(var j = 0; j < labels.length; j++) {
+                labels[j].classList.add("invalid");
+            }
+        }
+        return formValid;
+    }
+
+};
+
+const query = window.location.search.substring(1)
+const status = query.split('status=')[1]
+
+if (status === "success") {
+    // show success message
+    StravaAuth.showSuccess();
+} else {
+    // show authorisation form
+    StravaAuth.showAuthorisationForm();
+}
+
+</script>
+</body>
+</html>

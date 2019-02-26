@@ -43,7 +43,9 @@ git clone https://github.com/ianperrin/MMM-Strava.git
 npm install --production
 ````
 
-Configure the module in your `config/config.js` file.
+[Configure the module](#configuring-the-module) in your `config/config.js` file.
+
+[Authenticate the module](#authenticating-the-module) to allow access to the Strava API.
 
 ## Updating the module
 
@@ -58,31 +60,31 @@ npm install --production
 If you haven't changed the module, this should work without any problems.
 Type `git status` to see your changes, if there are any, you can reset them with `git reset --hard`. After that, `git pull` should be possible.
 
-## Using the module
+## Configuring the module
 
 To use this module, add it to the modules array in the `config/config.js` file:
 
 ````javascript
 modules: [
     {
-        module: 'MMM-Strava',
-        position: 'top_right',
+        module: "MMM-Strava",
+        position: "top_right",
         config: {
-            strava_id: 'your_strava_id',
-            access_token: 'your_strava_api_access_token'
+            client_id: "your_strava_application_id",
+            client_secret: "your_strava_api_access_token"
         }
     }
 ]
 ````
 
-## Configuration options
+### Configuration options
 
-The following properties can be configured:
+The following properties can be added to the configuration:
 
 | **Option** | **Default** | **Description** | **Possible Values** |
 | --- | --- | --- | --- |
-| `strava_id` |  | *Required* - Your Strava ID. Obtained from [your My Profile page](https://support.strava.com/hc/en-us/articles/216928797-Where-do-i-find-my-Strava-ID-). |  |
-| `access_token` |  | *Required* - Your Strava API Access Token. Obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
+| `client_id` |  | *Required* - The Client ID for your Strava API Application, obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
+| `client_secret` |  | *Required* - The Client Secret for your Strava API Application, obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
 | `mode` | `table` | *Optional* - Determines which mode should be used to display activity information. | `"table"`, `"chart"` |
 | `activities` | `["ride", "run", "swim"]` | *Optional* - Determines which activities to display and in which order they are displayed. *Note:* - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"ride"`, `"run"`, `"swim"` |
 | `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
@@ -90,22 +92,17 @@ The following properties can be configured:
 | `auto_rotate` | `false` | *Optional* - Whether the summary of activities should rotate through the different periods in `table` mode. | `true` = rotates the summary through the different periods, `false` = displays the specified period only. |
 | `units` | `config.units` | *Optional* - What units to use. Specified by config.js | *Possible values:* `config.units` = Specified by config.js, `metric` = Kilometres/Metres, `imperial` = Miles/Feet |
 | `fade` | `false` | *Optional* - Whether to fade the activities to black. (Gradient) | *Possible values:* `true` or `false` |
-| `fadePoint` | `0.1` | *Optional* - Where to start fade? | *Possible values:* `0` (top of the list) - `1` (bottom of list) |
 | `updateInterval` | `10000` (10 seconds) | *Optional* - How often does the period have to change? (Milliseconds). | *Possible values:* `1000` - `86400000` |
 | `reloadInterval` | `300000` (5 minutes) | *Optional* - How often does the data needs to be reloaded from the API? (Milliseconds). See [Strava documentation](http://strava.github.io/api/#rate-limiting) for API rate limits | `7500` - `86400000` |
 | `animationSpeed` | `2500` | *Optional* - The speed of the update animation. (Milliseconds) | `0` - `5000` |
 | `locale` | `config.language` | *Optional* - The locale to be used for displaying dates - e.g. the days of the week or months or the year in chart mode. If omitted, the config.language will be used. | e.g. `en`, `en-gb`, `fr` etc |
 | `debug` | `false` | *Optional* - Outputs extended logging to the console/log | `true` = enables extended logging, `false` = disables extended logging |
 
-### Private activities
+## Authenticating the module
 
-The access token retrieved via the `My API Application` page can only read public activities. To allow the module to access to `private` activities, follow the steps below:
+The `client_id` and `client_secret` can be obtained from [your My API Application page](https://www.strava.com/settings/api). Once you have added these to the `config.js` and started your Magic Mirror, follow the steps below to authenticate the application with Strava:
 
-1. Using a browser on your computer, go to the [My API Application](https://www.strava.com/settings/api) page in your Strava profile
-2. On the My API Application page, locate and make a note of your `Client ID` and `Client Secret` (you will need to click the *show* link to reveal the client secret).
-3. Using the `Client ID` obtained in step 2, replace `XXXXX` in the following URL: `http://www.strava.com/oauth/authorize?client_id=XXXXX&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=view_private` then go to the URL in a browser on your computer
-4. If prompted, login, then Authorize the request
-5. You will then be redirected to and error (404) page. This is expected so don't panic. Copy the authentication code from the browsers address bar. The address will look something like `http://localhost/exchange_token?state=&code=c498932e64136c8991a3fb31e3d1dfdf2f859357` - you need everything after `code=`
-6. Using the `client id` and `client secret` obtained in step 2 above and the `code` obtained in step 5, replace the respective values in the following command `curl -X POST https://www.strava.com/oauth/token -F client_id=XXXXX -F client_secret=YYYYY -F code=ZZZZZ`
-7. Using terminal on the Pi or via SSH, run the command
-8. Copy the `access_token` from the result and use it to update the module configuration in the config.js file
+1. Browse to the Strava authentication page: http://localhost:8080/MMM-Strava/auth/ - _the exact URL may vary depending on your configuration._
+2. Select the module you wish to authenticate (e.g. `module_4_MMM-Strava`) and click/tap *Authorise* -_The number of the module will vary depending on your configuration._
+3. On the Strava Authorisation page, select the level of access you wish to give to the Magic Mirror, and click/tap *Authorize* - _the module requires at least `View data about your public profile` and `View data about your activities` but it's up to you whether you want to allow access to `private activities`._
+4. Once the successful authorisation message appears, restart your Magic Mirror.

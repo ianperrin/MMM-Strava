@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     nodeunit: {
-      all: ['test/**/*.js']
+      all: ['test/**/*.test.js']
     },
     jshint: {
       all: ['*.js']

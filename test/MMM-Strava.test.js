@@ -21,15 +21,10 @@ global.Log = {
 
 var strava = require('../MMM-Strava.js');
 
-exports['test'] = {
-  'phony ok test': function(test) {
-    test.expect(1);
-    test.ok(true);
+// roundedToFixed
+exports.roundedToFixedTest = function (test) {
+    test.expect(2);
+    test.equal(moduleObject.roundedToFixed(1.15,1), 1.2);
+    test.equal(moduleObject.roundedToFixed(145.9,0), 146);
     test.done();
-  },
-  'phony equals test': function(test) {
-    test.expect(1);
-    test.equal(1, 1);
-    test.done();
-  }
 };

@@ -235,7 +235,7 @@ module.exports = NodeHelper.create({
                 } catch (error) {
                     this.log(`Athete id not found for ${moduleIdentifier}`);
                 }
-            } else if (moduleConfig.mode === "chart") {
+            } else if (moduleConfig.mode === "chart" || moduleConfig.mode === "progress") {
                 // Get initial date
                 moment.locale(moduleConfig.locale);
                 var after = moment().startOf(moduleConfig.period === "ytd" ? "year" : "week").unix();
@@ -322,7 +322,7 @@ module.exports = NodeHelper.create({
     },
     /**
      * @function summariseActivities
-     * @description summarises a list of activities for display in the chart.
+     * @description summarises a list of activities for display in the chart or progress meter.
      *
      * @param {string} moduleIdentifier - The module identifier.
      */

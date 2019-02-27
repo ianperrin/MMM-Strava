@@ -56,8 +56,9 @@
   text-indent: -999em;
 }
 
-/* Chart */
-
+/***************************
+ * MMM-Strava Chart
+ ***************************/
 .MMM-Strava .chart {
   position: relative;
   margin-top: 20px;
@@ -67,54 +68,64 @@
   margin-top: 0;
 }
 
-.MMM-Strava .primary-stats {
+.MMM-Strava .chart .primary-stats {
   float: left;
   width: 125px;
 }
 
-.MMM-Strava .inline-stats {
+.MMM-Strava .chart .inline-stats {
   clear: both;
 }
 
-.MMM-Strava .primary-stats .inline-stats {
+.MMM-Strava .chart .primary-stats .inline-stats {
   margin-top: 2px;
 }
 
-.MMM-Strava .inline-stats::after {
+.MMM-Strava .chart .inline-stats::after {
   content: "";
   display: table;
   clear: both;
 }
 
-.MMM-Strava .inline-stats li {
+.MMM-Strava .chart .inline-stats li {
   list-style: none;
   vertical-align: top;
 }
 
-.MMM-Strava svg {
+.MMM-Strava .chart svg {
   /* float: right; */
   vertical-align: middle;
   margin-left: 15px;
 }
 
-.MMM-Strava svg .label {
+.MMM-Strava .chart svg .label {
   font-size: 11px;
 }
 
-.MMM-Strava svg .past {
+.MMM-Strava .chart svg .past {
   fill: #ccc;
 }
 
-.MMM-Strava svg .current {
+.MMM-Strava .chart svg .current {
   fill: #666;
 }
 
-.MMM-Strava svg .future {
+.MMM-Strava .chart svg .future {
   fill: #e5e5e5;
 }
 
-.MMM-Strava svg .bar {
+.MMM-Strava .chart svg .bar {
   shape-rendering: crispEdges;
+}
+
+/***************************
+ * MMM-Strava Progress
+ ***************************/
+.MMM-Strava .progress svg path {
+  will-change: auto;
+  stroke-width: 20px;
+  stroke-miterlimit: round;
+  transition: stroke-dashoffset 850ms ease-in-out;
 }
 
 /***************************

@@ -47,7 +47,7 @@ Module.register("MMM-Strava", {
         client_secret: "",
         strava_id: "",                                  // DEPRECATED: List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
         access_token: "",                               // DEPRECATED: List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
-        mode: "table",                                  // Possible values "table", "chart"
+        mode: "table",                                  // Possible values "table", "chart", "progress"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
         stats: ["count", "distance", "achievements"],   // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
@@ -170,7 +170,7 @@ Module.register("MMM-Strava", {
             loading: this.loading,
             error: this.error || null,
             data: this.data || {},
-            chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
+            //chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
         };
     },
     /**

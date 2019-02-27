@@ -1,0 +1,21 @@
+{% if loading %}
+    <div class="small dimmed light">
+        {{ 'LOADING' | translate | safe }}
+    </div>
+{% elif error %}
+    <div class="small dimmed light">
+        {{ error | safe }}
+    </div>
+{% else %}
+    <div class="small">
+{% for activity in config.activities %}
+{% set total_distance = data[activity].total_distance %}
+        <div class="progress" id="{{activity | lower }}">
+            <svg  xmlns="http://www.w3.org/2000/svg" height="200" width="200" viewBox="0 0 200 200" data-value="{{ total_distance }}">
+                <path class="bg" stroke="#ccc" d="M41 149.5a77 77 0 1 1 117.93 0"  fill="none"/>
+                <path class="meter" stroke="#09c" d="M41 149.5a77 77 0 1 1 117.93 0" fill="none" stroke-dasharray="350" stroke-dashoffset="350"/>
+            </svg>
+        </div>
+{% endfor %}
+    </div>
+{% endif %}

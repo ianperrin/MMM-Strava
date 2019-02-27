@@ -1,588 +1,275 @@
-/* Magic Mirror
- * Module: MMM-Strava
+/**
+ * @file MMM-Strava.js
  *
- * By Ian Perrin http://github.com/ianperrin/MMM-Strava
- * MIT Licensed.
+ * @author ianperrin
+ * @license MIT
+ *
+ * @see  https://github.com/ianperrin/MMM-Strava
  */
 
-/* jshint node: true, esversion: 6 */
 /* global Module, config, Log, moment */
 
-Module.register("MMM-Strava",{
+/**
+ * @external Module
+ * @see https://github.com/MichMich/MagicMirror/blob/master/js/module.js
+ */
 
+/**
+ * @external config
+ * @see https://github.com/MichMich/MagicMirror/blob/master/config/config.js.sample
+ */
+
+/**
+ * @external Log
+ * @see https://github.com/MichMich/MagicMirror/blob/master/js/logger.js
+ */
+
+/**
+ * @external moment
+ * @see https://www.npmjs.com/package/moment
+ */
+
+/**
+ * @module MMM-Strava
+ * @description Frontend of the MagicMirror² module.
+ *
+ * @requires external:Module
+ * @requires external:config
+ * @requires external:Log
+ * @requires external:moment
+ */
+Module.register("MMM-Strava", {
+    // Set the minimum MagicMirror module version for this module.
+    requiresVersion: "2.2.0",
     // Default module config.
     defaults: {
-        strava_id: [''],                      // List of strava_id's, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: [''],                   // List of acces_token's (corresponding to the strava_id's), see https://www.strava.com/settings/api
-        athlete_text: [''],                   // List of athlete_text's (corresponding to the strava_id's), will be diplayed instead of ativity_text
-        mode: 'table',                        // Possible values "table", "chart"
-        elevation: false,                     // Shows elevation in "table" mode
-        activities: ["ride", "run", "swim"],  // Possible values "ride", "run", "swim"
-        period: "recent",                     // Possible values "recent", "ytd", "all"
-        auto_rotate: false,                   // Rotate stats through each period starting from specified period
+        client_id: "",
+        client_secret: "",
+        strava_id: "",                                  // DEPRECATED: List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
+        access_token: "",                               // DEPRECATED: List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
+        mode: "table",                                  // Possible values "table", "chart"
+        activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
+        period: "recent",                               // Possible values "recent", "ytd", "all"
+        stats: ["count", "distance", "achievements"],   // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
+        auto_rotate: false,                             // Rotate stats through each period starting from specified period
         locale: config.language,
         units: config.units,
         fade: false,
-        fadePoint: 0.1,                       // Start on 1/4th of the list.
-        reloadInterval: 5 * 60 * 1000,        // every 5 minutes
-        updateInterval: 10 * 1000,            // 10 seconds
-        animationSpeed: 2.5 * 1000,           // 2.5 seconds
-        debug: false,                         // Set to true to enable extending logging
+        fadePoint: 0.1,                                 // Start on 1/4th of the list.
+        reloadInterval: 5 * 60 * 1000,                  // every 5 minutes
+        updateInterval: 10 * 1000,                      // 10 seconds
+        animationSpeed: 2.5 * 1000,                     // 2.5 seconds
+        debug: false,                                   // Set to true to enable extending logging
     },
-
-    // Store the strava data in an array of object.
-    stravaData: [],
-
-    // A loading boolean.
+    /**
+     * @member {boolean} loading - Flag to indicate the loading state of the module.
+     */
     loading: true,
-
-    // updateinterval run
-    updateintervalstarted: false,
-
-    // Subclass getStyles method.
+    /**
+     * @member {boolean} rotating - Flag to indicate the rotating state of the module.
+     */
+    rotating: false,
+    /**
+     * @function getStyles
+     * @description Style dependencies for this module.
+     * @override
+     *
+     * @returns {string[]} List of the style dependency filepaths.
+     */
     getStyles: function() {
-        return ['font-awesome.css','MMM-Strava.css'];
+        return ["font-awesome.css", "MMM-Strava.css"];
     },
-
-    // Subclass getScripts method.
+    /**
+     * @function getScripts
+     * @description Script dependencies for this module.
+     * @override
+     *
+     * @returns {string[]} List of the script dependency filepaths.
+     */
     getScripts: function() {
         return ["moment.js"];
     },
-
-    // Subclass getTranslations method.
+    /**
+     * @function getTranslations
+     * @description Translations for this module.
+     * @override
+     *
+     * @returns {Object.<string, string>} Available translations for this module (key: language code, value: filepath).
+     */
     getTranslations: function() {
         return {
-                en: "translations/en.json",
-                nl: "translations/nl.json",
-                de: "translations/de.json",
-                id: "translations/id.json",
-                hu: "translations/hu.json"
+            en: "translations/en.json",
+            nl: "translations/nl.json",
+            de: "translations/de.json",
+            id: "translations/id.json",
+            hu: "translations/hu.json"
         };
     },
-
-    // Subclass start method.
+    /**
+     * @function start
+     * @description Validates config values, adds nunjuck filters and initialises requests for data.
+     * @override
+     */
     start: function() {
         Log.info("Starting module: " + this.name);
-        if (this.config.period !== "recent" &&
-            this.config.period !== "ytd" &&
-            this.config.period !== "all")
-        {
-            this.config.period = "recent";
-        }
-        // Ensure config options are arrays
-        this.config.access_token = this.toArray(this.config.access_token);
-        this.config.strava_id = this.toArray(this.config.strava_id);
-        this.config.athlete_text = this.toArray(this.config.athlete_text);
-
-        this.sendSocketNotification("CONFIG", this.config);
+        // Validate config
+        this.config.mode = this.config.mode.toLowerCase();
+        this.config.period = this.config.period.toLowerCase();
+        // Add custom filters
+        this.addFilters();
+        // Initialise helper and schedule api calls
+        this.sendSocketNotification("SET_CONFIG", {"identifier": this.identifier, "config": this.config});
+        this.scheduleUpdates();
     },
-
-    // Subclass socketNotificationReceived method.
+    /**
+     * @function socketNotificationReceived
+     * @description Handles incoming messages from node_helper.
+     * @override
+     *
+     * @param {string} notification - Notification name
+     * @param {Object,<string,*} payload - Detailed payload of the notification.
+     */
     socketNotificationReceived: function(notification, payload) {
-        this.log("Received notification - " + notification);
-        this.log(payload);
-        var activityType, stats, activitySummary, i, j;
-
-        if (typeof this.stravaData !== 'undefined' && this.stravaData.length > 0) {
-            this.log("StravaData is already initialised.");
-        } else {
-            this.log("Initialising StravaData");
-            this.stravaData = [];
-            for (j = 0; j < this.config.access_token.length; j++) {
-                stats = {};
-                activitySummary = {};
-                this.stravaData[j] = {stats, activitySummary};
-            }
-            this.log(this.stravaData);
-        }	
-
-        for (j = 0; j < this.config.access_token.length; j++) {
-
-            if (notification === "ATHLETE_STATS" + this.config.access_token[j]) {
-                this.log("Reading athlete stats - token " + j);
-                stats = payload;
-
-                for (i = 0; i < this.config.activities.length; i++) {
-                    activityType = this.config.activities[i].toLowerCase();
-
-                    var recentActivityStats = stats["recent_" + activityType + "_totals"];
-                    if (recentActivityStats) {
-                        this.stravaData[j].stats["recent_" + activityType + "_totals"] = recentActivityStats;
-                    }
-                    var ytdActivityStats = stats["ytd_" + activityType + "_totals"];
-                    if (ytdActivityStats) {
-                        this.stravaData[j].stats["ytd_" + activityType + "_totals"] = ytdActivityStats;
-                    }
-                    var allActivityStats = stats["all_" + activityType + "_totals"];
-                    if (allActivityStats) {
-                        this.stravaData[j].stats["all_" + activityType + "_totals"] = allActivityStats;
-                    }
-                }
-                this.log(this.stravaData[j].stats);
-            }
-
-            if (notification === "ATHLETE_ACTIVITY" + this.config.access_token[j]) {
-                this.log("Reading athlete activity - token " + j);
-                var activities = payload;
-
-                // Initialise activity summary for the chart
-                for (i = 0; i < this.config.activities.length; i++) {
-                    activityType = this.config.activities[i].toLowerCase();
-                    this.stravaData[j].activitySummary[activityType] = {
-                            total_distance: 0,
-                            total_elevation_gain: 0,
-                            total_moving_time: 0,
-                            dayTotals: [0,0,0,0,0,0,0]
-                        };
-                }
-
-                // Summarise athlete activity totals and daily distances
-                for (i = 0; i < Object.keys(activities).length; i++) {
-
-                    activityType = activities[i].type.toLowerCase().replace('virtual','');
-                    var activityDate = moment(activities[i].start_date_local);
-                    activitySummary = this.stravaData[j].activitySummary[activityType];
-
-                    // Update activity summaries
-                    if (activitySummary) {
-                        activitySummary.total_distance += activities[i].distance;
-                        activitySummary.total_elevation_gain += activities[i].total_elevation_gain;
-                        activitySummary.total_moving_time += activities[i].moving_time;
-                        activitySummary.dayTotals[activityDate.weekday()] += activities[i].distance;
-                    }
-                }
-                this.log(this.stravaData[j].activitySummary);
+        this.log(`Receiving notification: ${notification} for ${payload.identifier}`);
+        if (payload.identifier === this.identifier) {
+            if (notification === "DATA") {
+                this.data = payload.data;
+                this.loading = false;
+                this.updateDom(this.config.animationSpeed);
+            } else if (notification === "ERROR") {
+                this.loading = false;
+                this.error = payload.data.message;
+                this.updateDom(this.config.animationSpeed);
+            } else if (notification === "WARNING") {
+                this.loading = false;
+                this.sendNotification("SHOW_ALERT", {type: "notification", title: payload.data.message});
             }
         }
-        this.loading = false;
-        this.scheduleUpdateInterval();
     },
-
-    // Override dom generator.
-    getDom: function() {
-        if (this.config.locale) {
-            moment.locale(this.config.locale);
-        }
-
-        for (var i = 0; i < this.config.access_token.length; i++) {
-            if (this.config.access_token[i].length <= 0 ||
-                this.config.strava_id[i].length <= 0 ||
-                this.config.activities.length <= 0) {
-                    return this.createMessageDiv(this.translate("CONFIG_MISSING"));
-            }
-        }
-
-        if (this.loading) {
-            return this.createMessageDiv(this.translate("LOADING"));
-        }
-
-        if (this.config.activities.length > 0) {
-
-            if (this.config.mode === 'chart') {
-                return this.createActivityChart();
-            } else {
-                return this.createStatsTable();
-            }
-
-        }
-
-    },
-
     /**
-     * createMessageDiv
-     * This method creates a div element to display a message.
-     * @return {message string}                the message to be displayed
-     * @return {dom object}                    a div element containing the message
+     * @function getTemplate
+     * @description Nunjuck template.
+     * @override
+     *
+     * @returns {string} Path to nunjuck template.
      */
-    createMessageDiv: function(message) {
-        var msgWrapper = document.createElement("div");
-        msgWrapper.innerHTML = this.translate(message);
-        msgWrapper.classList.add("small", "dimmed", "light");
-        return msgWrapper;
+    getTemplate: function() {
+        return "templates\\MMM-Strava." + this.config.mode + ".njk";
     },
-
     /**
-     * createChart
-     * This method creates a table to display the stats.
-     * @return {dom object}                    a div element containing the activity chart
+     * @function getTemplateData
+     * @description Data that gets rendered in the nunjuck template.
+     * @override
+     *
+     * @returns {string} Data for the nunjuck template.
      */
-    createActivityChart: function() {
-        var chartWrapper = document.createElement("div");
-        chartWrapper.className = "small";
-
-        function getNode(n, v) {
-          n = document.createElementNS("http://www.w3.org/2000/svg", n);
-          for (var p in v)
-            n.setAttributeNS(null, p.replace(/[A-Z]/g, function(m, p, o, s) { return "-" + m.toLowerCase(); }), v[p]);
-          return n;
-        }
-
-        // Add div for each activity type.
-        for (var i = 0; i < this.config.activities.length; i++) {
-            for (var j = 0; j < this.config.access_token.length; j++) {
-                var activityType = this.config.activities[i];
-                var activitySummary = this.stravaData[j].activitySummary[activityType.toLowerCase()];
-                var activityTypeDiv = document.createElement("div");
-
-                var label = '';
-                if (this.config.athlete_text[j] && this.config.athlete_text[j] !== '') {
-                    label = this.config.athlete_text[j];
-                }
-
-                activityTypeDiv.className = "week";
-                activityTypeDiv.id = activityType.toLowerCase();
-
-                if (label !== '') {
-                    var activityTypeCell = document.createElement("td");
-                    activityTypeCell.className = "title light align-right stat";
-                    activityTypeCell.innerHTML = label;
-                    activityTypeDiv.appendChild(activityTypeCell);
-                }
-
-                var primaryStatsDiv = document.createElement("div");
-                primaryStatsDiv.className = "primary-stats";
-
-                    var actualDistanceSpan = document.createElement("span");
-                    actualDistanceSpan.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_distance), 1) + ((this.config.units.toLowerCase() === "imperial") ? " mi" : " km");
-                    actualDistanceSpan.className = "actual small bright";
-                    primaryStatsDiv.appendChild(actualDistanceSpan);
-
-                    var inlineStatsList = document.createElement("ul");
-                    inlineStatsList.className = "inline-stats";
-
-                        var durationListItem = document.createElement("li");
-                        var movingTime = moment.duration(activitySummary.total_moving_time, "seconds");
-                        durationListItem.innerHTML = Math.floor(movingTime.asHours()) + "h " + movingTime.minutes() + "m";
-                        durationListItem.className = "xsmall light";
-                        inlineStatsList.appendChild(durationListItem);
-
-                        if (activityType !== "swim") {
-                            var elevationListItem = document.createElement("li");
-                            elevationListItem.innerHTML = this.roundedToFixed(this.convertToUnits(activitySummary.total_elevation_gain, true), 0) + ((this.config.units.toLowerCase() === "imperial") ? " ft" : " m");
-                            elevationListItem.className = "xsmall light";
-                            inlineStatsList.appendChild(elevationListItem);
-                        }
-
-                    primaryStatsDiv.appendChild(inlineStatsList);
-
-                activityTypeDiv.appendChild(primaryStatsDiv);
-
-                var chartSvg = getNode("svg", {width: 115, height: 68, class: 'chart'});
-
-                var chartG = getNode('g', { class: 'activity-chart', transform: 'translate(25, 5)' });
-
-                var now = moment().startOf('day');
-                var startOfWeek = moment().startOf('week');
-                var maxDayValue = this.maxArrayValue(activitySummary.dayTotals);
-
-                for (var d = 0; d < activitySummary.dayTotals.length; d++) {
-
-                    var barDate = startOfWeek;
-                    var barClass = 'past';
-                    if (now.diff(barDate, 'days') === 0) {
-                        barClass = 'highlighted';
-                    } else if (now.diff(barDate, 'days') >= 1) {
-                        barClass = 'future';
-                    }
-
-                    // bars
-                    var barG = getNode('g', { class: 'volume-bar-container', transform: 'translate(' + d * 12.5 + ', 0)' });
-                    var barHeight = (activitySummary.dayTotals[d] > 0 ? (activitySummary.dayTotals[d]/maxDayValue * 50) : 2) ;
-                    var barY = 50 - barHeight;
-                    var barRect = getNode('rect', { class: 'volume-bar', y: barY, width: 6.571428571428571, height: barHeight});
-                    barRect.classList.add(barClass);
-                    barG.appendChild(barRect);
-                    chartG.appendChild(barG);
-
-                    // labels
-                    var labelG = getNode('g', { class: 'day-label-container', transform: 'translate(' + d * 12.5 + ', 63)' });
-                    var labelRect = getNode('text', { class: 'day-label', x: 0, y: 0});
-                    labelRect.classList.add(barClass);
-                    labelRect.innerHTML = barDate.format('dd').slice(0,1);
-                    labelG.appendChild(labelRect);
-                    chartG.appendChild(labelG);
-
-                    barDate = startOfWeek.add(1, 'days');
-                }
-
-                chartSvg.appendChild(chartG);
-
-                activityTypeDiv.appendChild(chartSvg);
-
-                // Icon
-                var iconDiv = document.createElement("div");
-                iconDiv.classList.add("strava-icon", "icon-lg", "icon-" + activityType.toLowerCase());
-                iconDiv.title = activityType.toLowerCase();
-                activityTypeDiv.appendChild(iconDiv);
-
-                chartWrapper.appendChild(activityTypeDiv);
-            }
-
-        }
-
-        return chartWrapper;
+    getTemplateData: function() {
+        moment.locale(this.config.locale);
+        return {
+            config: this.config,
+            loading: this.loading,
+            error: this.error || null,
+            data: this.data || {},
+            chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
+        };
     },
-
     /**
-     * createStatsTable
-     * This method creates a table to display the stats.
-     * @return {dom object}                    the table containing the stats
+     * @function scheduleUpdates
+     * @description Schedules table rotation
      */
-    createStatsTable: function(counter) {
-    var tableWrapper = document.createElement("table");
-        tableWrapper.className = "small";
-
-        tableWrapper.appendChild(this.createHeaderRow());
-
-        // Add row to table for each activity.
-        for (var i = 0; i < this.config.activities.length; i++) {
-
-            for (var j = 0; j < this.config.access_token.length; j++) {
-                var activity = this.config.activities[i];
-                this.log("Creating table row for activity: " + activity + " in " + this.config.units);
-                var activityTotals = this.stravaData[j].stats[this.config.period + "_" + activity.toLowerCase() + "_totals"];
-                var label;
-                if (this.config.athlete_text[j] && this.config.athlete_text[j] !== '') {
-                    label = this.config.athlete_text[j];
-                } else {
-                    label = this.translate(activity.toUpperCase());
-                }
-
-                var activityRow = this.createActivityRow(activity.toLowerCase(), 
-                                                            label,
-                                                            activityTotals.count,
-                                                            this.roundedToFixed(this.convertToUnits(activityTotals.distance), 1),
-                                                        this.roundedToFixed(this.convertToUnits(activityTotals.elevation_gain), 1),
-                                                            activityTotals.achievement_count);
-
-                // Create fade effect.
-                if (this.config.fade && this.config.fadePoint < 1) {
-                    if (this.config.fadePoint < 0) {
-                        this.config.fadePoint = 0;
-                    }
-                    var startingPoint = this.config.activities.length * this.config.fadePoint;
-                    var steps = this.config.activities.length - startingPoint;
-                    if (i >= startingPoint) {
-                        var currentStep = i - startingPoint;
-                        activityRow.style.opacity = 1 - (1 / steps * currentStep);
-                    }
-                }
-
-                tableWrapper.appendChild(activityRow);
-            }
-
-        }
-
-        // Add period indicator if rotating
-        if (this.config.auto_rotate) {
-            var periodTr = document.createElement('tr');
-            periodTr.className = "xsmall";
-
-            var periodTd =  document.createElement("td");
-            periodTd.innerHTML = "[" + this.translate( this.config.period.toUpperCase() ) + "]";
-            periodTd.colSpan = tableWrapper.rows[0].cells.length; 
-            periodTd.className = "align-right";
-            periodTr.appendChild(periodTd);
-
-            tableWrapper.appendChild(periodTr);
-        }
-
-        return tableWrapper;
-    },
-
-    /**
-     * createHeaderRow
-     * This method creates a table row for the stat headings.
-     * @return {dom object}                    the table row (tr)
-     */
-    createHeaderRow: function() {
-        var tr = document.createElement('tr');
-        tr.className = "normal";
-
-        var activityTypeTd =  document.createElement("td");
-        tr.appendChild(activityTypeTd);
-
-        var activitySymbolTd =  document.createElement("td");
-        tr.appendChild(activitySymbolTd);
-
-        tr.appendChild(this.createHeaderRowStatCell("hashtag"));        // Count
-        tr.appendChild(this.createHeaderRowStatCell("arrows-h"));        // Distance
-        if (this.config.elevation)
-            tr.appendChild(this.createHeaderRowStatCell("line-chart"));        // Elevation  "location-arrow" "external-link-square"
-
-        if (this.config.period === "recent")
-            tr.appendChild(this.createHeaderRowStatCell("trophy"));            // Achievement Count
-
-        return tr;
-    },
-
-    /**
-     * createHeaderRowStatCell
-     * This method creates a table cell containing the supplied font awesome icon.
-     * @param  {string} icon                the font awesome icon. (without 'fa-')
-     * @return {dom object}                    the table cell (td)
-     */
-    createHeaderRowStatCell: function(icon) {
-
-        var td =  document.createElement("td");
-        td.className = "light symbol align-right stat";
-        var tdIcon =  document.createElement("span");
-        tdIcon.className = "fa fa-" + icon;
-        td.appendChild(tdIcon);
-
-        return td;
-    },
-
-    /**
-     * createActivityRow
-     * This method creates a table row with stats for an activity.
-     * @param  {string} icon                the font awesome icon. (without 'fa-')
-     * @param  {string} label                the label for the activity
-     * @param  {number} count                the activity count
-     * @param  {number} distance            the distance in metres
-     * @param  {number} elevation            the elevation in kilometres
-     * @param  {number} achievement_count     the number of achievements for the activity
-     * @return {dom object}                    the table row (tr)
-     */
-    createActivityRow: function(icon, label, count, distance, elevation, achievement_count) {
-        var tr = document.createElement("tr");
-        tr.className = "normal";
-
-        var activityTypeCell = document.createElement("td");
-        activityTypeCell.className = "title light";
-        activityTypeCell.innerHTML = label;
-        tr.appendChild(activityTypeCell);
-
-        var activityTypeIconCell = document.createElement("td");
-        activityTypeIconCell.className = "bright symbol";
-        var symbol =  document.createElement("div");
-        //symbol.className = "fa fa-" + icon;
-        symbol.classList.add( "strava-icon", "icon-" + icon);//"fa fa-" + icon;
-
-        activityTypeIconCell.appendChild(symbol);
-        tr.appendChild(activityTypeIconCell);
-
-        tr.appendChild(this.createActivityRowStatCell(count));                // Count
-        tr.appendChild(this.createActivityRowStatCell(distance));            // Distance
-        if (this.config.elevation)
-            tr.appendChild(this.createActivityRowStatCell(elevation));            // Elevation
-
-        if (this.config.period === "recent")
-            tr.appendChild(this.createActivityRowStatCell(achievement_count));    // Achievement Count
-
-        return tr;
-    },
-
-    /**
-     * createActivityRowStatCell
-     * This method creates a table cell containing the supplied HTML.
-     * @param  {string} innerHTML            the contents of the cell
-     * @return {dom object}                    the table cell (td)
-     */
-    createActivityRowStatCell: function(innerHTML) {
-
-        var td =  document.createElement("td");
-        td.className = "bright align-right stat";
-        td.innerHTML = innerHTML;
-
-        return td;
-    },
-
-    /* scheduleUpdateInterval()
-     * Schedule visual update.
-     */
-    scheduleUpdateInterval: function() {
+    scheduleUpdates: function() {
         var self = this;
-
-        self.updateDom(self.config.animationSpeed);
-
-        if (this.updateintervalstarted) {
-            //	nix tun
-        } else {
-
-            this.updateintervalstarted = true;
-
-            if (this.config.auto_rotate &&
-                this.config.updateInterval) {
-                    setInterval(function() {
-                        self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
-                        self.updateDom(self.config.animationSpeed);
-                    }, this.config.updateInterval);
+        // Schedule table rotation
+        if (!this.rotating) {
+            this.rotating = true;
+            if (this.config.auto_rotate && this.config.updateInterval) {
+                setInterval(function() {
+                    // Get next period
+                    self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
+                    self.updateDom(self.config.animationSpeed);
+                }, this.config.updateInterval);
             }
         }
     },
-
     /**
-     * convertToUnits
-     * This method converts the supplied value depending on the value of config.units.
-     * @param  {float} _float             the value (in metres) to be converted
-     * @param  {boolean} _minor           if _minor, the output will be in feet or metres otherwise it will be in miles or kilometres
-     * @return {float}                    the converted value
+     * @function log
+     * @description logs the message, prefixed by the Module name, if debug is enabled.
+     * @param  {string} msg            the message to be logged
      */
-    convertToUnits: function (_float, _minor){
-        if (_minor) {
-            // Convert to either feet or inches
-            return (this.config.units.toLowerCase() === "imperial") ? _float * 3.281 : _float;
-        } else {
-            // Convert to either miles or kilometres
-            var km = _float * 0.001;
-            return (this.config.units.toLowerCase() === "imperial") ? km * 0.621 : km;
-        }
-    },
-
-    /**
-     * roundedToFixed
-     * This method rounds the supplied value to the specified number of decimal places.
-     * @param  {float} _float            the value to be rounded
-     * @param  {number} _digits            the number of decimal places
-     * @return {float}                    the rounded value
-     */
-    roundedToFixed: function (_float, _digits) {
-        var rounder = Math.pow(10, _digits);
-        return (Math.round(_float * rounder) / rounder).toFixed(_digits);
-    },
-
-    /**
-     * maxArrayValue
-     * This method returns the maximum value from an integer array.
-     * @param  {array} _array            an array of integer values
-     * @return {int}                    the maximum value
-     */
-    maxArrayValue: function(_array) {
-        var max_value = 0;
-        for(var i = 0; i < _array.length; i++) {
-            if(_array[i] > max_value) {
-                max_value = _array[i];
-            }
-        }
-        return max_value;
-    },
-    
-    /**
-     * toArray
-     * This method returns an array from a string.
-     * @param  {string} _string            a string
-     * @return {array}                     the array
-     */
-    toArray: function(_string) {
-        if(Array.isArray(_string)) {
-        	return _string;
-        }
-        if(typeof _string == "string") {
-            return _string.split("'");
-        }
-        return [];
-    },
-
-    /**
-     * log
-     * This method logs the message, prefixed by the Module name, if debug is enabled.
-     * @param  {string} _msg            the message to be logged
-     */
-    log: function(_msg) {
+    log: function(msg) {
         if (this.config && this.config.debug) {
-            Log.info(this.name + ': ' + JSON.stringify(_msg));
+            Log.info(`${this.name}: ` + JSON.stringify(msg));
         }
+    },
+    /**
+     * @function addFilters
+     * @description adds filters to the Nunjucks environment.
+     */
+    addFilters() {
+        var env = this.nunjucksEnvironment();
+        env.addFilter("getIntervalClass", this.getIntervalClass.bind(this));
+        env.addFilter("getLabel", this.getLabel.bind(this));
+        env.addFilter("formatTime", this.formatTime.bind(this));
+        env.addFilter("formatDistance", this.formatDistance.bind(this));
+        env.addFilter("formatElevation", this.formatElevation.bind(this));
+        env.addFilter("roundValue", this.roundValue.bind(this));
+    },
+    getIntervalClass: function(interval)
+    {
+        moment.locale(this.config.locale);
+        var currentInterval = this.config.period === "ytd" ? moment().month() : moment().weekday();
+        var className = "future";
+        if (currentInterval === interval) {
+            className = "current";
+        } else if (currentInterval > interval) {
+            className = "past";
+        }
+        return className;
+    },
+    getLabel: function(interval) {
+        moment.locale(this.config.locale);
+        const startUnit = this.config.period === "ytd" ? "year" : "week";
+        const intervalUnit = this.config.period === "ytd" ? "months" : "days";
+        const labelUnit = this.config.period === "ytd" ? "MMM" : "dd";
+        var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
+        return intervalDate.format(labelUnit).slice(0,1).toUpperCase();
+    },
+    formatTime: function(timeInSeconds) {
+        var duration = moment.duration(timeInSeconds, "seconds");
+        return Math.floor(duration.asHours()) + "h " + duration.minutes() + "m";
+    },
+    // formatDistance
+    formatDistance: function(value, digits, showUnits) {
+        const distanceMultiplier = this.config.units === "imperial" ? 0.0006213712 : 0.001;
+        const distanceUnits = this.config.units === "imperial" ? " mi" : " km";
+        return this.formatNumber(value, distanceMultiplier, digits, (showUnits ? distanceUnits : null));
+    },
+    // formatElevation
+    formatElevation: function(value, digits, showUnits) {
+        const elevationMultiplier = this.config.units === "imperial" ? 3.28084 : 1;
+        const elevationUnits = this.config.units === "imperial" ? " ft" : " m";
+        return this.formatNumber(value, elevationMultiplier, digits, (showUnits ? elevationUnits : null));
+    },
+    // formatNumber
+    formatNumber: function(value, multipler, digits, units) {
+        // Convert value
+        value = value * multipler;
+        // Round value
+        value = this.roundValue(value, digits);
+        // Append units
+        if (units) {
+            value += units;
+        }
+        return value;
+    },
+    /**
+     * @function roundValue
+     * @description rounds the value to number of digits.
+     * @param  {decimal} value            the value to be rounded
+     * @param  {integer} digits           the number of digits to round the value to
+     */
+    roundValue: function(value, digits) {
+        var rounder = Math.pow(10, digits);
+        return (Math.round(value * rounder) / rounder).toFixed(digits);
     }
-    
 });

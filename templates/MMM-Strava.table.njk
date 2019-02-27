@@ -1,0 +1,75 @@
+{% if loading %}
+    <div class="small dimmed light">
+        {{ 'LOADING' | translate | safe }}
+    </div>
+{% elif error %}
+    <div class="small dimmed light">
+        {{ error | safe }}
+    </div>
+{% else %}
+    <table class="small">
+        <thead>
+            <tr class="normal">
+                <td></td>
+                <td></td>
+                {% if 'count' in config.stats %}
+                <td class="light symbol align-right stat"><span class="fa fa-hashtag" title="Activity count"></span></td>
+                {% endif %}
+                {% if 'distance' in config.stats %}
+                <td class="light symbol align-right stat"><span class="fa fa-arrows-h" title="Distance"></span></td>
+                {% endif %}
+                {% if 'elevation' in config.stats %}
+                <td class="light symbol align-right stat"><span class="fa fa-line-chart" title="Elevation"></span></td>
+                {% endif %}
+                {% if 'moving_time' in config.stats %}
+                <td class="light symbol align-right stat"><span class="fa fa-clock-o" title="Moving time"></span></td>
+                {% endif %}
+                {% if 'elapsed_time' in config.stats %}
+                <td class="light symbol align-right stat"><span class="fa fa-clock-o" title="Elapsed time"></span></td>
+                {% endif %}
+                {% if ('acheivements' in config.stats) and (config.period === "recent") %}
+                <td class="light symbol align-right stat"><span class="fa fa-trophy" title="Acheivements"></span></td>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+{% for activity in config.activities %}
+{% set activity_data = data[config.period + "_" + activity | lower + "_totals"] %}
+            <tr class="normal">
+                <td class="title light">{{activity | upper | translate }}</td>
+                <td class="bright symbol">
+                    <div class="strava-icon icon-{{activity | lower }}"></div>
+                </td>
+                {% if 'count' in config.stats %}
+                <td class="bright align-right stat">{{activity_data.count}}</td>
+                {% endif %}
+                {% if 'distance' in config.stats %}
+                <td class="bright align-right stat">{{activity_data.distance | formatDistance(1, false) }}</td>
+                {% endif %}
+                {% if 'elevation' in config.stats %}
+                <td class="bright align-right stat">{{activity_data.elevation_gain | formatElevation(1, false) }}</td>
+                {% endif %}
+                {% if 'moving_time' in config.stats %}
+                <td class="bright align-right stat">{{activity_data.moving_time | formatTime }}</td>
+                {% endif %}
+                {% if 'elapsed_time' in config.stats %}
+                <td class="bright align-right stat">{{activity_data.elapsed_time | formatTime }}</td>
+                {% endif %}
+                {% if ('acheivements' in config.stats) and (config.period === "recent") %}
+                <td class="bright align-right stat">{{activity_data.achievement_count}}</td>
+                {% endif %}
+            </tr>
+{% endfor %}
+        </tbody>
+{%  if config.auto_rotate %}
+        <tfoot>
+            <!-- period label -->
+            <tr class="xsmall">
+                <td class="align-right" colSpan="100%">
+                    {{config.period | upper | translate }}
+                </td>
+            </tr>
+        </tfoot>
+{% endif %}
+    </table>
+{% endif %}

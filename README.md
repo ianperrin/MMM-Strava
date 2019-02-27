@@ -102,7 +102,7 @@ The following properties can be added to the configuration:
 
 The `client_id` and `client_secret` can be obtained from [your My API Application page](https://www.strava.com/settings/api). Once you have added these to the `config.js` and started your Magic Mirror, follow the steps below to authenticate the application with Strava:
 
-1. Browse to the Strava authentication page: http://localhost:8080/MMM-Strava/auth/ - _the exact URL may vary depending on your configuration._
+1. Browse to the Strava authentication page: [http://localhost:8080/MMM-Strava/auth/](http://localhost:8080/MMM-Strava/auth/) - _the exact URL may vary depending on your configuration._
 2. Select the module you wish to authenticate (e.g. `module_4_MMM-Strava`) and click/tap *Authorise* -_The number of the module will vary depending on your configuration._
 3. On the Strava Authorisation page, select the level of access you wish to give to the Magic Mirror, and click/tap *Authorize* - _the module requires at least `View data about your public profile` and `View data about your activities` but it's up to you whether you want to allow access to `private activities`._
 4. Once the successful authorisation message appears, restart your Magic Mirror.

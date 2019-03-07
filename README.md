@@ -35,49 +35,62 @@ A MagicMirror Module for displaying your Strava data.
 
 ## Installation
 
-Clone this repository into your MagicMirror's Module folder:
+1. Stop your MagicMirror and clone the repository into the modules folder
 
-````bash
-cd ~/MagicMirror/modules
-git clone https://github.com/ianperrin/MMM-Strava.git
-npm install --production
-````
+   ````bash
+   cd ~/MagicMirror/modules
+   git clone https://github.com/ianperrin/MMM-Strava.git
+   npm install --production
+   ````
 
-[Configure the module](#configuring-the-module) in your `config/config.js` file.
+2. Create a Strava API Application and note the `client_id` and `client_secret`
 
-[Authenticate the module](#authenticating-the-module) to allow access to the Strava API.
+    * Browse to your [My API Application](https://www.strava.com/settings/api) page and log in to Strava if prompted.
+    * Make a note of the `client_id` and `client_secret`
+
+3. Add the module to the config file (`~/MagicMirror/config/config.js`) for your mirror.
+
+   ````javascript
+   modules: [
+       {
+           module: "MMM-Strava",
+           position: "top_right",
+           config: {
+               client_id: "your_strava_application_id",
+               client_secret: "your_strava_api_access_token"
+           }
+       }
+   ]
+   ````
+
+   The full list of config options can be found in the [configuration options](#configuration-options) table.
+
+4. Authenticate the module to allow access to the Strava API.
+
+    * Browse to the Strava authentication page: [http://localhost:8080/MMM-Strava/auth/](http://localhost:8080/MMM-Strava/auth/) - _the exact URL may vary depending on your configuration._
+    * Select the module you wish to authenticate (e.g. `module_4_MMM-Strava`) and click/tap *Authorise* -_The number of the modules will vary depending on your configuration._
+    * On the Strava Authorisation page, select the level of access you wish to give to the Magic Mirror, and click/tap *Authorize* - _the module requires at least `View data about your public profile` and `View data about your activities` but it's up to you whether you want to allow access to `private activities`._
+    * Once the successful authorisation message appears, restart your Magic Mirror.
 
 ## Updating the module
 
-To update the module to the latest version, pull the changes from this repository into the MMM-Strava folder:
+To update the module to the latest version,
 
-````bash
-cd ~/MagicMirror/modules/MMM-Strava
-git pull
-npm install --production
-````
+1. Pull the changes from this repository into the MMM-Strava folder:
 
-If you haven't changed the module, this should work without any problems.
-Type `git status` to see your changes, if there are any, you can reset them with `git reset --hard`. After that, `git pull` should be possible.
+   ````bash
+   cd ~/MagicMirror/modules/MMM-Strava
+   git pull
+   npm install --production
+   ````
 
-## Configuring the module
+2. Update your config file to remove the `strava_id` and `access_token` options and add the new `client_id` and `client_secret` options - *See steps 2 and 4 in the [installation notes](#installation)*.
 
-To use this module, add it to the modules array in the `config/config.js` file:
+**Please Note** Following the changes to Strava’s [authentication model](https://developers.strava.com/docs/authentication/)  is available.To support the new authentication flow, the client_id and client_secret must be included in the config in place of the deprecated strava_id and access_token options. The legacy options can still be used, but will trigger an alert on the mirror when the module is loaded and it is recommended they are removed.
 
-````javascript
-modules: [
-    {
-        module: "MMM-Strava",
-        position: "top_right",
-        config: {
-            client_id: "your_strava_application_id",
-            client_secret: "your_strava_api_access_token"
-        }
-    }
-]
-````
+If you haven't changed the module, this should work without any problems. If you have a problem, you can reset the module using `git reset --hard`, after which `git pull` should be possible. You may wish to use `git status` to see any changes before doing so.
 
-### Configuration options
+## Configuration options
 
 The following properties can be added to the configuration:
 
@@ -97,12 +110,3 @@ The following properties can be added to the configuration:
 | `animationSpeed` | `2500` | *Optional* - The speed of the update animation. (Milliseconds) | `0` - `5000` |
 | `locale` | `config.language` | *Optional* - The locale to be used for displaying dates - e.g. the days of the week or months or the year in chart mode. If omitted, the config.language will be used. | e.g. `en`, `en-gb`, `fr` etc |
 | `debug` | `false` | *Optional* - Outputs extended logging to the console/log | `true` = enables extended logging, `false` = disables extended logging |
-
-## Authenticating the module
-
-The `client_id` and `client_secret` can be obtained from [your My API Application page](https://www.strava.com/settings/api). Once you have added these to the `config.js` and started your Magic Mirror, follow the steps below to authenticate the application with Strava:
-
-1. Browse to the Strava authentication page: [http://localhost:8080/MMM-Strava/auth/](http://localhost:8080/MMM-Strava/auth/) - _the exact URL may vary depending on your configuration._
-2. Select the module you wish to authenticate (e.g. `module_4_MMM-Strava`) and click/tap *Authorise* -_The number of the module will vary depending on your configuration._
-3. On the Strava Authorisation page, select the level of access you wish to give to the Magic Mirror, and click/tap *Authorize* - _the module requires at least `View data about your public profile` and `View data about your activities` but it's up to you whether you want to allow access to `private activities`._
-4. Once the successful authorisation message appears, restart your Magic Mirror.

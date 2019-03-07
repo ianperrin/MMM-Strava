@@ -45,8 +45,6 @@ Module.register("MMM-Strava", {
     defaults: {
         client_id: "",
         client_secret: "",
-        strava_id: "",                                  // DEPRECATED: List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: "",                               // DEPRECATED: List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
         mode: "table",                                  // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
@@ -54,8 +52,6 @@ Module.register("MMM-Strava", {
         auto_rotate: false,                             // Rotate stats through each period starting from specified period
         locale: config.language,
         units: config.units,
-        fade: false,
-        fadePoint: 0.1,                                 // Start on 1/4th of the list.
         reloadInterval: 5 * 60 * 1000,                  // every 5 minutes
         updateInterval: 10 * 1000,                      // 10 seconds
         animationSpeed: 2.5 * 1000,                     // 2.5 seconds
@@ -180,7 +176,7 @@ Module.register("MMM-Strava", {
     scheduleUpdates: function() {
         var self = this;
         // Schedule table rotation
-        if (!this.rotating) {
+        if (!this.rotating && this.config.mode === "table") {
             this.rotating = true;
             if (this.config.auto_rotate && this.config.updateInterval) {
                 setInterval(function() {

@@ -45,8 +45,6 @@ Module.register("MMM-Strava", {
     defaults: {
         client_id: "",
         client_secret: "",
-        strava_id: "",                                  // DEPRECATED: List of strava_id"s, could get this from current athlete - https://strava.github.io/api/v3/athlete/#get-details
-        access_token: "",                               // DEPRECATED: List of acces_token"s (corresponding to the strava_id"s), see https://www.strava.com/settings/api
         mode: "table",                                  // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"

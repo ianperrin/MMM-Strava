@@ -176,7 +176,7 @@ Module.register("MMM-Strava", {
     scheduleUpdates: function() {
         var self = this;
         // Schedule table rotation
-        if (!this.rotating) {
+        if (!this.rotating && this.config.mode === "table") {
             this.rotating = true;
             if (this.config.auto_rotate && this.config.updateInterval) {
                 setInterval(function() {

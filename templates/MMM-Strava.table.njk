@@ -27,8 +27,8 @@
                 {% if 'elapsed_time' in config.stats %}
                 <td class="light symbol align-right stat"><span class="fa fa-clock-o" title="Elapsed time"></span></td>
                 {% endif %}
-                {% if ('acheivements' in config.stats) and (config.period === "recent") %}
-                <td class="light symbol align-right stat"><span class="fa fa-trophy" title="Acheivements"></span></td>
+                {% if ('achievements' in config.stats) and (config.period === "recent") %}
+                <td class="light symbol align-right stat"><span class="fa fa-trophy" title="Achievements"></span></td>
                 {% endif %}
             </tr>
         </thead>
@@ -55,7 +55,7 @@
                 {% if 'elapsed_time' in config.stats %}
                 <td class="bright align-right stat">{{activity_data.elapsed_time | formatTime }}</td>
                 {% endif %}
-                {% if ('acheivements' in config.stats) and (config.period === "recent") %}
+                {% if ('achievements' in config.stats) and (config.period === "recent") %}
                 <td class="bright align-right stat">{{activity_data.achievement_count}}</td>
                 {% endif %}
             </tr>

@@ -1,49 +1,33 @@
 {
-    "name": "MMM-Strava",
-    "version": "2.0.0-BETA",
-    "description": "A MagicMirror Module for displaying your Strava data.",
-    "main": "MMM-Strava.js",
-    "scripts": {
-        "test": "grunt test",
-        "unit": "grunt unit",
-        "lint": "grunt lint"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ianperrin/MMM-Strava.git"
-    },
-    "keywords": [
-        "magic",
-        "mirror",
-        "strava"
-    ],
-    "author": "Ian Perrin",
-    "contributors": [
-        "https://github.com/ianperrin/MMM-Strava/graphs/contributors"
-    ],
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/ianperrin/MMM-Strava/issues"
-    },
-    "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
-    "devDependencies": {
-        "grunt": "latest",
-        "grunt-contrib-jshint": "latest",
-        "grunt-eslint": "latest",
-        "grunt-jsonlint": "latest",
-        "grunt-markdownlint": "^1.0.43",
-        "grunt-mocha-test": "^0.13.3",
-        "grunt-stylelint": "latest",
-        "grunt-yamllint": "latest",
-        "mocha": "^4.1.0",
-        "stylelint": "^9.0.0",
-        "stylelint-config-standard": "latest"
-    },
-    "dependencies": {
-        "moment": "latest",
-        "path": "0.12.7",
-        "querystring": "0.2.0",
-        "request": "^2.87.0",
-        "strava-v3": "1.14.0"
-    }
+  "name": "MMM-Strava",
+  "version": "1.1.7",
+  "description": "A MagicMirror Module for displaying your Strava data.",
+  "main": "MMM-Strava.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianperrin/MMM-Strava.git"
+  },
+  "keywords": [
+    "magic",
+    "mirror",
+    "strava"
+  ],
+  "author": "Ian Perrin",
+  "contributors": [
+    "fewieden, peet86, khassel, fuchsde, slametps"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ianperrin/MMM-Strava/issues"
+  },
+  "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-nodeunit": "latest"
+  }
 }

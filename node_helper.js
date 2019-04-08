@@ -417,8 +417,8 @@ module.exports = NodeHelper.create({
      * @param  {string} msg            the message to be logged
      */
     log: function (msg) {
-        //if (this.config && this.config.debug) {
-        console.log(this.name + ":", JSON.stringify(msg));
-        //}
+        if (this.config && this.config.debug) {
+          console.log(this.name + ":", JSON.stringify(msg));
+        }
     }
 });

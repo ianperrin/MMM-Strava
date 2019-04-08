@@ -27,7 +27,7 @@
 }
 
 .MMM-Strava .strava-icon.icon-swim {
-  background-image: url(data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQgOTYiPjxzdHlsZT4uc3Qwe2ZpbGw6bm9uZTtzdHJva2U6I0NDQ0NDQztzdHJva2UtbGluZWNhcDpyb3VuZDt9IC5zdDF7ZmlsbDpub25lO3N0cm9rZTojNjY2NjY2O3N0cm9rZS1saW5lY2FwOnJvdW5kO30gLnN0MntmaWxsOm5vbmU7c3Ryb2tlOiNGRkZGRkY7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7fSAuc3Qze2ZpbGw6bm9uZTtzdHJva2U6I0ZDNEMwMjtzdHJva2UtbGluZWNhcDpyb3VuZDt9PC9zdHlsZT48cGF0aCBpZD0iU3Ryb2tlLTItQ29weS00IiBjbGFzcz0ic3QwIiBkPSJNMiA2LjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDExLjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDE2LjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjxwYXRoIGlkPSJTdHJva2UtMi1Db3B5LTUiIGNsYXNzPSJzdDEiIGQ9Ik0yIDMwLjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDM1LjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDQwLjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjxwYXRoIGlkPSJTdHJva2UtMi1Db3B5LTYiIGNsYXNzPSJzdDIiIGQ9Ik0yIDU0LjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDU5LjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDY0LjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjxwYXRoIGlkPSJTdHJva2UtMi1Db3B5LTciIGNsYXNzPSJzdDMiIGQ9Ik0yIDc4LjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDgzLjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDg4LjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjwvc3ZnPg%3D%3D);
+  background-image: url(data:image/+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjQgOTYiPjxzdHlsZT4uc3Qwe2ZpbGw6bm9uZTtzdHJva2U6I0NDQ0NDQztzdHJva2UtbGluZWNhcDpyb3VuZDt9IC5zdDF7ZmlsbDpub25lO3N0cm9rZTojNjY2NjY2O3N0cm9rZS1saW5lY2FwOnJvdW5kO30gLnN0MntmaWxsOm5vbmU7c3Ryb2tlOiNGRkZGRkY7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7fSAuc3Qze2ZpbGw6bm9uZTtzdHJva2U6I0ZDNEMwMjtzdHJva2UtbGluZWNhcDpyb3VuZDt9PC9zdHlsZT48cGF0aCBpZD0iU3Ryb2tlLTItQ29weS00IiBjbGFzcz0ic3QwIiBkPSJNMiA2LjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDExLjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDE2LjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjxwYXRoIGlkPSJTdHJva2UtMi1Db3B5LTUiIGNsYXNzPSJzdDEiIGQ9Ik0yIDMwLjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDM1LjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDQwLjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjxwYXRoIGlkPSJTdHJva2UtMi1Db3B5LTYiIGNsYXNzPSJzdDIiIGQ9Ik0yIDU0LjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDU5LjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDY0LjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjxwYXRoIGlkPSJTdHJva2UtMi1Db3B5LTciIGNsYXNzPSJzdDMiIGQ9Ik0yIDc4LjZjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDgzLjRjOS40IDQuOCAxMS4xLTMuMyAyMCAuNk0yIDg4LjJjOS40IDQuOCAxMS4xLTMuMyAyMCAuNiIvPjwvc3ZnPg%3D%3D);
 }
 
 .MMM-Strava .strava-icon.icon-run {
@@ -91,29 +91,29 @@
   vertical-align: top;
 }
 
-.MMM-Strava svg {
+.MMM-Strava .chartSVG {
   /* float: right; */
   vertical-align: middle;
   margin-left: 15px;
 }
 
-.MMM-Strava svg .label {
+.MMM-Strava .chartSVG .label {
   font-size: 11px;
 }
 
-.MMM-Strava svg .past {
+.MMM-Strava .chartSVG .past {
   fill: #ccc;
 }
 
-.MMM-Strava svg .current {
+.MMM-Strava .chartSVG .current {
   fill: #666;
 }
 
-.MMM-Strava svg .future {
+.MMM-Strava .chartSVG .future {
   fill: #e5e5e5;
 }
 
-.MMM-Strava svg .bar {
+.MMM-Strava .chartSVG .bar {
   shape-rendering: crispEdges;
 }
 
@@ -183,4 +183,17 @@ div.module.MMM-Strava-Authorisation {
 
 .MMM-Strava-Authorisation button:hover {
   opacity: 0.6;
+}
+
+.MMM-Strava .progressbar {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+}
+
+.MMM-Strava .progressSVG path {
+  will-change: auto;
+  stroke-width: 20px;
+  stroke-miterlimit: round;
+  transition: stroke-dashoffset 850ms ease-in-out;
 }

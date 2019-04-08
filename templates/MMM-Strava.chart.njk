@@ -20,7 +20,7 @@
                     {% endif %}
                 </ul>
             </div>
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="{{ 12.5 * (data[activity].intervals | length) }}" height="68">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="{{ 12.5 * (data[activity].intervals | length) }}" height="68" class="chartSVG">
                 <g class="activity-chart" transform="translate(3.3, 0)">
                 {% for interval in data[activity].intervals %}
                 {% set bar_height = (interval/data[activity].max_interval_distance * 45) if (interval > 0) else 2 %}

@@ -59,7 +59,8 @@ Module.register("MMM-Strava", {
         reloadInterval: 5 * 60 * 1000,                  // every 5 minutes
         updateInterval: 10 * 1000,                      // 10 seconds
         animationSpeed: 2.5 * 1000,                     // 2.5 seconds
-        debug: false,                                   // Set to true to enable extending logging
+        runningGoal: 750,
+        debug: true,                                    // Set to true to enable extending logging
     },
     /**
      * @member {boolean} loading - Flag to indicate the loading state of the module.
@@ -134,7 +135,7 @@ Module.register("MMM-Strava", {
         if (payload.identifier === this.identifier) {
             if (notification === "DATA") {
                 this.data = payload.data;
-                console.log("Strava data: "+this.data);
+                this.log("Strava data: "+JSON.stringify(this.data));
                 this.loading = false;
                 this.updateDom(this.config.animationSpeed);
             } else if (notification === "ERROR") {
@@ -157,6 +158,7 @@ Module.register("MMM-Strava", {
     getTemplate: function() {
         return "templates\\MMM-Strava." + this.config.mode + ".njk";
     },
+
     /**
      * @function getTemplateData
      * @description Data that gets rendered in the nunjuck template.
@@ -166,12 +168,15 @@ Module.register("MMM-Strava", {
      */
     getTemplateData: function() {
         moment.locale(this.config.locale);
+        console.log("Data: "+JSON.stringify(this.data));
+        console.log("ytd Distance: "+this.data.ytd_run_totals.distance / 1000);
         return {
             config: this.config,
             loading: this.loading,
             error: this.error || null,
             data: this.data || {},
             chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
+            barOffset: Math.round(this.addOffset(this.data.ytd_run_totals.distance / 1000))
         };
     },
     /**
@@ -270,7 +275,59 @@ Module.register("MMM-Strava", {
      * @param  {integer} digits           the number of digits to round the value to
      */
     roundValue: function(value, digits) {
-        var rounder = Math.pow(10, digits);
-        return (Math.round(value * rounder) / rounder).toFixed(digits);
+      var rounder = Math.pow(10, digits);
+      return (Math.round(value * rounder) / rounder).toFixed(digits);
+    },
+
+
+    /**
+     * @function addMeasure
+     * @description adds measure offset to progress bar to show comparative progress.
+     *
+     */
+    addMeasure: function() {
+      var measure =  (moment().dayOfYear() / 365);
+      var to = Math.round( 510 * (1 - measure));
+      //this.log("New offset: "+to);
+      return(Math.max(0, to));
+    },
+
+    /**
+     * @function addMeasure
+     * @description adds offset to progress bar to show actual progress.
+     *
+     */
+    addOffset: function(distance) {
+      this.log("Correcting Offset!");
+/*      const meters = document.querySelectorAll('svg[data-value] .meter');
+      this.log(meters);
+      meters.forEach( (path) => {
+        // Get the length of the path
+        let length = path.getTotalLength();
+        // console.log(length) once and hardcode the stroke-dashoffset and stroke-dasharray in the SVG if possible
+        // or uncomment to set it dynamically
+        // path.style.strokeDashoffset = length;
+        // path.style.strokeDasharray = length;
+
+        // Get the value of the meter
+        // let value = parseInt(path.parentNode.getAttribute('data-value'));
+        let value = Math.round(distance/this.config.runningGoal);
+        this.log("Data value: "+value);
+        // Calculate the percentage of the total length
+        let to = length * ((100 - value) / 100);
+        this.log("New offset: "+to);
+        // Trigger Layout in Safari hack https://jakearchibald.com/2013/animated-line-drawing-svg/
+        path.getBoundingClientRect();
+        // Set the Offset
+        return(Math.max(0, to));
+      });
+*/
+      var value = (distance / this.config.runningGoal);
+      this.log("Data value: " + value);
+      // Calculate the percentage of the total length
+      var to = Math.round( 510 * (1 - value));
+      this.log("New offset: "+to);
+      // Set the Offset
+      return(Math.max(0, to));
     }
 });

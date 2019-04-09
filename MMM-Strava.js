@@ -48,7 +48,7 @@ Module.register("MMM-Strava", {
         mode: "table",                                  // Possible values "table", "chart"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
-        stats: ["count", "distance", "achievements"],   // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
+        stats: ["count", "distance", "pace", "achievements"],   // Possible values "count", "distance", "pace", "elevation", "moving_time", "elapsed_time", "achievements"
         auto_rotate: false,                             // Rotate stats through each period starting from specified period
         locale: config.language,
         units: config.units,
@@ -229,6 +229,19 @@ Module.register("MMM-Strava", {
         const labelUnit = this.config.period === "ytd" ? "MMM" : "dd";
         var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
         return intervalDate.format(labelUnit).slice(0,1).toUpperCase();
+    },
+    
+    
+    getPace: function(activity, period) {
+        moment.locale(this.config.locale);
+        switch (activity) {
+            case "run":
+                break;
+            case "swim":
+                break;
+            case "ride":
+                break;
+        }
     },
     formatTime: function(timeInSeconds) {
         var duration = moment.duration(timeInSeconds, "seconds");

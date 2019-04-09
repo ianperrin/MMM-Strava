@@ -261,9 +261,22 @@ module.exports = NodeHelper.create({
             var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
             if (data) {
                 for (var value in data) {
-                    data[value].pace = moment.seconds(data[value].moving_time / (data[value].distance / 1000)).format(m:ss);
-                    console.log(data[value].pace);
-                };
+                  if (data[value].distance > 0) {
+                    if (JSON.stringify(value).includes("run")) {
+                      //moment.js hack to convert pace into m:ss. The number of seconds is added to start of the day (0:00) and the new "time is converted"
+                      data[value].pace = moment().startOf("day").seconds(Math.round(data[value].moving_time / (data[value].distance / 1000))).format("m:ss");
+                      console.log(data);
+                    } else if (JSON.stringify(value).includes("ride")) {
+                      data[value].pace = (data[value].distance / data[value].moving_time * 3.6).toFixed(2);
+                      console.log(data);
+                    } else {
+                      data[value].pace = moment().startOf("day").seconds(Math.round(data[value].moving_time / (data[value].distance / 100))).format("m:ss");
+                      console.log(data);
+                    }
+                  } else {
+                    data[value].pace = 0;
+                  }
+                }
                 self.sendSocketNotification("DATA", { "identifier": moduleIdentifier, "data": data });
             }
         });

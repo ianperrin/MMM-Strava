@@ -260,6 +260,10 @@ module.exports = NodeHelper.create({
         strava.athletes.stats({ "access_token": accessToken, "id": athleteId }, function (err, payload, limits) {
             var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
             if (data) {
+                for (var value in data) {
+                    value.pace = moment.seconds(value.moving_time / (value.distance / 1000)).format(m:ss);
+                    console.log(value.pace);
+                };
                 self.sendSocketNotification("DATA", { "identifier": moduleIdentifier, "data": data });
             }
         });

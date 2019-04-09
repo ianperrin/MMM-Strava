@@ -261,8 +261,8 @@ module.exports = NodeHelper.create({
             var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
             if (data) {
                 for (var value in data) {
-                    value.pace = moment.seconds(value.moving_time / (value.distance / 1000)).format(m:ss);
-                    console.log(value.pace);
+                    data[value].pace = moment.seconds(data[value].moving_time / (data[value].distance / 1000)).format(m:ss);
+                    console.log(data[value].pace);
                 };
                 self.sendSocketNotification("DATA", { "identifier": moduleIdentifier, "data": data });
             }

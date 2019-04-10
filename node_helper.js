@@ -257,20 +257,24 @@ module.exports = NodeHelper.create({
     getAthleteStats: function (moduleIdentifier, accessToken, athleteId) {
         this.log("Getting athlete stats for " + moduleIdentifier + " using " + athleteId);
         var self = this;
+        const moduleConfig = this.configs[moduleIdentifier].config;
         strava.athletes.stats({ "access_token": accessToken, "id": athleteId }, function (err, payload, limits) {
             var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
             if (data) {
                 for (var value in data) {
                   if (data[value].distance > 0) {
                     if (JSON.stringify(value).includes("run")) {
-                      //moment.js hack to convert pace into m:ss. The number of seconds is added to start of the day (0:00) and the new "time is converted"
-                      data[value].pace = moment().startOf("day").seconds(Math.round(data[value].moving_time / (data[value].distance / 1000))).format("m:ss");
+                      distance = (moduleConfig.units == "metric") ? (data[value].distance / 1000) : (data[value].distance / 1609.34);
+                      //moment.js "hack" to convert pace into m:ss. The number of seconds is added to start of the day (0:00) and the new "time is converted"
+                      data[value].pace = moment().startOf("day").seconds(Math.round(data[value].moving_time / distance)).format("m:ss");
                       console.log(data);
                     } else if (JSON.stringify(value).includes("ride")) {
-                      data[value].pace = (data[value].distance / data[value].moving_time * 3.6).toFixed(2);
+                      distance = (moduleConfig.units == "metric") ? (data[value].distance) : (data[value].distance / 1.60934);
+                      data[value].pace = (distance / data[value].moving_time * 3.6).toFixed(2);
                       console.log(data);
                     } else {
-                      data[value].pace = moment().startOf("day").seconds(Math.round(data[value].moving_time / (data[value].distance / 100))).format("m:ss");
+                      distance = (moduleConfig.units == "metric") ? (data[value].distance / 100) : (data[value].distance / 100 * 0.9144);
+                      data[value].pace = moment().startOf("day").seconds(Math.round(data[value].moving_time / distance)).format("m:ss");
                       console.log(data);
                     }
                   } else {

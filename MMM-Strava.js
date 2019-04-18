@@ -60,6 +60,10 @@ Module.register("MMM-Strava", {
         updateInterval: 10 * 1000,                      // 10 seconds
         animationSpeed: 2.5 * 1000,                     // 2.5 seconds
         runningGoal: 750,
+        goals: {
+          "ride": 1000,
+          "run": 750,
+          "swim": 100},
         debug: true,                                    // Set to true to enable extending logging
     },
     /**
@@ -176,7 +180,8 @@ Module.register("MMM-Strava", {
             error: this.error || null,
             data: this.data || {},
             chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
-            barOffset: Math.round(this.addOffset(this.data.ytd_run_totals.distance / 1000))
+            barOffset: Math.round(this.addOffset(this.data.ytd_run_totals.distance / 1000)),
+            barThreshold: Math.round(-510 * (moment().dayOfYear() / moment().endOf("year").dayOfYear()))
         };
     },
     /**

@@ -209,6 +209,7 @@ Module.register("MMM-Strava", {
         env.addFilter("formatDistance", this.formatDistance.bind(this));
         env.addFilter("formatElevation", this.formatElevation.bind(this));
         env.addFilter("roundValue", this.roundValue.bind(this));
+        env.addFilter("getPace", this.getPace.bind(this));
     },
     getIntervalClass: function(interval)
     {
@@ -230,19 +231,44 @@ Module.register("MMM-Strava", {
         var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
         return intervalDate.format(labelUnit).slice(0,1).toUpperCase();
     },
-    
-    
-    getPace: function(activity, period) {
+
+    /**
+     * @function getPace
+     * @description calculates and returns pace for display in nunjuck template.
+     * @param  {string} acivity            the activity (period is not important here)
+     * @param  {string} distance           the distance for the activity and period
+     * @param  {string} moving_time        the moving time for the activity and period
+
+     * @returns {string} pace
+     */
+    getPace: function(activity, distance, moving_time) {
         moment.locale(this.config.locale);
-        switch (activity) {
+        var pace = 0;
+        if (distance > 0)
+        {
+          switch (activity) {
             case "run":
-                break;
+              distance = (this.config.units == "metric") ? (distance / 1000) : (distance / 1609.34);
+              //moment.js "hack" to convert pace into m:ss. The number of seconds is added to start of the day (0:00) and the new "time" is converted to m:ss
+              pace = moment().startOf("day").seconds(Math.round(moving_time / distance)).format("m:ss");
+              break;
             case "swim":
-                break;
+              distance = (this.config.units == "metric") ? (distance) : (distance / 1.60934);
+              pace = (distance / moving_time * 3.6).toFixed(2);
+              break;
             case "ride":
-                break;
+              distance = (this.config.units == "metric") ? (distance / 100) : (distance / 100 * 0.9144);
+              pace = moment().startOf("day").seconds(Math.round(moving_time / distance)).format("m:ss");
+              break;
+            default:
+              pace = 0;
+          }
+        } else {
+          pace = 0;
         }
+        return pace;
     },
+
     formatTime: function(timeInSeconds) {
         var duration = moment.duration(timeInSeconds, "seconds");
         return Math.floor(duration.asHours()) + "h " + duration.minutes() + "m";

@@ -60,7 +60,7 @@
                 <td class="bright align-right stat">{{activity_data.elapsed_time | formatTime }}</td>
                 {% endif %}
                 {% if 'pace' in config.stats %}
-                <td class="bright align-right stat">{{activity_data.pace}}</td>
+                <td class="bright align-right stat">{{getPace(activity, activity_data.distance, activity_data.moving_time)}}</td>
                 {% endif %}
                 {% if ('achievements' in config.stats) and (config.period === "recent") %}
                 <td class="bright align-right stat">{{activity_data.achievement_count}}</td>

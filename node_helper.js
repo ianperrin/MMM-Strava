@@ -348,7 +348,7 @@ module.exports = NodeHelper.create({
         // Summarise activity totals and interval totals
         for (var i = 0; i < Object.keys(activityList).length; i++) {
             // Merge virtual activities
-            activityName = activityList[i].type.toLowerCase().replace("virtual");
+            activityName = activityList[i].type.toLowerCase().replace("virtual", "");
             var activityTypeSummary = activitySummary[activityName];
             // Update activity summaries
             if (activityTypeSummary) {

@@ -49,7 +49,7 @@ Module.register("MMM-Strava", {
     defaults: {
         client_id: "",
         client_secret: "",
-        mode: "progressbar",                                  // Possible values "table", "chart", "progressbar"
+        mode: "chart",                                  // Possible values "table", "chart", "progressbar"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
         stats: ["count", "distance", "achievements"],   // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"

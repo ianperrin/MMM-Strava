@@ -193,7 +193,11 @@ div.module.MMM-Strava-Authorisation {
 
 .MMM-Strava .progressSVG path {
   will-change: auto;
-  stroke-width: 30px;
+  stroke-width: 35px;
   stroke-miterlimit: round;
   transition: stroke-dashoffset 850ms ease-in-out;
+}
+
+.MMM-Strava .progressbar div {
+  text-align: center;
 }

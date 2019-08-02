@@ -9,7 +9,7 @@
 {% else %}
     <div class="small" role="progressbar">
 {% for activity in config.activities %}
-  {% set activity_data = data[config.period + "_" + activity | lower + "_totals"] %}
+  {% set activity_stats = stats[config.period + "_" + activity | lower + "_totals"] %}
 		<svg  xmlns="http://www.w3.org/2000/svg" height="300" width="300" viewBox="0 0 300 300" data-value="0">
 			<path class="bg" stroke="#ccc" d="M90 249.5 a 100 100 0 1 1 117.93 0"  fill="none"/>
       <path class="meter" stroke="#09c" d="M90 249.5 a 100 100 0 1 1 117.93 0" fill="none" stroke-dasharray="510" stroke-dashoffset="510"/>

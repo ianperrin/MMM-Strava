@@ -57,13 +57,15 @@ Module.register("MMM-Strava", {
         locale: config.language,
         units: config.units,
         reloadInterval: 5 * 60 * 1000,                  // every 5 minutes
-        updateInterval: 10 * 1000,                      // 10 seconds
+        updateInterval: 20 * 1000,                      // 10 seconds
         animationSpeed: 2.5 * 1000,                     // 2.5 seconds
-        runningGoal: 750,
+        showProgressBar: true,
+        shownPB: "ride",                                //will revolve between all progressbars with a goal
         goals: {
           "ride": 1000,
           "run": 750,
-          "swim": 100},
+          "swim": 0,
+        },
         debug: true,                                    // Set to true to enable extending logging
     },
     /**
@@ -74,6 +76,7 @@ Module.register("MMM-Strava", {
      * @member {boolean} rotating - Flag to indicate the rotating state of the module.
      */
     rotating: false,
+
     /**
      * @function getStyles
      * @description Style dependencies for this module.
@@ -123,7 +126,8 @@ Module.register("MMM-Strava", {
         // Add custom filters
         this.addFilters();
         // Initialise helper and schedule api calls
-        this.sendSocketNotification("SET_CONFIG", {"identifier": this.identifier, "config": this.config});
+        this.log("Sending socket notification GET_DATA");
+        if (this.loading) {this.sendSocketNotification("GET_STRAVA_DATA", {"identifier": this.identifier, "config": this.config});}
         this.scheduleUpdates();
     },
     /**
@@ -137,9 +141,14 @@ Module.register("MMM-Strava", {
     socketNotificationReceived: function(notification, payload) {
         this.log(`Receiving notification: ${notification} for ${payload.identifier}`);
         if (payload.identifier === this.identifier) {
-            if (notification === "DATA") {
-                this.data = payload.data;
-                this.log("Strava data: "+JSON.stringify(this.data));
+            if (notification === "STATS") {
+                this.stats = payload.stats;
+                this.log("Athlete stats: "+JSON.stringify(this.stats));
+                //this.loading = false;
+                //this.updateDom(this.config.animationSpeed);
+            } else if (notification === "ACTIVITIES") {
+                this.activities = payload.data;
+                this.log("Athlete activities: "+JSON.stringify(this.activities));
                 this.loading = false;
                 this.updateDom(this.config.animationSpeed);
             } else if (notification === "ERROR") {
@@ -172,16 +181,19 @@ Module.register("MMM-Strava", {
      */
     getTemplateData: function() {
         moment.locale(this.config.locale);
-        console.log("Data: "+JSON.stringify(this.data));
-        console.log("ytd Distance: "+this.data.ytd_run_totals.distance / 1000);
+        this.log("Updating template data");
         return {
             config: this.config,
             loading: this.loading,
             error: this.error || null,
-            data: this.data || {},
+            stats: this.stats || {},
+            activities: this.activities || {},
             chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
-            barOffset: Math.round(this.addOffset(this.data.ytd_run_totals.distance / 1000)),
-            barThreshold: Math.round(-510 * (moment().dayOfYear() / moment().endOf("year").dayOfYear()))
+            progressBar: {
+              "run": this.addMeasure(this.stats.ytd_run_totals.distance, "run"),
+              "ride": this.addMeasure(this.stats.ytd_ride_totals.distance, "ride"),
+              "swim": this.addMeasure(this.stats.ytd_swim_totals.distance, "swim")
+            }
         };
     },
     /**
@@ -197,6 +209,7 @@ Module.register("MMM-Strava", {
                 setInterval(function() {
                     // Get next period
                     self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
+                    self.config.shownPB = ((self.config.shownPB === "ride" && self.config.goals.run) ? "run" : ((self.config.shownPB === "run" && self.config.goals.swim) ? "swim" : "ride"));
                     self.updateDom(self.config.animationSpeed);
                 }, this.config.updateInterval);
             }
@@ -290,49 +303,24 @@ Module.register("MMM-Strava", {
      * @description adds measure offset to progress bar to show comparative progress.
      *
      */
-    addMeasure: function() {
-      var measure =  (moment().dayOfYear() / 365);
-      var to = Math.round( 510 * (1 - measure));
-      //this.log("New offset: "+to);
-      return(Math.max(0, to));
-    },
+    addMeasure: function(distance, sport) {
+      var partOfYear = (moment().dayOfYear() / moment().endOf("year").dayOfYear());
+      var toMeasure = Math.round( 510 * (1 - partOfYear));
 
-    /**
-     * @function addMeasure
-     * @description adds offset to progress bar to show actual progress.
-     *
-     */
-    addOffset: function(distance) {
-      this.log("Correcting Offset!");
-/*      const meters = document.querySelectorAll('svg[data-value] .meter');
-      this.log(meters);
-      meters.forEach( (path) => {
-        // Get the length of the path
-        let length = path.getTotalLength();
-        // console.log(length) once and hardcode the stroke-dashoffset and stroke-dasharray in the SVG if possible
-        // or uncomment to set it dynamically
-        // path.style.strokeDashoffset = length;
-        // path.style.strokeDasharray = length;
-
-        // Get the value of the meter
-        // let value = parseInt(path.parentNode.getAttribute('data-value'));
-        let value = Math.round(distance/this.config.runningGoal);
-        this.log("Data value: "+value);
-        // Calculate the percentage of the total length
-        let to = length * ((100 - value) / 100);
-        this.log("New offset: "+to);
-        // Trigger Layout in Safari hack https://jakearchibald.com/2013/animated-line-drawing-svg/
-        path.getBoundingClientRect();
-        // Set the Offset
-        return(Math.max(0, to));
-      });
-*/
-      var value = (distance / this.config.runningGoal);
-      this.log("Data value: " + value);
+      var reached = (distance / (this.config.goals[sport] * 1000));
       // Calculate the percentage of the total length
-      var to = Math.round( 510 * (1 - value));
-      this.log("New offset: "+to);
-      // Set the Offset
-      return(Math.max(0, to));
+      var toRes = Math.round( 510 * (1 - reached));
+      //this.log("New offset: "+to);
+
+      var distToMeasure = Math.round(partOfYear * this.config.goals[sport] * 1000);
+      var deviation = distance - distToMeasure;
+      //return progress bar parameters
+      return({
+        "toMeasure": Math.max(0, toMeasure),
+        "offset": Math.max(0, toRes),
+        "deviation": deviation,
+        "threshold": Math.round(-510 * partOfYear),
+        "distance": distance,
+      });
     }
 });

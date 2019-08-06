@@ -82,8 +82,9 @@
             <path class="threshold" stroke="#fff" d="M90 249.5 a 100 100 0 1 1 117.93 0"  fill="none" stroke-dasharray="3 600" stroke-dashoffset="{{progressBar[pbAct].threshold}}"/>
           </g>
         </svg>
-        <div class="small">
-          <span>{{progressBar[pbAct].distance | formatDistance(0, true)}} // {{progressBar[pbAct].deviation | formatDistance(0, true)}}</span>
+        <div class="small pbdata" style="text-align:center">
+          <div class="strava-icon icon-pb icon-{{pbAct}}"></div>
+          <div class="small bright progressdata">{{progressBar[pbAct].distance | formatDistance(0, true)}}<br>{{progressBar[pbAct].deviation | formatDistance(0, true)}}</div>
         </div>
     </div>
 {% endif %}

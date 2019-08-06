@@ -9,21 +9,21 @@
 {% else %}
     <div class="small">
 {% for activity in config.activities %}
-{% set total_distance = data[activity].total_distance %}
+{% set total_distance = activities[activity].total_distance %}
         <div class="chart" id="{{activity | lower }}">
             <div class="primary-stats">
                 <span class="actual small bright">{{ total_distance | formatDistance(1, true) }}</span>
                 <ul class="inline-stats">
-                    <li class="xsmall light">{{ data[activity].total_moving_time | formatTime }}</li>
+                    <li class="xsmall light">{{ activities[activity].total_moving_time | formatTime }}</li>
                     {%  if activity !== 'swim' %}
-                    <li class="xsmall light">{{ data[activity].total_elevation_gain | formatElevation(1, true) }}</li>
+                    <li class="xsmall light">{{ activities[activity].total_elevation_gain | formatElevation(1, true) }}</li>
                     {% endif %}
                 </ul>
             </div>
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="{{ 12.5 * (data[activity].intervals | length) }}" height="68">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="{{ 12.5 * (activities[activity].intervals | length) }}" height="68" class="chartSVG">
                 <g class="activity-chart" transform="translate(3.3, 0)">
-                {% for interval in data[activity].intervals %}
-                {% set bar_height = (interval/data[activity].max_interval_distance * 45) if (interval > 0) else 2 %}
+                {% for interval in activities[activity].intervals %}
+                {% set bar_height = (interval/activities[activity].max_interval_distance * 45) if (interval > 0) else 2 %}
                     <g class="bar-container" transform="translate({{ loop.index0 * 12.5 }}, 0)">
                         <rect class="bar {{ loop.index0 | getIntervalClass }}" y="{{ 50 - bar_height }}" width="6.6" height="{{ bar_height }}"></rect>
                     </g>

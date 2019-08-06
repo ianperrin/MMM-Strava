@@ -1,3 +1,7 @@
+
+
+
+
 /**
  * @file MMM-Strava.js
  *
@@ -45,7 +49,7 @@ Module.register("MMM-Strava", {
     defaults: {
         client_id: "",
         client_secret: "",
-        mode: "table",                                  // Possible values "table", "chart"
+        mode: "chart",                                  // Possible values "table", "chart", "progressbar"
         activities: ["ride", "run", "swim"],            // Possible values "ride", "run", "swim"
         period: "recent",                               // Possible values "recent", "ytd", "all"
         stats: ["count", "distance", "pace", "achievements"],   // Possible values "count", "distance", "pace", "elevation", "moving_time", "elapsed_time", "achievements"
@@ -53,9 +57,16 @@ Module.register("MMM-Strava", {
         locale: config.language,
         units: config.units,
         reloadInterval: 5 * 60 * 1000,                  // every 5 minutes
-        updateInterval: 10 * 1000,                      // 10 seconds
-        animationSpeed: 2.5 * 1000,                     // 2.5 seconds
-        debug: false,                                   // Set to true to enable extending logging
+        updateInterval: 20 * 1000,                      // 10 seconds
+        animationSpeed: 0 * 1000,                     // 2.5 seconds
+        showProgressBar: true,
+        shownPB: "ride",                                //will revolve between all progressbars with a goal
+        goals: {
+          "ride": 1000,
+          "run": 750,
+          "swim": 0,
+        },
+        debug: true,                                    // Set to true to enable extending logging
     },
     /**
      * @member {boolean} loading - Flag to indicate the loading state of the module.
@@ -65,6 +76,7 @@ Module.register("MMM-Strava", {
      * @member {boolean} rotating - Flag to indicate the rotating state of the module.
      */
     rotating: false,
+
     /**
      * @function getStyles
      * @description Style dependencies for this module.
@@ -114,22 +126,23 @@ Module.register("MMM-Strava", {
         // Add custom filters
         this.addFilters();
         // Initialise helper and schedule api calls
-        this.sendSocketNotification("SET_CONFIG", {"identifier": this.identifier, "config": this.config});
+        this.log("Sending socket notification GET_DATA");
+        if (this.loading) {this.sendSocketNotification("GET_STRAVA_DATA", {"identifier": this.identifier, "config": this.config});}
         this.scheduleUpdates();
     },
-    /**
-     * @function socketNotificationReceived
-     * @description Handles incoming messages from node_helper.
-     * @override
-     *
-     * @param {string} notification - Notification name
-     * @param {Object,<string,*} payload - Detailed payload of the notification.
-     */
+
+
     socketNotificationReceived: function(notification, payload) {
         this.log(`Receiving notification: ${notification} for ${payload.identifier}`);
         if (payload.identifier === this.identifier) {
-            if (notification === "DATA") {
-                this.data = payload.data;
+            if (notification === "STATS") {
+                this.stats = payload.stats;
+                this.log("Athlete stats: "+JSON.stringify(this.stats));
+                //this.loading = false;
+                //this.updateDom(this.config.animationSpeed);
+            } else if (notification === "ACTIVITIES") {
+                this.activities = payload.data;
+                this.log("Athlete activities: "+JSON.stringify(this.activities));
                 this.loading = false;
                 this.updateDom(this.config.animationSpeed);
             } else if (notification === "ERROR") {
@@ -142,37 +155,32 @@ Module.register("MMM-Strava", {
             }
         }
     },
-    /**
-     * @function getTemplate
-     * @description Nunjuck template.
-     * @override
-     *
-     * @returns {string} Path to nunjuck template.
-     */
+
+
     getTemplate: function() {
         return "templates\\MMM-Strava." + this.config.mode + ".njk";
     },
-    /**
-     * @function getTemplateData
-     * @description Data that gets rendered in the nunjuck template.
-     * @override
-     *
-     * @returns {string} Data for the nunjuck template.
-     */
+
+
     getTemplateData: function() {
         moment.locale(this.config.locale);
+        this.log("Updating template data");
         return {
             config: this.config,
             loading: this.loading,
             error: this.error || null,
-            data: this.data || {},
+            stats: this.stats || {},
+            activities: this.activities || {},
             chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
+            progressBar: {
+              "run": this.addMeasure(this.stats.ytd_run_totals.distance, "run"),
+              "ride": this.addMeasure(this.stats.ytd_ride_totals.distance, "ride"),
+              "swim": this.addMeasure(this.stats.ytd_swim_totals.distance, "swim")
+            }
         };
     },
-    /**
-     * @function scheduleUpdates
-     * @description Schedules table rotation
-     */
+
+
     scheduleUpdates: function() {
         var self = this;
         // Schedule table rotation
@@ -182,25 +190,21 @@ Module.register("MMM-Strava", {
                 setInterval(function() {
                     // Get next period
                     self.config.period = ((self.config.period === "recent") ? "ytd" : ((self.config.period === "ytd") ? "all" : "recent"));
+                    self.config.shownPB = ((self.config.shownPB === "ride" && self.config.goals.run) ? "run" : ((self.config.shownPB === "run" && self.config.goals.swim) ? "swim" : "ride"));
                     self.updateDom(self.config.animationSpeed);
                 }, this.config.updateInterval);
             }
         }
     },
-    /**
-     * @function log
-     * @description logs the message, prefixed by the Module name, if debug is enabled.
-     * @param  {string} msg            the message to be logged
-     */
+
+
     log: function(msg) {
         if (this.config && this.config.debug) {
             Log.info(`${this.name}: ` + JSON.stringify(msg));
         }
     },
-    /**
-     * @function addFilters
-     * @description adds filters to the Nunjucks environment.
-     */
+
+
     addFilters() {
         var env = this.nunjucksEnvironment();
         env.addFilter("getIntervalClass", this.getIntervalClass.bind(this));
@@ -211,6 +215,8 @@ Module.register("MMM-Strava", {
         env.addFilter("roundValue", this.roundValue.bind(this));
         env.addFilter("getPace", this.getPace.bind(this));
     },
+
+
     getIntervalClass: function(interval)
     {
         moment.locale(this.config.locale);
@@ -223,6 +229,8 @@ Module.register("MMM-Strava", {
         }
         return className;
     },
+
+
     getLabel: function(interval) {
         moment.locale(this.config.locale);
         const startUnit = this.config.period === "ytd" ? "year" : "week";
@@ -269,22 +277,27 @@ Module.register("MMM-Strava", {
         return pace;
     },
 
+
     formatTime: function(timeInSeconds) {
         var duration = moment.duration(timeInSeconds, "seconds");
         return Math.floor(duration.asHours()) + "h " + duration.minutes() + "m";
     },
-    // formatDistance
+
+
     formatDistance: function(value, digits, showUnits) {
         const distanceMultiplier = this.config.units === "imperial" ? 0.0006213712 : 0.001;
         const distanceUnits = this.config.units === "imperial" ? " mi" : " km";
         return this.formatNumber(value, distanceMultiplier, digits, (showUnits ? distanceUnits : null));
     },
-    // formatElevation
+
+
     formatElevation: function(value, digits, showUnits) {
         const elevationMultiplier = this.config.units === "imperial" ? 3.28084 : 1;
         const elevationUnits = this.config.units === "imperial" ? " ft" : " m";
         return this.formatNumber(value, elevationMultiplier, digits, (showUnits ? elevationUnits : null));
     },
+
+
     // formatNumber
     formatNumber: function(value, multipler, digits, units) {
         // Convert value
@@ -297,14 +310,37 @@ Module.register("MMM-Strava", {
         }
         return value;
     },
-    /**
-     * @function roundValue
-     * @description rounds the value to number of digits.
-     * @param  {decimal} value            the value to be rounded
-     * @param  {integer} digits           the number of digits to round the value to
-     */
+
+
     roundValue: function(value, digits) {
-        var rounder = Math.pow(10, digits);
-        return (Math.round(value * rounder) / rounder).toFixed(digits);
+      var rounder = Math.pow(10, digits);
+      return (Math.round(value * rounder) / rounder).toFixed(digits);
+    },
+
+
+    /**
+     * @function addMeasure
+     * @description adds measure offset to progress bar to show comparative progress.
+     *
+     */
+    addMeasure: function(distance, sport) {
+      var partOfYear = (moment().dayOfYear() / moment().endOf("year").dayOfYear());
+      var toMeasure = Math.round( 510 * (1 - partOfYear));
+
+      var reached = (distance / (this.config.goals[sport] * 1000));
+      // Calculate the percentage of the total length
+      var toRes = Math.round( 510 * (1 - reached));
+      //this.log("New offset: "+to);
+
+      var distToMeasure = Math.round(partOfYear * this.config.goals[sport] * 1000);
+      var deviation = distance - distToMeasure;
+      //return progress bar parameters
+      return({
+        "toMeasure": Math.max(0, toMeasure),
+        "offset": Math.max(0, toRes),
+        "deviation": deviation,
+        "threshold": Math.round(-510 * partOfYear),
+        "distance": distance,
+      });
     }
 });

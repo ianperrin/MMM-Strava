@@ -66,8 +66,8 @@ module.exports = NodeHelper.create({
      */
     socketNotificationReceived: function (notification, payload) {
         var self = this;
-        this.log("Received notification: " + notification);
-        if (notification === "SET_CONFIG") {
+        this.log("Received notification: " + notification + " at " +moment().format("H:mm:ss"));
+        if (notification === "GET_STRAVA_DATA") {
             // Validate module config
             if (payload.config.access_token || payload.config.strava_id) {
                 this.log(`Legacy config in use for ${payload.identifier}`);
@@ -221,27 +221,26 @@ module.exports = NodeHelper.create({
      * @param {string} moduleIdentifier - The module identifier.
      */
     getData: function (moduleIdentifier) {
-        this.log(`Getting data for ${moduleIdentifier}`);
+        this.log(`Getting data for ${moduleIdentifier} at ` +moment().format("H:mm:ss"));
         const moduleConfig = this.configs[moduleIdentifier].config;
         try {
             // Get access token
             const accessToken = moduleConfig.access_token || this.tokens[moduleConfig.client_id].token.access_token;
-            if (moduleConfig.mode === "table") {
+
                 try {
                     // Get athelete Id
                     const athleteId = moduleConfig.strava_id || this.tokens[moduleConfig.client_id].token.athlete.id;
                     // Call api
                     this.getAthleteStats(moduleIdentifier, accessToken, athleteId);
+
+                    moment.locale(moduleConfig.locale);
+                    var after = moment().startOf(moduleConfig.period === "ytd" ? "year" : "week").unix();
+                    // Call api
+                    this.getAthleteActivities(moduleIdentifier, accessToken, after);
+
                 } catch (error) {
                     this.log(`Athete id not found for ${moduleIdentifier}`);
                 }
-            } else if (moduleConfig.mode === "chart") {
-                // Get initial date
-                moment.locale(moduleConfig.locale);
-                var after = moment().startOf(moduleConfig.period === "ytd" ? "year" : "week").unix();
-                // Call api
-                this.getAthleteActivities(moduleIdentifier, accessToken, after);
-            }
         } catch (error) {
             this.log(`Access token not found for ${moduleIdentifier}`);
         }
@@ -255,13 +254,13 @@ module.exports = NodeHelper.create({
      * @param {integer} athleteId
      */
     getAthleteStats: function (moduleIdentifier, accessToken, athleteId) {
-        this.log("Getting athlete stats for " + moduleIdentifier + " using " + athleteId);
+        this.log(`Getting athlete stats for ${moduleIdentifier} using id ` + athleteId);
         var self = this;
         const moduleConfig = this.configs[moduleIdentifier].config;
         strava.athletes.stats({ "access_token": accessToken, "id": athleteId }, function (err, payload, limits) {
             var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
             if (data) {
-                self.sendSocketNotification("DATA", { "identifier": moduleIdentifier, "data": data });
+                self.sendSocketNotification("STATS", { "identifier": moduleIdentifier, "stats": data });
             }
         });
     },
@@ -281,9 +280,9 @@ module.exports = NodeHelper.create({
             if (activityList) {
                 var data = {
                     "identifier": moduleIdentifier,
-                    "data": self.summariseActivities(moduleIdentifier, activityList)
+                    "activities": self.summariseActivities(moduleIdentifier, activityList)
                 };
-                self.sendSocketNotification("DATA", data);
+                self.sendSocketNotification("ACTIVITIES", data);
             }
         });
     },
@@ -419,7 +418,7 @@ module.exports = NodeHelper.create({
      */
     log: function (msg) {
         //if (this.config && this.config.debug) {
-        console.log(this.name + ":", JSON.stringify(msg));
+          console.log(this.name + ":", JSON.stringify(msg));
         //}
     }
 });

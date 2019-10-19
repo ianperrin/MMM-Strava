@@ -40,6 +40,7 @@ A MagicMirror Module for displaying your Strava data.
    ````bash
    cd ~/MagicMirror/modules
    git clone https://github.com/ianperrin/MMM-Strava.git
+   cd ~/MagicMirror/modules/MMM-Strava
    npm install --production
    ````
 
@@ -86,7 +87,7 @@ To update the module to the latest version,
 
 2. Update your config file to remove the `strava_id` and `access_token` options and add the new `client_id` and `client_secret` options - *See steps 2 and 4 in the [installation notes](#installation)*.
 
-**Please Note** Following the changes to Strava’s [authentication model](https://developers.strava.com/docs/authentication/)  is available.To support the new authentication flow, the client_id and client_secret must be included in the config in place of the deprecated strava_id and access_token options. The legacy options can still be used, but will trigger an alert on the mirror when the module is loaded and it is recommended they are removed.
+**Please Note** Following the changes to Strava’s [authentication model](https://developers.strava.com/docs/authentication/), the client_id and client_secret must be included in the config in place of the deprecated strava_id and access_token options.
 
 If you haven't changed the module, this should work without any problems. If you have a problem, you can reset the module using `git reset --hard`, after which `git pull` should be possible. You may wish to use `git status` to see any changes before doing so.
 

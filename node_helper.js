@@ -21,7 +21,7 @@ const moment = require("moment");
  * @external strava-v3
  * @see https://www.npmjs.com/package/strava-v3
  */
-const strava = require("./strava_api.js");
+const strava = require("strava-v3");
 
 /**
  * @alias fs
@@ -46,7 +46,6 @@ module.exports = NodeHelper.create({
     start: function () {
         console.log("Starting module helper: " + this.name);
         this.createRoutes();
-        this.readTokens();
     },
     // Set the minimum MagicMirror module version for this module.
     requiresVersion: "2.2.0",
@@ -68,10 +67,11 @@ module.exports = NodeHelper.create({
         var self = this;
         this.log("Received notification: " + notification);
         if (notification === "SET_CONFIG") {
+            this.readTokens();
             // Validate module config
             if (payload.config.access_token || payload.config.strava_id) {
                 this.log(`Legacy config in use for ${payload.identifier}`);
-                this.sendSocketNotification("WARNING", { "identifier": payload.identifier, "data": { message: "Strava authorisation is changing. Please update your config." } });
+                this.sendSocketNotification("WARNING", { "identifier": payload.identifier, "data": { message: "Strava authorisation has changed. Please update your config." } });
             }
             // Initialise and store module config
             if (!(payload.identifier in this.configs)) {
@@ -131,6 +131,12 @@ module.exports = NodeHelper.create({
             const clientId = this.configs[moduleIdentifier].config.client_id;
             const redirectUri = `http://${req.headers.host}/${this.name}/auth/exchange`;
             this.log(`Requesting access for ${clientId}`);
+            // Set Strava config
+            strava.config({
+                "client_id"     : clientId,
+                "redirect_uri"  : redirectUri
+            });
+            
             const args = {
                 "client_id": clientId,
                 "redirect_uri": redirectUri,
@@ -159,19 +165,23 @@ module.exports = NodeHelper.create({
             const clientId = this.configs[moduleIdentifier].config.client_id;
             const clientSecret = this.configs[moduleIdentifier].config.client_secret;
             this.log(`Getting token for ${clientId}`);
+            strava.config({
+                "client_id"     : clientId,
+                "client_secret"  : clientSecret
+             });
             var self = this;
             const args = {
                 client_id: clientId,
                 client_secret: clientSecret
             };
-            strava.oauth.exchangeToken(args, authCode, function (err, payload, limits) {
+            strava.oauth.getToken(authCode, function (err, payload, limits) {
                 if (err) {
                     console.error(err);
                     res.redirect(`/${self.name}/auth/?error=${err}`);
                     return;
                 }
                 // Store tokens
-                self.saveToken(clientId, payload, (err, data) => {
+                self.saveToken(clientId, payload.body, (err, data) => {
                     // redirect route
                     res.redirect(`/${self.name}/auth/?status=success`);
                 });
@@ -190,29 +200,36 @@ module.exports = NodeHelper.create({
     refreshTokens: function (moduleIdentifier) {
         this.log(`Refreshing tokens for ${moduleIdentifier}`);
         var self = this;
-        const args = {
-            client_id: this.configs[moduleIdentifier].config.client_id,
-            client_secret: this.configs[moduleIdentifier].config.client_secret
-        };
+        const clientId = this.configs[moduleIdentifier].config.client_id;
+        const clientSecret = this.configs[moduleIdentifier].config.client_secret;
         const token = this.tokens[args.client_id].token;
-        strava.oauth.refreshTokens(args, token.refresh_token, function (err, payload, limits) {
-            var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
-            if (data && (token.access_token != data.access_token || token.refresh_token != data.refresh_token)) {
-                token.token_type = data.token_type || token.token_type;
-                token.access_token = data.access_token || token.access_token;
-                token.refresh_token = data.refresh_token || token.refresh_token;
-                token.expires_at = data.expires_at || token.expires_at;
-                // Store tokens
-                self.saveToken(args.client_id, token, (err, data) => {
-                    if (!err) {
-                        self.getData(moduleIdentifier);
-                    }
-                });
-            } else {
-                throw new Error(`Failed to refresh tokens for ${moduleIdentifier}. Check config or module authorisation.`);
+        this.log(`Refreshing token for ${clientId}`);
+        strava.config({
+            "client_id"     : clientId,
+            "client_secret"  : clientSecret
+         });
+        var response = strava.oauth.refreshToken(token.refresh_token)
+        try {
+            if (response.statusCode = 200) {
+                var data = response.body;
+                if (data && (token.access_token != data.access_token || token.refresh_token != data.refresh_token)) {
+                    token.token_type = data.token_type || token.token_type;
+                    token.access_token = data.access_token || token.access_token;
+                    token.refresh_token = data.refresh_token || token.refresh_token;
+                    token.expires_at = data.expires_at || token.expires_at;
+                    // Store tokens
+                    self.saveToken(args.client_id, token, (err, data) => {
+                        if (!err) {
+                            self.getData(moduleIdentifier);
+                        }
+                    });
+                } else {
+                    throw new Error(`Failed to refresh tokens for ${moduleIdentifier}. Check config or module authorisation.`);
+                }
             }
-            return;
-        });
+        } catch (error) {
+            this.log(`Failed to refresh tokens for ${moduleIdentifier}. Check config or module authorisation.`);
+        }
     },
     /**
      * @function getData
@@ -229,6 +246,8 @@ module.exports = NodeHelper.create({
             if (moduleConfig.mode === "table") {
                 try {
                     // Get athelete Id
+                    this.log(moduleConfig.strava_id);
+                    this.log(this.tokens[moduleConfig.client_id].token);
                     const athleteId = moduleConfig.strava_id || this.tokens[moduleConfig.client_id].token.athlete.id;
                     // Call api
                     this.getAthleteStats(moduleIdentifier, accessToken, athleteId);

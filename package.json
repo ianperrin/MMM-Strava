@@ -41,9 +41,6 @@
     },
     "dependencies": {
         "moment": "latest",
-        "path": "0.12.7",
-        "querystring": "0.2.0",
-        "request": "^2.87.0",
-        "strava-v3": "1.14.0"
+        "strava-v3": "2.0.1"
     }
 }

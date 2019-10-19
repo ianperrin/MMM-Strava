@@ -36,7 +36,7 @@
         "grunt-stylelint": "latest",
         "grunt-yamllint": "latest",
         "mocha": "^4.1.0",
-        "stylelint": "^9.0.0",
+        "stylelint": "^10.1.0",
         "stylelint-config-standard": "latest"
     },
     "dependencies": {

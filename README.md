@@ -47,6 +47,7 @@ A MagicMirror Module for displaying your Strava data.
 2. Create a Strava API Application and note the `client_id` and `client_secret`
 
     * Browse to your [My API Application](https://www.strava.com/settings/api) page and log in to Strava if prompted.
+    * Make sure the callback domain matches the IP address (or URL) used to access the MagicMirror.
     * Make a note of the `client_id` and `client_secret`
 
 3. Add the module to the config file (`~/MagicMirror/config/config.js`) for your mirror.
@@ -57,8 +58,8 @@ A MagicMirror Module for displaying your Strava data.
            module: "MMM-Strava",
            position: "top_right",
            config: {
-               client_id: "your_strava_application_id",
-               client_secret: "your_strava_api_access_token"
+               client_id: "your_strava_client_id",
+               client_secret: "your_strava_api_client_secret"
            }
        }
    ]

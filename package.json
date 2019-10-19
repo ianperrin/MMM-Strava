@@ -1,46 +1,50 @@
 {
-    "name": "MMM-Strava",
-    "version": "2.0.0",
-    "description": "A MagicMirror Module for displaying your Strava data.",
-    "main": "MMM-Strava.js",
-    "scripts": {
-        "test": "grunt test",
-        "unit": "grunt unit",
-        "lint": "grunt lint"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ianperrin/MMM-Strava.git"
-    },
-    "keywords": [
-        "magic",
-        "mirror",
-        "strava"
-    ],
-    "author": "Ian Perrin",
-    "contributors": [
-        "https://github.com/ianperrin/MMM-Strava/graphs/contributors"
-    ],
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/ianperrin/MMM-Strava/issues"
-    },
-    "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
-    "devDependencies": {
-        "grunt": "latest",
-        "grunt-contrib-jshint": "latest",
-        "grunt-eslint": "latest",
-        "grunt-jsonlint": "latest",
-        "grunt-markdownlint": "^1.0.43",
-        "grunt-mocha-test": "^0.13.3",
-        "grunt-stylelint": "latest",
-        "grunt-yamllint": "latest",
-        "mocha": "^4.1.0",
-        "stylelint": "^9.0.0",
-        "stylelint-config-standard": "latest"
-    },
-    "dependencies": {
-        "moment": "latest",
-        "strava-v3": "2.0.1"
-    }
+  "name": "MMM-Strava",
+  "version": "2.0.0",
+  "description": "A MagicMirror Module for displaying your Strava data.",
+  "main": "MMM-Strava.js",
+  "scripts": {
+    "test": "grunt test",
+    "unit": "grunt unit",
+    "lint": "grunt lint",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianperrin/MMM-Strava.git"
+  },
+  "keywords": [
+    "magic",
+    "mirror",
+    "strava"
+  ],
+  "author": "Ian Perrin",
+  "contributors": [
+    "https://github.com/ianperrin/MMM-Strava/graphs/contributors"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ianperrin/MMM-Strava/issues"
+  },
+  "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-eslint": "latest",
+    "grunt-jsonlint": "latest",
+    "grunt-markdownlint": "^1.0.43",
+    "grunt-mocha-test": "^0.13.3",
+    "grunt-stylelint": "latest",
+    "grunt-yamllint": "latest",
+    "mocha": "^4.1.0",
+    "stylelint": "^9.0.0",
+    "stylelint-config-standard": "latest"
+  },
+  "dependencies": {
+    "moment": "latest",
+    "strava-v3": "2.0.1",
+    "snyk": "^1.236.0"
+  },
+  "snyk": true
 }

@@ -246,8 +246,6 @@ module.exports = NodeHelper.create({
             if (moduleConfig.mode === "table") {
                 try {
                     // Get athelete Id
-                    this.log(moduleConfig.strava_id);
-                    this.log(this.tokens[moduleConfig.client_id].token);
                     const athleteId = moduleConfig.strava_id || this.tokens[moduleConfig.client_id].token.athlete.id;
                     // Call api
                     this.getAthleteStats(moduleIdentifier, accessToken, athleteId);

@@ -66,7 +66,13 @@ A MagicMirror Module for displaying your Strava data.
 
    The full list of config options can be found in the [configuration options](#configuration-options) table.
 
-4. Authenticate the module to allow access to the Strava API.
+4. Restart the MagicMirror
+
+    ````bash
+    pm2 restart mm
+    ````
+
+5. Authenticate the module to allow access to the Strava API.
 
     * Browse to the Strava authentication page: [http://localhost:8080/MMM-Strava/auth/](http://localhost:8080/MMM-Strava/auth/) - _the exact URL may vary depending on your configuration._
     * Select the module you wish to authenticate (e.g. `module_4_MMM-Strava`) and click/tap *Authorise* -_The number of the modules will vary depending on your configuration._

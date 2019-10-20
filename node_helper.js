@@ -133,8 +133,8 @@ module.exports = NodeHelper.create({
             this.log(`Requesting access for ${clientId}`);
             // Set Strava config
             strava.config({
-                "client_id"     : clientId,
-                "redirect_uri"  : redirectUri
+                "client_id": clientId,
+                "redirect_uri": redirectUri
             });
             const args = {
                 "client_id": clientId,
@@ -165,8 +165,8 @@ module.exports = NodeHelper.create({
             const clientSecret = this.configs[moduleIdentifier].config.client_secret;
             this.log(`Getting token for ${clientId}`);
             strava.config({
-                "client_id"     : clientId,
-                "client_secret"  : clientSecret
+                "client_id": clientId,
+                "client_secret": clientSecret
             });
             var self = this;
             strava.oauth.getToken(authCode, function (err, payload, limits) {
@@ -200,28 +200,22 @@ module.exports = NodeHelper.create({
         const token = this.tokens[clientId].token;
         this.log(`Refreshing token for ${clientId}`);
         strava.config({
-            "client_id"     : clientId,
-            "client_secret"  : clientSecret
+            "client_id": clientId,
+            "client_secret": clientSecret
         });
-        var response = strava.oauth.refreshToken(token.refresh_token);
         try {
-            if (response.statusCode == 200) {
-                var data = response.body;
-                if (data && (token.access_token != data.access_token || token.refresh_token != data.refresh_token)) {
-                    token.token_type = data.token_type || token.token_type;
-                    token.access_token = data.access_token || token.access_token;
-                    token.refresh_token = data.refresh_token || token.refresh_token;
-                    token.expires_at = data.expires_at || token.expires_at;
-                    // Store tokens
-                    self.saveToken(clientId, token, (err, data) => {
-                        if (!err) {
-                            self.getData(moduleIdentifier);
-                        }
-                    });
-                } else {
-                    throw new Error(`Failed to refresh tokens for ${moduleIdentifier}. Check config or module authorisation.`);
-                }
-            }
+            strava.oauth.refreshToken(token.refresh_token).then(result => {
+                token.token_type = result.token_type || token.token_type;
+                token.access_token = result.access_token || token.access_token;
+                token.refresh_token = result.refresh_token || token.refresh_token;
+                token.expires_at = result.expires_at || token.expires_at;
+                // Store tokens
+                self.saveToken(clientId, token, (err, data) => {
+                    if (!err) {
+                        self.getData(moduleIdentifier);
+                    }
+                });
+            });
         } catch (error) {
             this.log(`Failed to refresh tokens for ${moduleIdentifier}. Check config or module authorisation.`);
         }
@@ -237,11 +231,11 @@ module.exports = NodeHelper.create({
         const moduleConfig = this.configs[moduleIdentifier].config;
         try {
             // Get access token
-            const accessToken = moduleConfig.access_token || this.tokens[moduleConfig.client_id].token.access_token;
+            const accessToken = this.tokens[moduleConfig.client_id].token.access_token;
             if (moduleConfig.mode === "table") {
                 try {
                     // Get athelete Id
-                    const athleteId = moduleConfig.strava_id || this.tokens[moduleConfig.client_id].token.athlete.id;
+                    const athleteId = this.tokens[moduleConfig.client_id].token.athlete.id;
                     // Call api
                     this.getAthleteStats(moduleIdentifier, accessToken, athleteId);
                 } catch (error) {
@@ -308,28 +302,24 @@ module.exports = NodeHelper.create({
      * @param {Object} limits
      */
     handleApiResponse: function (moduleIdentifier, err, payload, limits) {
-        // Strava-v3 package errors
-        if (err) {
-            this.log({ module: moduleIdentifier, error: err });
-            this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": { "message": err.msg } });
-            return false;
-        }
-        // Strava API "fault"
-        if (payload && Object.prototype.hasOwnProperty.call(payload, "message") && Object.prototype.hasOwnProperty.call(payload, "errors")) {
-            if (payload.errors[0].field === "access_token" && payload.errors[0].code === "invalid") {
-                this.refreshTokens(moduleIdentifier);
-            } else {
-                this.log({ module: moduleIdentifier, errors: payload.errors });
-                this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": payload });
+        try {
+            // Strava-v3 errors
+            if (err) {
+                if (err.error && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
+                    this.refreshTokens(moduleIdentifier);
+                } else {
+                    this.log({ module: moduleIdentifier, error: err });
+                    this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": { "message": err.message } });
+                }
             }
-            return false;
+            // Strava Data
+            if (payload) {
+                return payload;
+            }
+        } catch (error) {
+            // Unknown response
+            this.log(`Unable to handle API response for ${moduleIdentifier}`);
         }
-        // Strava Data
-        if (payload) {
-            return payload;
-        }
-        // Unknown response
-        this.log(`Unable to handle API response for ${moduleIdentifier}`);
         return false;
     },
     /**

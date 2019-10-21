@@ -19,7 +19,7 @@ A MagicMirror Module for displaying your Strava data.
   * The total elevation gain for the period. (optional)
   * The total moving time for the period. (optional)
   * The total elapsed time for the period. (optional)
-  * The total number of achievements (recent period only).
+  * The total number of achievements (`recent` period only).
 * `chart` mode, which includes
   * The total distance, moving time and elevation for the last week.
   * A chart showing the total distance by day (for `recent` period) or month (for `ytd` period).
@@ -28,7 +28,10 @@ A MagicMirror Module for displaying your Strava data.
 
 * Which `activities` (and the order activities) should be displayed.
 * Which `stats` should be displayed in `table` mode.
-* Which `period` to display stats for your activities: Recent (last 4 weeks in `table` mode or current week in `chart` mode), year to date or all time (only applicable in `table` mode).
+* Which `period` to display stats for your activities:
+  * "recent" - last 4 weeks in `table` mode or current week in `chart` mode.
+  * "ytd" - current year to date.
+  * "all" - all time (only applicable in `table` mode).
 * Whether the module should rotate through the different periods, and the interval between rotations. (only applicable in `table` mode)
 * The units (miles/feet or kilometres/metres) used to display the total distance and elevation gain for each activity.
 * The locale used for determining the date (day or month) labels in the chart.
@@ -108,7 +111,7 @@ The following properties can be added to the configuration:
 | `client_secret` |  | *Required* - The Client Secret for your Strava API Application, obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
 | `mode` | `table` | *Optional* - Determines which mode should be used to display activity information. | `"table"`, `"chart"` |
 | `activities` | `["ride", "run", "swim"]` | *Optional* - Determines which activities to display and in which order they are displayed. *Note:* - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"ride"`, `"run"`, `"swim"` |
-| `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
+| `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` and `chart` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
 | `stats` | `["count", "distance", "achievements"]` | *Optional* - Determines which statistics to display in `table` mode. *Note:* - The stats can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"count"`, `"distance"`, `"elevation"`, `"moving_time"`, `"elapsed_time"`, `"achievements"` |
 | `auto_rotate` | `false` | *Optional* - Whether the summary of activities should rotate through the different periods in `table` mode. | `true` = rotates the summary through the different periods, `false` = displays the specified period only. |
 | `units` | `config.units` | *Optional* - What units to use. Specified by config.js | *Possible values:* `config.units` = Specified by config.js, `metric` = Kilometres/Metres, `imperial` = Miles/Feet |

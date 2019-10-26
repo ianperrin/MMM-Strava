@@ -9,7 +9,7 @@ A MagicMirror Module for displaying your Strava data.
 
 ## Example
 
-![Table mode screenshot](.github/example.gif) ![Chart mode screenshot](.github/example-2.png)
+![Table mode screenshot](.github/example.gif) ![Chart mode screenshot](.github/example-chart.gif)
 
 ### The module displays activity information in one of two modes
 

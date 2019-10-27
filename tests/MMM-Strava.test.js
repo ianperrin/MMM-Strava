@@ -1,4 +1,4 @@
-/* global global, require, describe, it */
+/* global describe, it */
 
 var moduleObject;
 var assert = require("assert");

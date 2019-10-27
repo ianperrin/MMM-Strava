@@ -1,4 +1,4 @@
-/* global require, describe, it */
+/* global describe, it */
 
 var Module = require("../node_helper.js");
 var helper = new Module();

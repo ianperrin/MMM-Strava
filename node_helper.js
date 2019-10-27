@@ -67,7 +67,10 @@ module.exports = NodeHelper.create({
         var self = this;
         this.log("Received notification: " + notification);
         if (notification === "SET_CONFIG") {
-            this.readTokens();
+            // debug?
+            if (payload.config.debug) {
+                this.debug = true;
+            }
             // Validate module config
             if (payload.config.access_token || payload.config.strava_id) {
                 this.log(`Legacy config in use for ${payload.identifier}`);
@@ -79,6 +82,7 @@ module.exports = NodeHelper.create({
             }
             this.configs[payload.identifier].config = payload.config;
             // Check for token authorisations
+            this.readTokens();
             if (payload.config.client_id && (!(payload.config.client_id in this.tokens))) {
                 this.log(`Unauthorised client id for ${payload.identifier}`);
                 this.sendSocketNotification("ERROR", { "identifier": payload.identifier, "data": { message: `Client id unauthorised - please visit <a href="/${self.name}/auth/">/${self.name}/auth/</a>` } });
@@ -419,8 +423,8 @@ module.exports = NodeHelper.create({
      * @param  {string} msg            the message to be logged
      */
     log: function (msg) {
-        //if (this.config && this.config.debug) {
-        console.log(this.name + ":", JSON.stringify(msg));
-        //}
+        if (this.debug) {
+            console.log(this.name + ":", JSON.stringify(msg));
+        }
     }
 });

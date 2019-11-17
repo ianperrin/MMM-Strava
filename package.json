@@ -1,6 +1,6 @@
 {
     "name": "MMM-Strava",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "description": "A MagicMirror Module for displaying your Strava data.",
     "main": "MMM-Strava.js",
     "scripts": {

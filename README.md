@@ -14,15 +14,15 @@ A MagicMirror Module for displaying your Strava data.
 
 ### The module displays activity information in one of two modes
 
-* `table` mode, which includes
+* `table` mode, which displays
   * The number of activities for the period.
   * The total distance for the period.
   * The total elevation gain for the period. (optional)
   * The total moving time for the period. (optional)
   * The total elapsed time for the period. (optional)
   * The total number of achievements (`recent` period only).
-* `chart` mode, which includes
-  * The total distance, moving time and elevation for the last week.
+* `chart` mode, which displays
+  * The total distance, moving time and elevation for the period.
   * A chart showing the total distance by day (for `recent` period) or month (for `ytd` period).
 
 ### In addition you can configure the following options
@@ -33,6 +33,9 @@ A MagicMirror Module for displaying your Strava data.
   * "recent" - last 4 weeks in `table` mode or current week in `chart` mode.
   * "ytd" - current year to date.
   * "all" - all time (only applicable in `table` mode).
+* Which `chartType` should be used in `chart` mode:
+  * "bar" - a simple bar chart
+  * "radial" - a radial histogram
 * Whether the module should rotate through the different periods, and the interval between rotations. (only applicable in `table` mode)
 * The units (miles/feet or kilometres/metres) used to display the total distance and elevation gain for each activity.
 * The locale used for determining the date (day or month) labels in the chart.
@@ -111,6 +114,7 @@ The following properties can be added to the configuration:
 | `client_id` |  | *Required* - The Client ID for your Strava API Application, obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
 | `client_secret` |  | *Required* - The Client Secret for your Strava API Application, obtained from [your My API Application page](https://www.strava.com/settings/api). |  |
 | `mode` | `table` | *Optional* - Determines which mode should be used to display activity information. | `"table"`, `"chart"` |
+| `chartType` | `bar` | *Optional* - Determines the type of chert which should be displayed in `chart`. | `"bar"`, `"radial"` |
 | `activities` | `["ride", "run", "swim"]` | *Optional* - Determines which activities to display and in which order they are displayed. *Note:* - The activities can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"ride"`, `"run"`, `"swim"` |
 | `period` | `recent` | *Optional* - What period should be used to summarise the activities in `table` and `chart` mode. | `recent` = recent (last 4 weeks), `ytd` = year to date, `all` = all time |
 | `stats` | `["count", "distance", "achievements"]` | *Optional* - Determines which statistics to display in `table` mode. *Note:* - The stats can be listed in any order, and only one is required. However, they must be entered as an array of strings i.e. comma separated values within square brackets. | `"count"`, `"distance"`, `"elevation"`, `"moving_time"`, `"elapsed_time"`, `"achievements"` |

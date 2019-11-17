@@ -10,7 +10,43 @@
     <div class="small">
 {% for activity in config.activities %}
 {% set total_distance = data[activity].total_distance %}
-        <div class="chart" id="{{activity | lower }}">
+        <div class="chart {{ config.chartType | lower }}" id="{{activity | lower }}">
+        {% if (config.chartType === "radial") %}
+            <!-- https://www.amcharts.com/demos/radial-histogram/ -->
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="group" style="width: 500px; height: 500px; overflow: visible;">
+                <g id="bars" role="list" aria-label="radial histogram" opacity="1" transform="translate(219,219)">
+                    {% for interval in data[activity].intervals %}
+                    <g id="interval-{{ loop.index0 | getLabel }}" role="listitem">
+                        <text class="label {{ loop.index0 | getIntervalClass }}" transform="{{ loop.index0 | getRadialLabelTransform((data[activity].intervals | length)) }}" x="-6" y="7" dy="-4.455">
+                            <tspan>{{ loop.index0 | getLabel }}</tspan>
+                        </text>
+                        <path class="bar {{ loop.index0 | getIntervalClass }} interval-{{ loop.index }}" d="{{ loop.index0 | getRadialDataPath( (data[activity].intervals | length), (interval/data[activity].max_interval_distance) ) }} "></path>
+                    </g>
+                    {% endfor %}
+                    <text y="-30" fill="#ffffff">
+                        <tspan x="0" text-anchor="middle">{{ total_distance | formatDistance(1, true) }}</tspan>
+                    </text>
+                    <text y="35" fill="#cccccc">
+                        <tspan x="0" text-anchor="middle">{{ data[activity].total_moving_time | formatTime }}</tspan>
+                        {%  if activity !== "swim" %}
+                        <tspan x="0" dy="25" text-anchor="middle">{{ data[activity].total_elevation_gain | formatElevation(1, true) }}</tspan>
+                        {% endif %}
+                    </text>
+                    <g id="activity-icon" fill="white" width="28" height="28" opacity="0.80" transform="translate(-14, -14)">
+                        {% if (activity === "ride") %}
+                        <path d="M19,11a4.94,4.94,0,0,0-1.67.31L15.29,7H17.5a.5.5,0,0,1,.25.93.5.5,0,1,0,.5.87A1.5,1.5,0,0,0,17.5,6h-3a.5.5,0,0,0-.45.71l.85,1.79H9L7.79,6H9A.5.5,0,0,0,9,5H5A.5.5,0,0,0,5,6H6.68L8.1,9,6.85,11.37a5,5,0,1,0,3.1,5.13H12a.5.5,0,0,0,.25-.07l.06-.05a.49.49,0,0,0,.12-.11v0h0l3.2-6.14.78,1.64A5,5,0,1,0,19,11ZM14.83,9.5,12,14.88,9.46,9.5ZM5,20a4,4,0,1,1,1.39-7.74L4.56,15.77A.5.5,0,0,0,5,16.5H8.95A4,4,0,0,1,5,20Zm2.28-7.28A4,4,0,0,1,8.95,15.5H5.82ZM9.95,15.5a5,5,0,0,0-2.21-3.67l.9-1.72,2.57,5.39ZM19,20a4,4,0,0,1-2.15-7.37l1.7,3.58a.5.5,0,0,0,.9-.43l-1.69-3.57A4,4,0,0,1,19,12a4,4,0,0,1,0,8Z"/>
+                        {% elif (activity === "run") %}
+                        <path d="M23,17.45c-1.95-1.75-4.12-3.78-4.39-4.12S17.43,10.39,16.54,8c-.44-2.77-.9-3.09-1.14-3.26a1.78,1.78,0,0,0-1.05-.34h0a3.63,3.63,0,0,0-1.87.74A4.1,4.1,0,0,1,10.35,6a2.65,2.65,0,0,1-1-.19c-.55-.21-.57-.43-.61-1a1.9,1.9,0,0,0-.67-1.56A1.24,1.24,0,0,0,7.38,3C5.82,3,3.55,6.6,2.73,8l-1.31.93A1,1,0,0,0,1,9.84c.28,2.49,2,4.18,5.77,5.63a7.14,7.14,0,0,1,2.85,1.79,16.05,16.05,0,0,0,3.09,2.34A9.92,9.92,0,0,0,17.8,21c2.69,0,5.57-1.13,5.57-2.81A1,1,0,0,0,23,17.45ZM17.8,20a8.9,8.9,0,0,1-4.59-1.25c-3.45-2.07-2.87-3-6.09-4.21C3.53,13.15,2.22,11.7,2,9.73L3.48,8.68C4.79,6.42,6.65,4,7.38,4a.24.24,0,0,1,.15,0c.58.42-.29,2,1.5,2.69A3.65,3.65,0,0,0,10.35,7c1.86,0,3-1.57,4-1.57a.79.79,0,0,1,.47.15c.37.26.75,2.71.75,2.71l.27.71H14.5a.5.5,0,0,0,0,1h1.72l.39,1H15.24a.5.5,0,0,0,0,1H17l.41,1H16a.5.5,0,0,0,0,1h1.94c.66.76,4.46,4.19,4.46,4.19C22.38,18.95,20.36,20,17.8,20Z"/>
+                        {% elif (activity === "swim") %}
+                        <path d="M6.51,8A4.14,4.14,0,0,0,10,5.86,4.14,4.14,0,0,0,13.51,8,4.15,4.15,0,0,0,17,5.86,4.15,4.15,0,0,0,20.51,8a4.07,4.07,0,0,0,2.29-.71.5.5,0,0,0-.57-.82A3.09,3.09,0,0,1,20.51,7a3.39,3.39,0,0,1-3-2.47.52.52,0,0,0-.94,0,3.39,3.39,0,0,1-3,2.47,3.39,3.39,0,0,1-3-2.47.52.52,0,0,0-.94,0A3.39,3.39,0,0,1,6.51,7a3.09,3.09,0,0,1-1.71-.53.5.5,0,1,0-.57.82A4.07,4.07,0,0,0,6.51,8Z"/>
+                        <path d="M22.22,18.47a3.09,3.09,0,0,1-1.71.53,3.39,3.39,0,0,1-3-2.47.52.52,0,0,0-.94,0,3.39,3.39,0,0,1-3,2.47,3.39,3.39,0,0,1-3-2.47.52.52,0,0,0-.94,0,3.39,3.39,0,0,1-3,2.47,3.09,3.09,0,0,1-1.71-.53.5.5,0,1,0-.57.82A4.07,4.07,0,0,0,6.51,20,4.14,4.14,0,0,0,10,17.86,4.14,4.14,0,0,0,13.51,20,4.15,4.15,0,0,0,17,17.86,4.15,4.15,0,0,0,20.51,20a4.07,4.07,0,0,0,2.29-.71.5.5,0,0,0-.57-.82Z"/>
+                        <path d="M7,11.86A4.14,4.14,0,0,0,10.51,14,4.15,4.15,0,0,0,14,11.86,4.15,4.15,0,0,0,17.51,14a4.07,4.07,0,0,0,2.29-.71.5.5,0,0,0-.57-.82,3.09,3.09,0,0,1-1.71.53,3.39,3.39,0,0,1-3-2.47.52.52,0,0,0-.94,0,3.35,3.35,0,0,1-3,2.47,3.39,3.39,0,0,1-3-2.47.52.52,0,0,0-.94,0,3.39,3.39,0,0,1-3,2.47,3.09,3.09,0,0,1-1.71-.53.5.5,0,1,0-.57.82A4.07,4.07,0,0,0,3.51,14,4.14,4.14,0,0,0,7,11.86Z"/>
+                        {% endif %}
+                    </g>
+                </g>
+            </svg>
+        {% else %}
+
             <div class="primary-stats">
                 <span class="actual small bright">{{ total_distance | formatDistance(1, true) }}</span>
                 <ul class="inline-stats">
@@ -34,6 +70,8 @@
                 </g>
             </svg>
             <div class="strava-icon icon-lg icon-{{ activity | lower }}" title="{{ activity | upper | translate }}"></div>
+
+        {% endif %}
         </div>
 {% endfor %}
     </div>

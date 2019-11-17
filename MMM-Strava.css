@@ -113,7 +113,7 @@
   fill: #e5e5e5;
 }
 
-.MMM-Strava svg .bar {
+.MMM-Strava svg rect.bar {
   shape-rendering: crispEdges;
 }
 

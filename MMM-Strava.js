@@ -131,7 +131,7 @@ Module.register("MMM-Strava", {
         this.log(`Receiving notification: ${notification} for ${payload.identifier}`);
         if (payload.identifier === this.identifier) {
             if (notification === "DATA") {
-                this.data = payload.data;
+                this.stravaData = payload.data;
                 this.loading = false;
                 this.updateDom(this.config.animationSpeed);
             } else if (notification === "ERROR") {
@@ -167,7 +167,7 @@ Module.register("MMM-Strava", {
             config: this.config,
             loading: this.loading,
             error: this.error || null,
-            data: this.data || {},
+            data: this.stravaData || {},
             chart: {bars: this.config.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort() },
         };
     },

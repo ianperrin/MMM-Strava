@@ -99,7 +99,8 @@ Module.register("MMM-Strava", {
             nl: "translations/nl.json",
             de: "translations/de.json",
             id: "translations/id.json",
-            hu: "translations/hu.json"
+            hu: "translations/hu.json",
+            gr: "translations/gr.json"
         };
     },
     /**

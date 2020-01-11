@@ -1,6 +1,6 @@
 /* global describe, it */
 
-var Module = require("../node_helper.js");
+var Module = require("../../js/node_helper.js");
 var helper = new Module();
 helper.setName("MMM-Strava");
 

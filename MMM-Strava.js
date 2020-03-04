@@ -57,6 +57,7 @@ Module.register("MMM-Strava", {
         updateInterval: 10 * 1000,                      // 10 seconds
         animationSpeed: 2.5 * 1000,                     // 2.5 seconds
         debug: false,                                   // Set to true to enable extending logging
+        showprivatestats: false,                        // Set to true to include private activities in stats
     },
     /**
      * @member {boolean} loading - Flag to indicate the loading state of the module.

@@ -241,7 +241,11 @@ module.exports = NodeHelper.create({
                     // Get athelete Id
                     const athleteId = this.tokens[moduleConfig.client_id].token.athlete.id;
                     // Call api
-                    this.getAthleteStats(moduleIdentifier, accessToken, athleteId);
+                    if (moduleConfig.showprivatestats) {
+                        this.getAllAthleteStats(moduleIdentifier, accessToken);
+                    } else {
+                        this.getAthleteStats(moduleIdentifier, accessToken, athleteId);
+                    }
                 } catch (error) {
                     this.log(`Athete id not found for ${moduleIdentifier}`);
                 }
@@ -273,6 +277,35 @@ module.exports = NodeHelper.create({
                 self.sendSocketNotification("DATA", { "identifier": moduleIdentifier, "data": data });
             }
         });
+    },
+    /**
+     * @function getAllAthleteStats
+     * @description get stats for an athlete from the API
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     * @param {string} accessToken
+     */
+    getAllAthleteStats: async function (moduleIdentifier, accessToken) {
+        this.log("Getting athlete stats for " + moduleIdentifier);
+        var self = this;
+        var sumList;
+        var activityList;
+        var i = 0;
+        do {
+            i++;
+            activityList = await strava.athlete.listActivities({ "access_token": accessToken, "page": i, "per_page": 200 });
+            if (sumList) {
+                sumList = sumList.concat(activityList);
+            } else {
+                sumList = activityList;
+            }
+        }
+        while (activityList.length > 0);
+        var data = {
+            "identifier": moduleIdentifier,
+            "data": self.summariseStats(moduleIdentifier, sumList)
+        };
+        self.sendSocketNotification("DATA", data);
     },
     /**
      * @function getAthleteActivities
@@ -372,6 +405,79 @@ module.exports = NodeHelper.create({
             }
         }
         return activitySummary;
+    },
+    /**
+     * @function summariseStats
+     * @description summarises a list of activities for display in the table.
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     * @param {Object} activityList - The list of all activities
+     */
+    summariseStats: function (moduleIdentifier, activityList) {
+        var self = this;
+        self.log("Summarising athlete activities for " + moduleIdentifier);
+        var moduleConfig = self.configs[moduleIdentifier].config;
+        var activitySummary = Object.create(null);
+        var activityName;
+        // Initialise activity summary
+        var sumobj = {
+            count: 0,
+            distance: 0,
+            moving_time: 0,
+            elapsed_time: 0,
+            elevation_gain: 0,
+            achievement_count: 0
+        };
+        for (var activity in moduleConfig.activities) {
+            if (Object.prototype.hasOwnProperty.call(moduleConfig.activities, activity)) {
+                activityName = "recent_" + moduleConfig.activities[activity].toLowerCase() + "_totals";
+                activitySummary[activityName] = JSON.parse(JSON.stringify(sumobj));
+                activityName = "ytd_" + moduleConfig.activities[activity].toLowerCase() + "_totals";
+                activitySummary[activityName] = JSON.parse(JSON.stringify(sumobj));
+                activityName = "all_" + moduleConfig.activities[activity].toLowerCase() + "_totals";
+                activitySummary[activityName] = JSON.parse(JSON.stringify(sumobj));
+            }
+        }
+        // Summarise activity totals and interval totals
+        if (activityList) {
+            const moduleConfig = this.configs[moduleIdentifier].config;
+            moment.locale(moduleConfig.locale);
+            var ytd = moment().startOf("year").unix();
+            var recent = moment().subtract(28, "days").unix();
+            for (var i = 0; i < Object.keys(activityList).length; i++) {
+                var actdate = moment(activityList[i].start_date_local).unix();
+                // always add to all
+                activityName = "all_" + activityList[i].type.toLowerCase().replace("virtual", "") + "_totals";
+                self.addActivitytoSum(activityList[i], activitySummary[activityName]);
+                // ytd
+                if (actdate >= ytd) {
+                    activityName = "ytd_" + activityList[i].type.toLowerCase().replace("virtual", "") + "_totals";
+                    self.addActivitytoSum(activityList[i], activitySummary[activityName]);
+                }
+                // recent = 4 weeks back
+                if (actdate >= recent) {
+                    activityName = "recent_" + activityList[i].type.toLowerCase().replace("virtual", "") + "_totals";
+                    self.addActivitytoSum(activityList[i], activitySummary[activityName]);
+                }
+            }
+        }
+        return activitySummary;
+    },
+    /**
+     * @function summariseStats
+     * @description summarises a list of activities for display in the table.
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     */
+    addActivitytoSum: function (act, sum) {
+        if (sum) {
+            sum.count += 1;
+            sum.distance += act.distance;
+            sum.moving_time += act.moving_time;
+            sum.elapsed_time += act.elapsed_time;
+            sum.elevation_gain += act.total_elevation_gain;
+            sum.achievement_count += act.achievement_count;
+        }
     },
     /**
      * @function saveToken

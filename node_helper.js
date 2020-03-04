@@ -11,7 +11,7 @@
  * @external node_helper
  * @see https://github.com/MichMich/MagicMirror/blob/master/modules/node_modules/node_helper/index.js
  */
-const NodeHelper = require("node_helper");
+const NodeHelper = require("../../js/node_helper.js");
 /**
  * @external moment
  * @see https://www.npmjs.com/package/moment

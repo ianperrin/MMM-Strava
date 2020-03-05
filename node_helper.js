@@ -287,25 +287,29 @@ module.exports = NodeHelper.create({
      */
     getAllAthleteStats: async function (moduleIdentifier, accessToken) {
         this.log("Getting athlete stats for " + moduleIdentifier);
-        var self = this;
-        var sumList;
-        var activityList;
-        var i = 0;
-        do {
-            i++;
-            activityList = await strava.athlete.listActivities({ "access_token": accessToken, "page": i, "per_page": 200 });
-            if (sumList) {
-                sumList = sumList.concat(activityList);
-            } else {
-                sumList = activityList;
+        try {
+            var self = this;
+            var sumList;
+            var activityList;
+            var i = 0;
+            do {
+                i++;
+                activityList = await strava.athlete.listActivities({ "access_token": accessToken, "page": i, "per_page": 200 });
+                if (sumList) {
+                    sumList = sumList.concat(activityList);
+                } else {
+                    sumList = activityList;
+                }
             }
+            while (activityList.length > 0);
+            var data = {
+                "identifier": moduleIdentifier,
+                "data": self.summariseStats(moduleIdentifier, sumList)
+            };
+            self.sendSocketNotification("DATA", data);
+        } catch (err) {
+            this.handleApiError(moduleIdentifier, err);
         }
-        while (activityList.length > 0);
-        var data = {
-            "identifier": moduleIdentifier,
-            "data": self.summariseStats(moduleIdentifier, sumList)
-        };
-        self.sendSocketNotification("DATA", data);
     },
     /**
      * @function getAthleteActivities
@@ -335,20 +339,30 @@ module.exports = NodeHelper.create({
      *
      * @param {string} moduleIdentifier - The module identifier.
      * @param {Object} err
+     */
+    handleApiError: function (moduleIdentifier, err) {
+        // Strava-v3 errors
+        if (err) {
+            if (err.error && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
+                this.refreshTokens(moduleIdentifier);
+            } else {
+                this.log({ module: moduleIdentifier, error: err });
+                this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": { "message": err.message } });
+            }
+        }
+    },
+    /**
+     * @function handleApiResponse
+     * @description handles the response from the API to catch errors and faults.
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     * @param {Object} err
      * @param {Object} payload
      * @param {Object} limits
      */
     handleApiResponse: function (moduleIdentifier, err, payload, limits) {
         try {
-            // Strava-v3 errors
-            if (err) {
-                if (err.error && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
-                    this.refreshTokens(moduleIdentifier);
-                } else {
-                    this.log({ module: moduleIdentifier, error: err });
-                    this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": { "message": err.message } });
-                }
-            }
+            this.handleApiError(moduleIdentifier, err);
             // Strava Data
             if (payload) {
                 return payload;

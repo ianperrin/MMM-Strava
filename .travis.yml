@@ -7,7 +7,7 @@ env:
 before_install:
   - cd ../../ && git clone https://github.com/MichMich/MagicMirror
   - mv ianperrin/MMM-Strava MagicMirror/modules
-  - cd MagicMirror && npm install express
+  - cd MagicMirror && npm install express && rm -f .eslintrc.json
   - cd modules/MMM-Strava
 before_script:
   - npm install grunt-cli -g

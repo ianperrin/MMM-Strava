@@ -125,3 +125,4 @@ The following properties can be added to the configuration:
 | `animationSpeed` | `2500` | *Optional* - The speed of the update animation. (Milliseconds) | `0` - `5000` |
 | `locale` | `config.language` | *Optional* - The locale to be used for displaying dates - e.g. the days of the week or months or the year in chart mode. If omitted, the config.language will be used. | e.g. `en`, `en-gb`, `fr` etc |
 | `debug` | `false` | *Optional* - Outputs extended logging to the console/log | `true` = enables extended logging, `false` = disables extended logging |
+| `digits` | `1` | *Optional* - Digits for distance and elevation | `0` - ... |

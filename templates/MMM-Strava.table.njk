@@ -44,10 +44,10 @@
                 <td class="bright align-right stat">{{activity_data.count}}</td>
                 {% endif %}
                 {% if 'distance' in config.stats %}
-                <td class="bright align-right stat">{{activity_data.distance | formatDistance(1, false) }}</td>
+                <td class="bright align-right stat">{{activity_data.distance | formatDistance(config.digits, false) }}</td>
                 {% endif %}
                 {% if 'elevation' in config.stats %}
-                <td class="bright align-right stat">{{activity_data.elevation_gain | formatElevation(1, false) }}</td>
+                <td class="bright align-right stat">{{activity_data.elevation_gain | formatElevation(config.digits, false) }}</td>
                 {% endif %}
                 {% if 'moving_time' in config.stats %}
                 <td class="bright align-right stat">{{activity_data.moving_time | formatTime }}</td>

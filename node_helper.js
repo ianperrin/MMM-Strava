@@ -1,3 +1,4 @@
+/*jshint loopfunc: true */
 /**
  * @file node_helper.js
  *
@@ -11,7 +12,7 @@
  * @external node_helper
  * @see https://github.com/MichMich/MagicMirror/blob/master/modules/node_modules/node_helper/index.js
  */
-const NodeHelper = require("node_helper");
+const NodeHelper = require("../../js/node_helper.js");
 /**
  * @external moment
  * @see https://www.npmjs.com/package/moment
@@ -241,7 +242,11 @@ module.exports = NodeHelper.create({
                     // Get athelete Id
                     const athleteId = this.tokens[moduleConfig.client_id].token.athlete.id;
                     // Call api
-                    this.getAthleteStats(moduleIdentifier, accessToken, athleteId);
+                    if (moduleConfig.showPrivateStats) {
+                        this.getAllAthleteStats(moduleIdentifier, accessToken, moduleConfig.limitPrivateStats);
+                    } else {
+                        this.getAthleteStats(moduleIdentifier, accessToken, athleteId);
+                    }
                 } catch (error) {
                     this.log(`Athete id not found for ${moduleIdentifier}`);
                 }
@@ -275,6 +280,44 @@ module.exports = NodeHelper.create({
         });
     },
     /**
+     * @function getAllAthleteStats
+     * @description get stats for an athlete from the API
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     * @param {string} accessToken
+     * @param {integer} limitPrivateStats
+     */
+    getAllAthleteStats: function (moduleIdentifier, accessToken, limitPrivateStats) {
+        this.log("Getting all athlete stats for " + moduleIdentifier);
+        var self = this;
+        var sumList;
+        var cnt = 0;
+        var perpage = 200;
+        var maxcnt = Math.ceil(limitPrivateStats / perpage);
+        this.log("getAllAthleteStats start collecting with " + maxcnt + " api calls");
+        for (var i = 1; i <= maxcnt; i++) {
+            strava.athlete.listActivities({ "access_token": accessToken, "page": i, "per_page": perpage }, function (err, payload, limits) {
+                cnt++;
+                var activityList = self.handleApiResponse(moduleIdentifier, err, payload, limits);
+                if (activityList) {
+                    if (sumList) {
+                        sumList = sumList.concat(activityList);
+                    } else {
+                        sumList = activityList;
+                    }
+                }
+                if (cnt >= maxcnt) {
+                    self.log("getAllAthleteStats end");
+                    var data = {
+                        "identifier": moduleIdentifier,
+                        "data": self.summariseStats(moduleIdentifier, sumList)
+                    };
+                    self.sendSocketNotification("DATA", data);
+                }
+            });
+        }
+    },
+    /**
      * @function getAthleteActivities
      * @description get logged in athletes activities from the API
      *
@@ -302,20 +345,30 @@ module.exports = NodeHelper.create({
      *
      * @param {string} moduleIdentifier - The module identifier.
      * @param {Object} err
+     */
+    handleApiError: function (moduleIdentifier, err) {
+        // Strava-v3 errors
+        if (err) {
+            if (err.error && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
+                this.refreshTokens(moduleIdentifier);
+            } else {
+                this.log({ module: moduleIdentifier, error: err });
+                this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": { "message": err.message } });
+            }
+        }
+    },
+    /**
+     * @function handleApiResponse
+     * @description handles the response from the API to catch errors and faults.
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     * @param {Object} err
      * @param {Object} payload
      * @param {Object} limits
      */
     handleApiResponse: function (moduleIdentifier, err, payload, limits) {
         try {
-            // Strava-v3 errors
-            if (err) {
-                if (err.error && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
-                    this.refreshTokens(moduleIdentifier);
-                } else {
-                    this.log({ module: moduleIdentifier, error: err });
-                    this.sendSocketNotification("ERROR", { "identifier": moduleIdentifier, "data": { "message": err.message } });
-                }
-            }
+            this.handleApiError(moduleIdentifier, err);
             // Strava Data
             if (payload) {
                 return payload;
@@ -372,6 +425,79 @@ module.exports = NodeHelper.create({
             }
         }
         return activitySummary;
+    },
+    /**
+     * @function summariseStats
+     * @description summarises a list of activities for display in the table.
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     * @param {Object} activityList - The list of all activities
+     */
+    summariseStats: function (moduleIdentifier, activityList) {
+        var self = this;
+        self.log("Summarising athlete activities for " + moduleIdentifier);
+        var moduleConfig = self.configs[moduleIdentifier].config;
+        var activitySummary = Object.create(null);
+        var activityName;
+        // Initialise activity summary
+        var sumobj = {
+            count: 0,
+            distance: 0,
+            moving_time: 0,
+            elapsed_time: 0,
+            elevation_gain: 0,
+            achievement_count: 0
+        };
+        for (var activity in moduleConfig.activities) {
+            if (Object.prototype.hasOwnProperty.call(moduleConfig.activities, activity)) {
+                activityName = "recent_" + moduleConfig.activities[activity].toLowerCase() + "_totals";
+                activitySummary[activityName] = JSON.parse(JSON.stringify(sumobj));
+                activityName = "ytd_" + moduleConfig.activities[activity].toLowerCase() + "_totals";
+                activitySummary[activityName] = JSON.parse(JSON.stringify(sumobj));
+                activityName = "all_" + moduleConfig.activities[activity].toLowerCase() + "_totals";
+                activitySummary[activityName] = JSON.parse(JSON.stringify(sumobj));
+            }
+        }
+        // Summarise activity totals and interval totals
+        if (activityList) {
+            const moduleConfig = this.configs[moduleIdentifier].config;
+            moment.locale(moduleConfig.locale);
+            var ytd = moment().startOf("year").unix();
+            var recent = moment().subtract(28, "days").unix();
+            for (var i = 0; i < Object.keys(activityList).length; i++) {
+                var actdate = moment(activityList[i].start_date_local).unix();
+                // always add to all
+                activityName = "all_" + activityList[i].type.toLowerCase().replace("virtual", "") + "_totals";
+                self.addActivitytoSum(activityList[i], activitySummary[activityName]);
+                // ytd
+                if (actdate >= ytd) {
+                    activityName = "ytd_" + activityList[i].type.toLowerCase().replace("virtual", "") + "_totals";
+                    self.addActivitytoSum(activityList[i], activitySummary[activityName]);
+                }
+                // recent = 4 weeks back
+                if (actdate >= recent) {
+                    activityName = "recent_" + activityList[i].type.toLowerCase().replace("virtual", "") + "_totals";
+                    self.addActivitytoSum(activityList[i], activitySummary[activityName]);
+                }
+            }
+        }
+        return activitySummary;
+    },
+    /**
+     * @function summariseStats
+     * @description summarises a list of activities for display in the table.
+     *
+     * @param {string} moduleIdentifier - The module identifier.
+     */
+    addActivitytoSum: function (act, sum) {
+        if (sum) {
+            sum.count += 1;
+            sum.distance += act.distance;
+            sum.moving_time += act.moving_time;
+            sum.elapsed_time += act.elapsed_time;
+            sum.elevation_gain += act.total_elevation_gain;
+            sum.achievement_count += act.achievement_count;
+        }
     },
     /**
      * @function saveToken

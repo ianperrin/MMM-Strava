@@ -127,3 +127,4 @@ The following properties can be added to the configuration:
 | `showPrivateStats` | `false` | *Optional* - Strava excludes private activities from stats. | `true` = include private activities to stats, `false` = only public activities in stats |
 | `limitPrivateStats` | `1000` | *Optional* - Only needed if `showPrivateStats=true` | `1000` = number of activities to pull from strava api. You should set this number in relation to your overall stats count |
 | `debug` | `false` | *Optional* - Outputs extended logging to the console/log | `true` = enables extended logging, `false` = disables extended logging |
+| `digits` | `1` | *Optional* - Digits for distance and elevation | `0` - ... |

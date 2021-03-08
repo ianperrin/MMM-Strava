@@ -57,6 +57,7 @@ Module.register("MMM-Strava", {
         updateInterval: 10 * 1000,                      // 10 seconds
         animationSpeed: 2.5 * 1000,                     // 2.5 seconds
         debug: false,                                   // Set to true to enable extending logging
+        digits: 1,                                      // digits for distance and elevation
         showPrivateStats: false,                        // Set to true to include private activities in stats
         limitPrivateStats: 1000,                        // This limits the number of activites to 1000 (if using showPrivateStats=true)
     },

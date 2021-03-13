@@ -1,8 +1,10 @@
 /* global describe, it */
+const moduleAlias = require('module-alias');
 
-var Module = require("../../../js/node_helper.js");
-var helper = new Module();
-helper.setName("MMM-Strava");
+moduleAlias.addAlias('node_helper', "../../js/node_helper.js");
+var Module = require("../node_helper.js");
+helper = new Module();
+helper.setName("mmm-testing");
 
 var assert = require("assert");
 describe("Node Helper", function () {

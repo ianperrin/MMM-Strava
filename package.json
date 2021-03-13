@@ -37,6 +37,7 @@
         "grunt-yamllint": "latest",
         "load-grunt-config": "^3.0.1",
         "mocha": "^4.1.0",
+        "module-alias": "^2.2.2",
         "stylelint": "^10.1.0",
         "stylelint-config-standard": "latest"
     },

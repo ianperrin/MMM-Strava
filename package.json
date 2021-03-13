@@ -29,7 +29,7 @@
     "devDependencies": {
         "grunt": "latest",
         "grunt-contrib-jshint": "latest",
-        "grunt-eslint": "latest",
+        "grunt-eslint": "^23.0.0",
         "grunt-jsonlint": "latest",
         "grunt-markdownlint": "^1.0.43",
         "grunt-mocha-test": "^0.13.3",

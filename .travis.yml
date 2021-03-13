@@ -10,4 +10,5 @@ before_install:
   - cd MagicMirror && npm install express
   - cd modules/MMM-Strava
 before_script:
+  - npm install
   - npm install grunt-cli -g

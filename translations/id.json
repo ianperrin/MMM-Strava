@@ -1,9 +1,9 @@
 {
-    "CONFIG_MISSING": "Silakan tetapkan access_token, athlete_id dan aktivitas.",
-    "RIDE": "Sepeda",
-    "RUN": "Lari",
-    "SWIM": "Renang",
-    "RECENT": "4 minggu terakhir",
-    "YTD": "Tahun ini",
-    "ALL": "Semua"
+	"CONFIG_MISSING": "Silakan tetapkan access_token, athlete_id dan aktivitas.",
+	"RIDE": "Sepeda",
+	"RUN": "Lari",
+	"SWIM": "Renang",
+	"RECENT": "4 minggu terakhir",
+	"YTD": "Tahun ini",
+	"ALL": "Semua"
 }

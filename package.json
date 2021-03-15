@@ -1,48 +1,52 @@
 {
-    "name": "MMM-Strava",
-    "version": "2.2.0",
-    "description": "A MagicMirror Module for displaying your Strava data.",
-    "main": "MMM-Strava.js",
-    "scripts": {
-        "test": "grunt test",
-        "unit": "grunt unit",
-        "lint": "grunt lint"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ianperrin/MMM-Strava.git"
-    },
-    "keywords": [
-        "magic",
-        "mirror",
-        "strava"
-    ],
-    "author": "Ian Perrin",
-    "contributors": [
-        "https://github.com/ianperrin/MMM-Strava/graphs/contributors"
-    ],
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/ianperrin/MMM-Strava/issues"
-    },
-    "homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
-    "devDependencies": {
-        "grunt": "latest",
-        "grunt-contrib-jshint": "latest",
-        "grunt-eslint": "^23.0.0",
-        "grunt-jsonlint": "latest",
-        "grunt-markdownlint": "^1.0.43",
-        "grunt-mocha-test": "^0.13.3",
-        "grunt-stylelint": "latest",
-        "grunt-yamllint": "latest",
-        "load-grunt-config": "^3.0.1",
-        "mocha": "^4.1.0",
-        "module-alias": "^2.2.2",
-        "stylelint": "^10.1.0",
-        "stylelint-config-standard": "latest"
-    },
-    "dependencies": {
-        "moment": "latest",
-        "strava-v3": "2.0.1"
-    }
+	"name": "MMM-Strava",
+	"version": "2.2.1",
+	"description": "A MagicMirror Module for displaying your Strava data.",
+	"main": "MMM-Strava.js",
+	"scripts": {
+		"test": "npm run test:unit && npm run test:prettier && npm run test:js && npm run test:css",
+		"test:unit": "NODE_ENV=test mocha tests --recursive",
+		"test:prettier": "prettier --check **/*.{js,css,json,md,yml}",
+		"test:js": "eslint *.js tests/**/*.js --config .eslintrc.json --quiet",
+		"test:css": "stylelint **/*.css --config .stylelintrc.json",
+		"lint:prettier": "prettier --write **/*.{js,css,json,md,yml}",
+		"lint:js": "eslint *.js tests/**/*.js --config .eslintrc.json --fix",
+		"lint:css": "stylelint **/*.css --config .stylelintrc.json --fix"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ianperrin/MMM-Strava.git"
+	},
+	"keywords": [
+		"magic",
+		"mirror",
+		"strava"
+	],
+	"author": "Ian Perrin",
+	"contributors": [
+		"https://github.com/ianperrin/MMM-Strava/graphs/contributors"
+	],
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/ianperrin/MMM-Strava/issues"
+	},
+	"homepage": "https://github.com/ianperrin/MMM-Strava/#readme",
+	"devDependencies": {
+		"chai": "^4.2.0",
+		"eslint": "^7.15.0",
+		"eslint-config-prettier": "^7.0.0",
+		"eslint-plugin-jsdoc": "^30.7.8",
+		"eslint-plugin-prettier": "^3.2.0",
+		"mocha": "^8.2.1",
+		"module-alias": "^2.2.2",
+		"prettier": "^2.2.1",
+		"stylelint": "^13.8.0",
+		"stylelint-config-prettier": "^8.0.2",
+		"stylelint-config-standard": "^20.0.0",
+		"stylelint-prettier": "^1.1.2"
+	},
+	"dependencies": {
+		"moment": "latest",
+		"strava-v3": "2.0.1"
+	}
 }

@@ -1,6 +1,6 @@
 {
-    "CONFIG_MISSING": "Configureer de access_token, athlete_id en activities.",
-    "RIDE": "Fietstocht",
-    "RUN": "Rennen",
-    "SWIM": "Zwemmen"
+	"CONFIG_MISSING": "Configureer de access_token, athlete_id en activities.",
+	"RIDE": "Fietstocht",
+	"RUN": "Rennen",
+	"SWIM": "Zwemmen"
 }

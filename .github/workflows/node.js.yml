@@ -27,7 +27,7 @@ jobs:
       - name: Checkout Module repo
         uses: actions/checkout@v2
         with:
-          path: MagicMirror/modules/mmm-testing
+          path: MagicMirror/modules/MMM-Strava
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -43,6 +43,6 @@ jobs:
 
       - name: Run tests
         run: |
-          cd MagicMirror/modules/mmm-testing
+          cd MagicMirror/modules/MMM-Strava
           npm ci
           npm run test

@@ -229,7 +229,7 @@ Module.register("MMM-Strava", {
 		if (units) {
 			value += units;
 		}
-		return value;
+		return isNaN(value) ? "" : value;
 	},
 	// getRadialLabelTransform
 	getRadialLabelTransform(index, count) {

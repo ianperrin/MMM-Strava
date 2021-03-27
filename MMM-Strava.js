@@ -79,7 +79,7 @@ Module.register("MMM-Strava", {
 	 */
 	start: function () {
 		Log.info("Starting module: " + this.name);
-		// Validate config
+		// Validate config options
 		this.config.mode = this.config.mode.toLowerCase();
 		this.config.chartType = this.config.chartType.toLowerCase();
 		this.config.activities = this.filterActivities(this.config.activities.map((activity) => activity.toLowerCase()));
@@ -91,7 +91,6 @@ Module.register("MMM-Strava", {
 			this.config.stats = this.config.mode === "chart" ? defaultChartStats : defaultTableStats;
 		}
 		this.config.stats = this.config.stats.map((stat) => stat.toLowerCase());
-		Log.info(this.config.stats);
 		// Add custom filters
 		this.addFilters();
 		// Initialise helper and schedule api calls
@@ -187,7 +186,7 @@ Module.register("MMM-Strava", {
 	filterActivities: function (activityArray) {
 		var validActivities = this.config.mode === "chart" ? activityArray : this.defaults.activities;
 		return activityArray.filter(function (activity) {
-			return validActivities.indexOf(activity) == -1 ? false : true;
+			return validActivities.indexOf(activity) === -1 ? false : true;
 		});
 	},
 	/**

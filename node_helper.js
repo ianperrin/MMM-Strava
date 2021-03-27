@@ -348,6 +348,8 @@ module.exports = NodeHelper.create({
 					total_distance: 0,
 					total_elevation_gain: 0,
 					total_moving_time: 0,
+					total_elapsed_time: 0,
+					total_achievement_count: 0,
 					max_interval_distance: 0,
 					intervals: Array(periodIntervals.length).fill(0)
 				};
@@ -364,6 +366,8 @@ module.exports = NodeHelper.create({
 				activityTypeSummary.total_distance += distance;
 				activityTypeSummary.total_elevation_gain += activityList[i].total_elevation_gain;
 				activityTypeSummary.total_moving_time += activityList[i].moving_time;
+				activityTypeSummary.total_elapsed_time += activityList[i].elapsed_time;
+				activityTypeSummary.total_achievement_count += activityList[i].achievement_count;
 				const activityDate = moment(activityList[i].start_date_local);
 				const intervalIndex = moduleConfig.period === "ytd" ? activityDate.month() : activityDate.weekday();
 				activityTypeSummary.intervals[intervalIndex] += distance;

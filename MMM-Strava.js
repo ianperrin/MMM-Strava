@@ -17,7 +17,7 @@ Module.register("MMM-Strava", {
 		chartType: "bar", // Possible values "bar", "radial"
 		activities: ["ride", "run", "swim"], // Possible values "alpineski", "backcountryski", "canoeing", "crossfit", "ebikeride", "elliptical", "golf", "handcycle", "hike", "iceskate", "inlineskate", "kayaking", "kitesurf", "nordicski", "ride", "rockclimbing", "rollerski", "rowing", "run", "sail", "skateboard", "snowboard", "snowshoe", "soccer", "stairstepper", "standuppaddling", "surfing", "swim", "velomobile", "virtualride", "virtualrun", "walk", "weighttraining", "wheelchair", "windsurf", "workout", "yoga"
 		period: "recent", // Possible values "recent", "ytd", "all"
-		stats: ["count", "distance", "achievements"], // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
+		stats: [], // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
 		auto_rotate: false, // Rotate stats through each period starting from specified period
 		locale: config.language,
 		units: config.units,
@@ -84,7 +84,14 @@ Module.register("MMM-Strava", {
 		this.config.chartType = this.config.chartType.toLowerCase();
 		this.config.activities = this.filterActivities(this.config.activities.map((activity) => activity.toLowerCase()));
 		this.config.period = this.config.period.toLowerCase();
+		// Set stats defaults based on mode
+		if (!this.config.stats || this.config.stats.length === 0) {
+			const defaultChartStats = ["distance", "moving_time", "elevation"];
+			const defaultTableStats = ["count", "distance", "achievements"];
+			this.config.stats = this.config.mode === "chart" ? defaultChartStats : defaultTableStats;
+		}
 		this.config.stats = this.config.stats.map((stat) => stat.toLowerCase());
+		Log.info(this.config.stats);
 		// Add custom filters
 		this.addFilters();
 		// Initialise helper and schedule api calls

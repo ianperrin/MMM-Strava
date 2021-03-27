@@ -166,6 +166,7 @@ MMM-Strava .strava-icon.icon-rollerski {
 .MMM-Strava .chart {
   position: relative;
   margin-top: 20px;
+  clear: both;
 }
 
 .MMM-Strava .chart:first-child {

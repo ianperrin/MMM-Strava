@@ -15,7 +15,7 @@ Module.register("MMM-Strava", {
 		client_secret: "",
 		mode: "table", // Possible values "table", "chart"
 		chartType: "bar", // Possible values "bar", "radial"
-		activities: ["ride", "run", "swim"], // Possible values "ride", "run", "swim"
+		activities: ["ride", "run", "swim"], // Possible values "alpineski", "backcountryski", "canoeing", "crossfit", "ebikeride", "elliptical", "golf", "handcycle", "hike", "iceskate", "inlineskate", "kayaking", "kitesurf", "nordicski", "ride", "rockclimbing", "rollerski", "rowing", "run", "sail", "skateboard", "snowboard", "snowshoe", "soccer", "stairstepper", "standuppaddling", "surfing", "swim", "velomobile", "virtualride", "virtualrun", "walk", "weighttraining", "wheelchair", "windsurf", "workout", "yoga"
 		period: "recent", // Possible values "recent", "ytd", "all"
 		stats: ["count", "distance", "achievements"], // Possible values "count", "distance", "elevation", "moving_time", "elapsed_time", "achievements"
 		auto_rotate: false, // Rotate stats through each period starting from specified period
@@ -81,8 +81,10 @@ Module.register("MMM-Strava", {
 		Log.info("Starting module: " + this.name);
 		// Validate config
 		this.config.mode = this.config.mode.toLowerCase();
-		this.config.period = this.config.period.toLowerCase();
 		this.config.chartType = this.config.chartType.toLowerCase();
+		this.config.activities = this.filterActivities(this.config.activities.map((activity) => activity.toLowerCase()));
+		this.config.period = this.config.period.toLowerCase();
+		this.config.stats = this.config.stats.map((stat) => stat.toLowerCase());
 		// Add custom filters
 		this.addFilters();
 		// Initialise helper and schedule api calls
@@ -170,6 +172,18 @@ Module.register("MMM-Strava", {
 		}
 	},
 	/**
+	 * @function filterActivities
+	 * @description Removes invalid activity values from an array.
+	 *
+	 * @param {Object} activityArray - Array of activities to be validated
+	 */
+	filterActivities: function (activityArray) {
+		var validActivities = this.config.mode === "chart" ? activityArray : this.defaults.activities;
+		return activityArray.filter(function (activity) {
+			return validActivities.indexOf(activity) == -1 ? false : true;
+		});
+	},
+	/**
 	 * @function addFilters
 	 * @description adds filters to the Nunjucks environment.
 	 */
@@ -221,15 +235,17 @@ Module.register("MMM-Strava", {
 	},
 	// formatNumber
 	formatNumber: function (value, multipler, digits, units) {
-		// Convert value
-		value = value * multipler;
-		// Round value
-		value = this.roundValue(value, digits);
-		// Append units
-		if (units) {
-			value += units;
+		if (!isNaN(value)) {
+			// Convert value
+			value = value * multipler;
+			// Round value
+			value = this.roundValue(value, digits);
+			// Append units
+			if (units) {
+				value += units;
+			}
 		}
-		return isNaN(value) ? "" : value;
+		return value;
 	},
 	// getRadialLabelTransform
 	getRadialLabelTransform(index, count) {

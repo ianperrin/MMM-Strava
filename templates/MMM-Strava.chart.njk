@@ -52,7 +52,7 @@
                     <li class="xsmall light">{{ data[activity].total_elevation_gain | formatElevation(config.digits, true) }}</li>
                     {% endif %}
                     {% if 'count' in config.stats %}
-                    <li class="xsmall light"><span class="fa fa-fw fa-hashtag dimmed" title="Activity count"></span>{{ data[activity].intervals | length}}</li>
+                    <li class="xsmall light"><span class="fa fa-fw fa-hashtag dimmed" title="Activity count"></span>{{ data[activity].total_activity_count }}</li>
                     {% endif %}
                     {% if ('achievements' in config.stats) %}
                     <li class="xsmall light"><span class="fa fa-fw fa-trophy dimmed" title="Achievements"></span>{{ data[activity].total_achievement_count}}</li>

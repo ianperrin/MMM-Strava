@@ -364,7 +364,7 @@ module.exports = NodeHelper.create({
 			// Update activity summaries
 			if (activityTypeSummary) {
 				var distance = activityList[i].distance;
-				activityTypeSummary.total_activity_count += 1,
+				activityTypeSummary.total_activity_count += 1;
 				activityTypeSummary.total_distance += distance;
 				activityTypeSummary.total_elevation_gain += activityList[i].total_elevation_gain;
 				activityTypeSummary.total_moving_time += activityList[i].moving_time;

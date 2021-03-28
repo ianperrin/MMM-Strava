@@ -65,11 +65,16 @@ Module.register("MMM-Strava", {
 	getTranslations: function () {
 		return {
 			en: "translations/en.json",
-			nl: "translations/nl.json",
 			de: "translations/de.json",
-			id: "translations/id.json",
+			es: "translations/es.json",
+			fr: "translations/fr.json",
+			gr: "translations/gr.json",
 			hu: "translations/hu.json",
-			gr: "translations/gr.json"
+			id: "translations/id.json",
+			it: "translations/it.json",
+			pt: "translations/pt.json",
+			nl: "translations/nl.json",
+			ru: "translations/ru.json"
 		};
 	},
 	/**

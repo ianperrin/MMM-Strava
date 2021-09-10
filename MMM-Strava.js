@@ -262,6 +262,8 @@ Module.register("MMM-Strava", {
 			value = value * multipler;
 			// Round value
 			value = this.roundValue(value, digits);
+			// Format number
+			value = new Number(value).toLocaleString(this.config.locale);
 			// Append units
 			if (units) {
 				value += units;

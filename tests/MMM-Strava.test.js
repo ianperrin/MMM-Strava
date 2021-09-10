@@ -79,26 +79,26 @@ describe("MMM-Strava", function () {
 		});
 		it("distances in metres should be successfully humanised to imperial", function () {
 			moduleObject.config.units = "imperial";
-			assert.equal(moduleObject.formatDistance(8000, 0, false), "5", "8000 m should equal 5 (mi) when shown to 1 decimal places");
-			assert.equal(moduleObject.formatDistance(8000, 0, true), "5 mi", "8000 m should equal 5 mi when shown to 1 decimal places");
-			assert.equal(moduleObject.formatDistance(8800, 1, false), "5.5", "8800 m should equal 5.5 (mi) when shown to 1 decimal place");
-			assert.equal(moduleObject.formatDistance(8800, 1, true), "5.5 mi", "8800 m should equal 5.5 mi when shown to 1 decimal place");
+			assert.equal(moduleObject.formatDistance(8000, 0, false), "5", "8000 m should be converted to 5 (mi) when shown in imperial to 0 decimal places");
+			assert.equal(moduleObject.formatDistance(8000, 0, true), "5 mi", "8000 m should be converted to 5 (mi) when shown in imperial to 0 decimal places");
+			assert.equal(moduleObject.formatDistance(8800, 1, false), "5.5", "8800 m should be converted to 5.5 (mi) when shown in imperial to 1 decimal place");
+			assert.equal(moduleObject.formatDistance(8800, 1, true), "5.5 mi", "8800 m should be converted to 5.5 mi when shown in imperial to 1 decimal place");
 		});
 	});
 	describe("#formatElevation()", function () {
 		it("elevations in metres should be successfully humanised to metric", function () {
 			moduleObject.config.units = "metric";
-			assert.equal(moduleObject.formatElevation(8000, 0, false), "8000", "8000 m should equal 8 (m) when shown to 0 decimal places");
-			assert.equal(moduleObject.formatElevation(8000, 0, true), "8000 m", "8000 m should equal 8 m when shown to 0 decimal places");
-			assert.equal(moduleObject.formatElevation(8800, 1, false), "8800.0", "8800 m should equal 8800.0 (m) when shown to 1 decimal place");
-			assert.equal(moduleObject.formatElevation(8800, 1, true), "8800.0 m", "8800 m should equal 8800.0 m when shown to 1 decimal place");
+			assert.equal(moduleObject.formatElevation(8000.64, 0, false), "8,001", "8000.64 m should return 8,001 (m) when shown in metric to 0 decimal places");
+			assert.equal(moduleObject.formatElevation(8000.64, 0, true), "8,001 m", "8000.64 m should equal 8,001 m when shown in metric to 0 decimal places");
+			assert.equal(moduleObject.formatElevation(8800.64, 1, false), "8,800.6", "8800.64 m should equal 8,800.6 (m) when shown in metric to 1 decimal place");
+			assert.equal(moduleObject.formatElevation(8800.64, 1, true), "8,800.6 m", "8800.64 m should equal 8,800.6 m when shown in metric to 1 decimal place");
 		});
 		it("elevations in metres should be successfully humanised to imperial", function () {
 			moduleObject.config.units = "imperial";
-			assert.equal(moduleObject.formatElevation(8000, 0, false), "26247", "8000 m should equal 26247 (ft) when shown to 1 decimal places");
-			assert.equal(moduleObject.formatElevation(8000, 0, true), "26247 ft", "8000 m should equal 26247 ft when shown to 1 decimal places");
-			assert.equal(moduleObject.formatElevation(8000, 1, false), "26246.7", "8000 m should equal 26246.7 (ft) when shown to 1 decimal place");
-			assert.equal(moduleObject.formatElevation(8000, 1, true), "26246.7 ft", "8000 m should equal 26246.7 ft when shown to 1 decimal place");
+			assert.equal(moduleObject.formatElevation(8000, 0, false), "26,247", "8000 m should equal 26,247 (ft) when shown in imperial to 1 decimal places");
+			assert.equal(moduleObject.formatElevation(8000, 0, true), "26,247 ft", "8000 m should equal 26,247 ft when shown in imperial to 1 decimal places");
+			assert.equal(moduleObject.formatElevation(8000, 1, false), "26,246.7", "8000 m should equal 26,246.7 (ft) when shown in imperial to 1 decimal place");
+			assert.equal(moduleObject.formatElevation(8000, 1, true), "26,246.7 ft", "8000 m should equal 26,246.7 ft when shown in imperial to 1 decimal place");
 		});
 	});
 	describe("#roundValue()", function () {

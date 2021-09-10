@@ -8,28 +8,28 @@
     </div>
 {% else %}
     <div class="small">
-{% for activity in config.activities %}
-{% set total_distance = data[activity].total_distance %}
+{% for activity, activityData in data %}
+        {% set total_distance = activityData.total_distance %}
         <div class="chart {{ config.chartType | lower }}" id="{{activity | lower }}">
         {% if (config.chartType === "radial") %}
             <!-- https://www.amcharts.com/demos/radial-histogram/ -->
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="group" style="width: 500px; height: 500px; overflow: visible;">
                 <g id="bars" role="list" aria-label="radial histogram" opacity="1" transform="translate(219,219)">
-                    {% for interval in data[activity].intervals %}
+                    {% for interval in activityData.intervals %}
                     <g id="interval-{{ loop.index0 | getLabel }}" role="listitem">
-                        <text class="label {{ loop.index0 | getIntervalClass }}" transform="{{ loop.index0 | getRadialLabelTransform((data[activity].intervals | length)) }}" x="-6" y="7" dy="-4.455">
+                        <text class="label {{ loop.index0 | getIntervalClass }}" transform="{{ loop.index0 | getRadialLabelTransform((activityData.intervals | length)) }}" x="-6" y="7" dy="-4.455">
                             <tspan>{{ loop.index0 | getLabel }}</tspan>
                         </text>
-                        <path class="bar {{ loop.index0 | getIntervalClass }} interval-{{ loop.index }}" d="{{ loop.index0 | getRadialDataPath( (data[activity].intervals | length), (interval/data[activity].max_interval_distance) ) }} "></path>
+                        <path class="bar {{ loop.index0 | getIntervalClass }} interval-{{ loop.index }}" d="{{ loop.index0 | getRadialDataPath( (activityData.intervals | length), (interval/activityData.max_interval_distance) ) }} "></path>
                     </g>
                     {% endfor %}
                     <text y="-30" fill="#ffffff">
                         <tspan x="0" text-anchor="middle">{{ total_distance | formatDistance(config.digits, true) }}</tspan>
                     </text>
                     <text y="35" fill="#cccccc">
-                        <tspan x="0" text-anchor="middle">{{ data[activity].total_moving_time | formatTime }}</tspan>
+                        <tspan x="0" text-anchor="middle">{{ activityData.total_moving_time | formatTime }}</tspan>
                         {%  if activity !== "swim" %}
-                        <tspan x="0" dy="25" text-anchor="middle">{{ data[activity].total_elevation_gain | formatElevation(config.digits, true) }}</tspan>
+                        <tspan x="0" dy="25" text-anchor="middle">{{ activityData.total_elevation_gain | formatElevation(config.digits, true) }}</tspan>
                         {% endif %}
                     </text>
                     <g id="activity-icon" width="28" height="28" transform="translate(-14, -14)">
@@ -43,26 +43,26 @@
                 <span class="actual small bright">{{ total_distance | formatDistance(config.digits, true) }}</span>
                 <ul class="inline-stats">
                     {% if 'moving_time' in config.stats %}
-                    <li class="xsmall light">{{ data[activity].total_moving_time | formatTime }}</li>
+                    <li class="xsmall light">{{ activityData.total_moving_time | formatTime }}</li>
                     {% endif %}
                     {% if 'elapsed_time' in config.stats %}
-                    <li class="xsmall light">{{ data[activity].total_elapsed_time | formatTime }}</li>
+                    <li class="xsmall light">{{ activityData.total_elapsed_time | formatTime }}</li>
                     {% endif %}
                     {% if ('elevation' in config.stats) and (activity != "swim") %}
-                    <li class="xsmall light">{{ data[activity].total_elevation_gain | formatElevation(config.digits, true) }}</li>
+                    <li class="xsmall light">{{ activityData.total_elevation_gain | formatElevation(config.digits, true) }}</li>
                     {% endif %}
                     {% if 'count' in config.stats %}
-                    <li class="xsmall light"><span class="fa fa-fw fa-hashtag dimmed" title="Activity count"></span>{{ data[activity].total_activity_count }}</li>
+                    <li class="xsmall light"><span class="fa fa-fw fa-hashtag dimmed" title="Activity count"></span>{{ activityData.total_activity_count }}</li>
                     {% endif %}
                     {% if ('achievements' in config.stats) %}
-                    <li class="xsmall light"><span class="fa fa-fw fa-trophy dimmed" title="Achievements"></span>{{ data[activity].total_achievement_count}}</li>
+                    <li class="xsmall light"><span class="fa fa-fw fa-trophy dimmed" title="Achievements"></span>{{ activityData.total_achievement_count}}</li>
                     {% endif %}
                 </ul>
             </div>
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="{{ 12.5 * (data[activity].intervals | length) + 75 }}" height="68">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="{{ 12.5 * (activityData.intervals | length) + 75 }}" height="68">
                 <g class="activity-chart" transform="translate(3.3, 0)">
-                {% for interval in data[activity].intervals %}
-                {% set bar_height = (interval/data[activity].max_interval_distance * 45) if (interval > 0) else 2 %}
+                {% for interval in activityData.intervals %}
+                {% set bar_height = (interval/activityData.max_interval_distance * 45) if (interval > 0) else 2 %}
                     <g class="bar-container" transform="translate({{ loop.index0 * 12.5 }}, 0)">
                         <rect class="bar {{ loop.index0 | getIntervalClass }}" y="{{ 50 - bar_height }}" width="6.6" height="{{ bar_height }}"></rect>
                     </g>
@@ -71,7 +71,7 @@
                     </g>
                 {% endfor %}
                 </g>
-                <g id="activity-icon" transform="translate({{ 12.5 * (data[activity].intervals | length) + 15 }}, 10)">
+                <g id="activity-icon" transform="translate({{ 12.5 * (activityData.intervals | length) + 15 }}, 10)">
                     <image class="strava-icon icon-lg"  href="/MMM-Strava/assets/images/icon-{{ activity | lower }}.svg" width="48" height="48" opacity="0.80" />
                 </g>
             </svg>

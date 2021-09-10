@@ -25,7 +25,8 @@ Module.register("MMM-Strava", {
 		updateInterval: 10 * 1000, // 10 seconds
 		animationSpeed: 2.5 * 1000, // 2.5 seconds
 		debug: false, // Set to true to enable extending logging
-		digits: 1 // digits for distance and elevation
+		digits: 1, // digits for distance and elevation
+		firstYear: new Date().getFullYear() - 4 // first year to group activities by in chart mode when the period is 'all'
 	},
 	/**
 	 * @member {boolean} loading - Flag to indicate the loading state of the module.
@@ -209,9 +210,18 @@ Module.register("MMM-Strava", {
 		env.addFilter("getRadialLabelTransform", this.getRadialLabelTransform.bind(this));
 		env.addFilter("getRadialDataPath", this.getRadialDataPath.bind(this));
 	},
+	/**
+	 * @function getIntervalClass
+	 * @description returns the CSS Class for the supplied interval based on the config period.
+	 */
 	getIntervalClass: function (interval) {
 		moment.locale(this.config.locale);
-		var currentInterval = this.config.period === "ytd" ? moment().month() : moment().weekday();
+		const currentIntervalMap = {
+			all: moment().year() - this.config.firstYear,
+			ytd: moment().month(),
+			recent: moment().weekday()
+		};
+		var currentInterval = currentIntervalMap[this.config.period];
 		var className = "future";
 		if (currentInterval === interval) {
 			className = "current";
@@ -222,11 +232,12 @@ Module.register("MMM-Strava", {
 	},
 	getLabel: function (interval) {
 		moment.locale(this.config.locale);
-		const startUnit = this.config.period === "ytd" ? "year" : "week";
-		const intervalUnit = this.config.period === "ytd" ? "months" : "days";
-		const labelUnit = this.config.period === "ytd" ? "MMM" : "dd";
-		var intervalDate = moment().startOf(startUnit).add(interval, intervalUnit);
-		return intervalDate.format(labelUnit).slice(0, 1).toUpperCase();
+		const intervalDateMap = {
+			all: moment().year(this.config.firstYear).add(interval, "years").format("YY"),
+			ytd: moment().startOf("year").add(interval, "months").format("MMM").slice(0, 1).toUpperCase(),
+			recent: moment().startOf("week").add(interval, "days").format("dd").slice(0, 1).toUpperCase()
+		};
+		return intervalDateMap[this.config.period];
 	},
 	formatTime: function (timeInSeconds) {
 		var duration = moment.duration(timeInSeconds, "seconds");

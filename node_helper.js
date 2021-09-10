@@ -246,11 +246,14 @@ module.exports = NodeHelper.create({
 					this.log(`Athete id not found for ${moduleIdentifier}`);
 				}
 			} else if (moduleConfig.mode === "chart") {
-				// Get initial date
+				// Get initial date based on period
 				moment.locale(moduleConfig.locale);
-				var after = moment()
-					.startOf(moduleConfig.period === "ytd" ? "year" : "week")
-					.unix();
+				const afterPeriodMap = {
+					all: moment().year(moduleConfig.firstYear).month(0).date(1).hours(0).minutes(0).seconds(0).milliseconds(0).unix(),
+					ytd: moment().startOf("year").unix(),
+					recent: moment().startOf("week").unix()
+				};
+				var after = afterPeriodMap[moduleConfig.period];
 				// Call api
 				this.getAthleteActivities(moduleIdentifier, accessToken, after);
 			}
@@ -286,6 +289,7 @@ module.exports = NodeHelper.create({
 	 */
 	getAthleteActivities: function (moduleIdentifier, accessToken, after) {
 		this.log("Getting athlete activities for " + moduleIdentifier + " after " + moment.unix(after).format("YYYY-MM-DD"));
+		// TODO: Fix issue where number of activities exceeds 200 - issue #46
 		var self = this;
 		strava.athlete.listActivities({ access_token: accessToken, after: after, per_page: 200 }, function (err, payload, limits) {
 			var activityList = self.handleApiResponse(moduleIdentifier, err, payload, limits);
@@ -340,10 +344,15 @@ module.exports = NodeHelper.create({
 		var activitySummary = Object.create(null);
 		var activityName;
 		// Initialise activity summary
-		var periodIntervals = moduleConfig.period === "ytd" ? moment.monthsShort() : moment.weekdaysShort();
+		const periodIntervalMap = {
+			all: [...Array(moment().year() - moduleConfig.firstYear + 1).keys()].map((i) => i + moduleConfig.firstYear),
+			ytd: moment.monthsShort(),
+			recent: moment.weekdaysShort()
+		};
+		var periodIntervals = periodIntervalMap[moduleConfig.period];
 		for (var activity in moduleConfig.activities) {
 			if (Object.prototype.hasOwnProperty.call(moduleConfig.activities, activity)) {
-				activityName = moduleConfig.activities[activity].toLowerCase();
+				activityName = moduleConfig.activities[activity].toLowerCase().replace("virtual", "");
 				activitySummary[activityName] = {
 					total_activity_count: 0,
 					total_distance: 0,
@@ -371,7 +380,12 @@ module.exports = NodeHelper.create({
 				activityTypeSummary.total_elapsed_time += activityList[i].elapsed_time;
 				activityTypeSummary.total_achievement_count += activityList[i].achievement_count;
 				const activityDate = moment(activityList[i].start_date_local);
-				const intervalIndex = moduleConfig.period === "ytd" ? activityDate.month() : activityDate.weekday();
+				const intervalIndexMap = {
+					all: activityDate.year() - moduleConfig.firstYear,
+					ytd: activityDate.month(),
+					recent: activityDate.weekday()
+				};
+				const intervalIndex = intervalIndexMap[moduleConfig.period];
 				activityTypeSummary.intervals[intervalIndex] += distance;
 				// Update max interval distance
 				if (activityTypeSummary.intervals[intervalIndex] > activityTypeSummary.max_interval_distance) {

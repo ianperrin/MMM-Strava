@@ -269,15 +269,20 @@ module.exports = NodeHelper.create({
 	 * @param {string} accessToken
 	 * @param {integer} athleteId
 	 */
-	getAthleteStats: function (moduleIdentifier, accessToken, athleteId) {
+	getAthleteStats: async function (moduleIdentifier, accessToken, athleteId) {
 		this.log("Getting athlete stats for " + moduleIdentifier + " using " + athleteId);
 		var self = this;
-		strava.athletes.stats({ access_token: accessToken, id: athleteId }, function (err, payload, limits) {
-			var data = self.handleApiResponse(moduleIdentifier, err, payload, limits);
-			if (data) {
-				self.sendSocketNotification("DATA", { identifier: moduleIdentifier, data: data });
-			}
+		const errors = require("request-promise/errors");
+		const options = {
+			access_token: accessToken,
+			id: athleteId
+		};
+		const apiData = await strava.athletes.stats(options).catch(errors.StatusCodeError, function (e) {
+			self.handleApiError(moduleIdentifier, e);
 		});
+		if (apiData) {
+			self.sendSocketNotification("DATA", { identifier: moduleIdentifier, data: apiData });
+		}
 	},
 	/**
 	 * @function getAthleteActivities
@@ -287,48 +292,67 @@ module.exports = NodeHelper.create({
 	 * @param {string} accessToken
 	 * @param {string} after
 	 */
-	getAthleteActivities: function (moduleIdentifier, accessToken, after) {
+	getAthleteActivities: async function (moduleIdentifier, accessToken, after) {
 		this.log("Getting athlete activities for " + moduleIdentifier + " after " + moment.unix(after).format("YYYY-MM-DD"));
-		// TODO: Fix issue where number of activities exceeds 200 - issue #46
-		var self = this;
-		strava.athlete.listActivities({ access_token: accessToken, after: after, per_page: 200 }, function (err, payload, limits) {
-			var activityList = self.handleApiResponse(moduleIdentifier, err, payload, limits);
-			if (activityList) {
-				var data = {
-					identifier: moduleIdentifier,
-					data: self.summariseActivities(moduleIdentifier, activityList)
-				};
-				self.sendSocketNotification("DATA", data);
+		const self = this;
+		var pageNum = 1;
+		var isPaging = true;
+		var sendNotification = true;
+		const activityList = [];
+		const errors = require("request-promise/errors");
+		while (isPaging) {
+			const options = {
+				access_token: accessToken,
+				after: after,
+				page: pageNum,
+				per_page: 200
+			};
+			const apiData = await strava.athlete.listActivities(options).catch(errors.StatusCodeError, function (e) {
+				self.handleApiError(moduleIdentifier, e);
+				sendNotification = false;
+			});
+			if (apiData && apiData.length > 0) {
+				this.log("listActivities api returned " + apiData.length + " activities in page " + options.page + " using " + options.per_page + " per page.");
+				activityList.push(...apiData);
+				pageNum += 1;
+			} else {
+				isPaging = false;
+				break;
 			}
-		});
+		}
+		// Prepare and send notification payload
+		if (sendNotification) {
+			var data = {
+				identifier: moduleIdentifier,
+				data: this.summariseActivities(moduleIdentifier, activityList)
+			};
+			this.sendSocketNotification("DATA", data);
+		}
 	},
 	/**
-	 * @function handleApiResponse
-	 * @description handles the response from the API to catch errors and faults.
+	 * @function handleApiError
+	 * @description handles an error response from the API.
 	 *
 	 * @param {string} moduleIdentifier - The module identifier.
-	 * @param {object} err
-	 * @param {object} payload
-	 * @param {object} limits
+	 * @param {StatusCodeError} err
 	 */
-	handleApiResponse: function (moduleIdentifier, err, payload, limits) {
+	handleApiError: function (moduleIdentifier, err) {
 		try {
-			// Strava-v3 errors
+			// Strava-v3 errors - https://github.com/UnbounDev/node-strava-v3#error-handling
 			if (err) {
-				if (err.error && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
+				if (err.error && err.error.errors && err.error.errors[0].field === "access_token" && err.error.errors[0].code === "invalid") {
+					this.log(`Invalid access token for ${moduleIdentifier}, will try refreshing tokens.`);
 					this.refreshTokens(moduleIdentifier);
 				} else {
 					this.log({ module: moduleIdentifier, error: err });
 					this.sendSocketNotification("ERROR", { identifier: moduleIdentifier, data: { message: err.message } });
 				}
-			}
-			// Strava Data
-			if (payload) {
-				return payload;
+			} else {
+				this.log("No error to handle.");
 			}
 		} catch (error) {
 			// Unknown response
-			this.log(`Unable to handle API response for ${moduleIdentifier}`);
+			this.log(`Unable to handle API error for ${moduleIdentifier}.`);
 		}
 		return false;
 	},

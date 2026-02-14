@@ -47,6 +47,6 @@
 	},
 	"dependencies": {
 		"moment": "latest",
-		"strava-v3": "2.0.10"
+		"strava-v3": "3.1.0"
 	}
 }
